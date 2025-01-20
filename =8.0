@@ -1,0 +1,37 @@
+Channels:
+ - defaults
+Platform: linux-64
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /home/24052432g/.conda/envs/py310
+
+  added / updated specs:
+    - pytest
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    exceptiongroup-1.2.0       |  py310h06a4308_0          30 KB
+    packaging-24.2             |  py310h06a4308_0         174 KB
+    pluggy-1.5.0               |  py310h06a4308_0          37 KB
+    pytest-7.4.4               |  py310h06a4308_0        1008 KB
+    tomli-2.0.1                |  py310h06a4308_0          24 KB
+    ------------------------------------------------------------
+                                           Total:         1.2 MB
+
+The following NEW packages will be INSTALLED:
+
+  exceptiongroup     pkgs/main/linux-64::exceptiongroup-1.2.0-py310h06a4308_0 
+  iniconfig          pkgs/main/noarch::iniconfig-1.1.1-pyhd3eb1b0_0 
+  packaging          pkgs/main/linux-64::packaging-24.2-py310h06a4308_0 
+  pluggy             pkgs/main/linux-64::pluggy-1.5.0-py310h06a4308_0 
+  pytest             pkgs/main/linux-64::pytest-7.4.4-py310h06a4308_0 
+  tomli              pkgs/main/linux-64::tomli-2.0.1-py310h06a4308_0 
+
+
+Proceed ([y]/n)? 
