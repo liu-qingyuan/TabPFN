@@ -93,7 +93,7 @@ class TabPFNWrapper(BaseEstimator, ClassifierMixin):
             'std': self.feature_importances_std_
         }
 
-def select_features_rfe(X, y, n_features=11):
+def select_features_rfe(X, y, n_features=3):
     """
     使用TabPFN作为基础模型的RFE进行特征选择
     """
@@ -156,7 +156,7 @@ def run_experiment(
     os.makedirs(base_path, exist_ok=True)
     
     # Generate experiment name based on parameters
-    exp_name = f"TabPFN-Health-RFE11-N{n_estimators}-S{softmax_temperature}-B{balance_probabilities}-A{average_before_softmax}-I{ignore_pretraining_limits}-R{random_state}"
+    exp_name = f"TabPFN-Health-RFE3-N{n_estimators}-S{softmax_temperature}-B{balance_probabilities}-A{average_before_softmax}-I{ignore_pretraining_limits}-R{random_state}"
     
     print("Data Shape:", X.shape)
     print("Label Distribution:\n", y.value_counts())
@@ -271,7 +271,7 @@ y = df["Label"].copy()
 
 # 2. Select Features using TabPFN importance
 print("Selecting features using TabPFN importance...")
-selected_features, feature_ranking = select_features_rfe(X, y, n_features=11)
+selected_features, feature_ranking = select_features_rfe(X, y, n_features=3)
 
 # Save feature ranking
 feature_ranking.to_csv('./results/RFE_feature_ranking.csv', index=False)
@@ -333,9 +333,9 @@ if best_model is not None:
     
     save_path = './results/best_model_rfe'
     os.makedirs(save_path, exist_ok=True)
-    joblib.dump(best_model_info, f'{save_path}/TabPFN-Health-RFE11-Best-Model.joblib')
+    joblib.dump(best_model_info, f'{save_path}/TabPFN-Health-RFE3-Best-Model.joblib')
     
-    with open(f'{save_path}/TabPFN-Health-RFE11-Best-Parameters.txt', 'w') as f:
+    with open(f'{save_path}/TabPFN-Health-RFE3-Best-Parameters.txt', 'w') as f:
         f.write("Best Model Parameters:\n")
         f.write("=" * 50 + "\n")
         f.write(f"AUC Score: {best_auc:.4f}\n")
