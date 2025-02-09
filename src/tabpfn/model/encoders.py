@@ -9,11 +9,17 @@ import torch
 from torch import nn
 
 
-# TODO(eddiebergman): These were used before but I have no idea why.
-# We use the implementations given by torch for now.
-# TODO(Arjun): Enabling these again because their behaviour is a little
-# different from torch's implementation (see Issue #2). We should check if this makes
-# a difference in the results.
+# usage of custom implementations is required to support ONNX export
+def torch_nansum(x: torch.Tensor, axis=None, keepdim=False, dtype=None):
+    nan_mask = torch.isnan(x)
+    masked_input = torch.where(
+        nan_mask,
+        torch.tensor(0.0, device=x.device, dtype=x.dtype),
+        x,
+    )
+    return torch.sum(masked_input, axis=axis, keepdim=keepdim, dtype=dtype)
+
+
 def torch_nanmean(
     x: torch.Tensor,
     axis: int = 0,
@@ -46,7 +52,7 @@ def torch_nanstd(x: torch.Tensor, axis: int = 0):
         dim=axis,
     )
     return torch.sqrt(
-        torch.nansum(torch.square(mean_broadcast - x), axis=axis) / (num - 1),  # type: ignore
+        torch_nansum(torch.square(mean_broadcast - x), axis=axis) / (num - 1),  # type: ignore
     )
 
 
@@ -100,33 +106,40 @@ def normalize_data(
 
 
 def select_features(x: torch.Tensor, sel: torch.Tensor) -> torch.Tensor:
-    """Select features from the input tensor based on the selection mask.
+    """Select features from the input tensor based on the selection mask,
+    and arrange them contiguously in the last dimension.
+    If batch size is bigger than 1, we pad the features with zeros to make the number of features fixed.
 
     Args:
-        x: The input tensor.
-        sel: The boolean selection mask indicating which features to keep.
+        x: The input tensor of shape (sequence_length, batch_size, total_features)
+        sel: The boolean selection mask indicating which features to keep of shape (batch_size, total_features)
 
     Returns:
         The tensor with selected features.
+        The shape is (sequence_length, batch_size, number_of_selected_features) if batch_size is 1.
+        The shape is (sequence_length, batch_size, total_features) if batch_size is greater than 1.
     """
-    new_x = x.clone()
-    for B in range(x.shape[1]):
-        if x.shape[1] > 1:
-            new_x[:, B, :] = torch.cat(
-                [
-                    x[:, B, sel[B]],
-                    torch.zeros(
-                        x.shape[0],
-                        x.shape[-1] - sel[B].sum(),
-                        device=x.device,
-                        dtype=x.dtype,
-                    ),
-                ],
-                -1,
-            )
-        else:
-            # If B == 1, we don't need to append zeros, as the number of features can change
-            new_x = x[:, :, sel[B]]
+    B, total_features = sel.shape
+    sequence_length = x.shape[0]
+
+    # If B == 1, we don't need to append zeros, as the number of features don't need to be fixed.
+    if B == 1:
+        return x[:, :, sel[0]]
+
+    new_x = torch.zeros(
+        (sequence_length, B, total_features),
+        device=x.device,
+        dtype=x.dtype,
+    )
+
+    # For each batch, compute the number of selected features.
+    sel_counts = sel.sum(dim=-1)  # shape: (B,)
+
+    for b in range(B):
+        s = int(sel_counts[b])
+        if s > 0:
+            new_x[:, b, :s] = x[:, b, sel[b]]
+
     return new_x
 
 
@@ -458,7 +471,7 @@ class NanHandlingEncoderStep(SeqEncStep):
             single_eval_pos: The position to use for single evaluation.
             **kwargs: Additional keyword arguments (unused).
         """
-        self.feature_means_ = torch.nanmean(x[:single_eval_pos], dim=0)
+        self.feature_means_ = torch_nanmean(x[:single_eval_pos], axis=0)
 
     def _transform(
         self,
