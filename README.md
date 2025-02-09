@@ -5,6 +5,9 @@
 [![Discord](https://img.shields.io/discord/1285598202732482621?color=7289da&label=Discord&logo=discord&logoColor=ffffff)](https://discord.com/channels/1285598202732482621/)
 [![Documentation](https://img.shields.io/badge/docs-priorlabs.ai-blue)](https://priorlabs.ai/docs)
 [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://tinyurl.com/tabpfn-colab-local)
+[![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://pypi.org/project/tabpfn/)
+
+<img src="https://github.com/PriorLabs/tabpfn-extensions/blob/main/tabpfn_summary.webp" width="80%" alt="TabPFN Summary">
 
 TabPFN is a foundation model for tabular data that outperforms traditional methods while 
 being dramatically faster. This repository contains the core PyTorch implementation with
@@ -15,10 +18,6 @@ features. Previous version available at [v1.0.0](../../tree/v1.0.0) and
 `pip install tabpfn<2`.
 
 📚 For detailed usage examples and best practices, check out [Interactive Colab Tutorial](https://tinyurl.com/tabpfn-colab-local)
-
-## 🚀 We're Hiring!
-
-Prior Labs is building breakthrough foundation models for tabular data. [Join our team in Freiburg and Berlin ](https://jobs.ashbyhq.com/prior-labs)
 
 ## 🌐 TabPFN Ecosystem
 
@@ -55,7 +54,7 @@ from tabpfn import TabPFNClassifier
 
 # Load data
 X, y = load_breast_cancer(return_X_y=True)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
 # Initialize a classifier
 clf = TabPFNClassifier()
@@ -112,25 +111,9 @@ We're building the future of tabular machine learning and would love your involv
 
 Prior Labs License (Apache 2.0 with additional attribution requirement): [here](https://priorlabs.ai/tabpfn-license/)
 
-```
-Attribution clause (cropped):
-If You distribute or make available the Work or any Derivative
-Work thereof relating to any part of the source or model weights,
-or a product or service (including another AI model) that contains
-any source or model weights, You shall (A) provide a copy of this
-License with any such materials; and (B) prominently display
-“Built with TabPFN” on each related website, user interface, blogpost,
-about page, or product documentation. If You use the source or model
-weights or model outputs to create, train, fine tune, distil, or
-otherwise improve an AI model, which is distributed or made available,
-you shall also include “TabPFN” at the beginning of any such AI model name.
-To clarify, internal benchmarking and testing without external
-communication shall not qualify as distribution or making available
-pursuant to this Section 10 and no attribution under this Section 10
-shall be required.
-```
-
 ## 📚 Citation
+
+You can read our paper explaining TabPFN [here](https://doi.org/10.1038/s41586-024-08328-6). 
 
 ```bibtex
 @article{hollmann2025tabpfn,
@@ -146,7 +129,16 @@ shall be required.
  publisher={Springer Nature},
  url={https://www.nature.com/articles/s41586-024-08328-6},
 }
+
+@inproceedings{hollmann2023tabpfn,
+  title={TabPFN: A transformer that solves small tabular classification problems in a second},
+  author={Hollmann, Noah and M{\"u}ller, Samuel and Eggensperger, Katharina and Hutter, Frank},
+  booktitle={International Conference on Learning Representations 2023},
+  year={2023}
+}
 ```
+
+
 
 ## 🛠️ Development
 
