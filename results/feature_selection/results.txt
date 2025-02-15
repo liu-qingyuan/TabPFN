@@ -1,0 +1,26 @@
+Feature Selection Results
+==================================================
+
+Selected Features:
+1. Feature2
+2. Feature3
+3. Feature5
+4. Feature6
+5. Feature27
+6. Feature28
+7. Feature48
+8. Feature49
+9. Feature57
+10. Feature61
+
+Test Set Results:
+------------------------------
+Accuracy: 0.7053
+AUC: 0.6373
+F1 Score: 0.8069
+Class 0 Accuracy: 0.2615
+Class 1 Accuracy: 0.9360
+
+Confusion Matrix:
+[[ 17  48]
+ [  8 117]]
