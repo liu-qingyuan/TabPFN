@@ -1,0 +1,8 @@
+Model Parameters:
+==================================================
+Number of Features: 11
+Features: Feature63, Feature2, Feature46, Feature61, Feature56, Feature42, Feature39, Feature43, Feature48, Feature5, Feature22
+Cross-validation AUC Score: 0.8139 ± 0.0596
+Cross-validation Accuracy: 0.7253 ± 0.0630
+Cross-validation F1 Score: 0.7938 ± 0.0479
+Timestamp: 20250215-154355
