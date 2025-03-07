@@ -1,0 +1,30 @@
+Best 6 Features Evaluation Results
+==================================================
+
+Features:
+1. Feature63
+2. Feature2
+3. Feature46
+4. Feature42
+5. Feature39
+6. Feature43
+
+Cross-validation Results:
+------------------------------
+accuracy: 0.6924 ± 0.0933
+auc: 0.7902 ± 0.0853
+f1: 0.7767 ± 0.0696
+acc_0: 0.4305 ± 0.2314
+acc_1: 0.8426 ± 0.0838
+
+External Validation Results:
+------------------------------
+accuracy: 0.6368
+auc: 0.6561
+f1: 0.7376
+acc_0: 0.3692
+acc_1: 0.7760
+
+Confusion Matrix:
+[[24 41]
+ [28 97]]
