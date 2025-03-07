@@ -22,7 +22,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_matrix
 from sklearn.feature_selection import RFE
 from sklearn.inspection import permutation_importance
-from tabpfn_extensions.hpo import TunedTabPFNClassifier
+from tabpfn_extensions.post_hoc_ensembles.sklearn_interface import AutoTabPFNClassifier
 from tqdm import tqdm
 import torch
 import random
@@ -39,7 +39,7 @@ def __sklearn_tags__(self):
     return SimpleNamespace(**tags)
 
 # 使用猴子补丁覆盖原来的 __sklearn_tags__ 方法
-TunedTabPFNClassifier.__sklearn_tags__ = __sklearn_tags__
+AutoTabPFNClassifier.__sklearn_tags__ = __sklearn_tags__
 
 # Set random seeds for reproducibility
 torch.manual_seed(42)
@@ -51,9 +51,9 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(42)
 random.seed(42)
 
-class TunedTabPFNWrapper(BaseEstimator, ClassifierMixin):
+class AutoTabPFNWrapper(BaseEstimator, ClassifierMixin):
     """
-    Wrapper for TunedTabPFNClassifier to use with sklearn's RFE
+    Wrapper for AutoTabPFNClassifier to use with sklearn's RFE
     """
     _estimator_type = "classifier"
 
@@ -71,19 +71,19 @@ class TunedTabPFNWrapper(BaseEstimator, ClassifierMixin):
                  device='cuda',
                  random_state=42,
                  n_repeats=5,
-                 n_trials=500):
+                 max_time=1):
         self.device = device
         self.random_state = random_state
         self.n_repeats = n_repeats
-        self.n_trials = n_trials
+        self.max_time = max_time
 
     def fit(self, X, y):
         self.classes_ = np.unique(y)
         
-        self.model_ = TunedTabPFNClassifier(
+        self.model_ = AutoTabPFNClassifier(
             device=self.device,
             random_state=self.random_state,
-            n_trials=self.n_trials
+            max_time=self.max_time
         )
         self.model_.fit(X, y)
         
@@ -109,19 +109,26 @@ class TunedTabPFNWrapper(BaseEstimator, ClassifierMixin):
         return roc_auc_score(y, y_proba)
 
 # Create results directory
-os.makedirs('./results/tuned_rfe_test_analysis', exist_ok=True)
+os.makedirs('./results/auto_rfe_analysis_guangzhou_no_nan', exist_ok=True)
 
-# Define features to exclude
-excluded_features = ['Feature12', 'Feature33', 'Feature34', 'Feature36', 'Feature40']
+# Define selected features (使用与 predict_healthcare_auto_predict_all.py 相同的特征列表)
+selected_features = [
+    'Feature2', 'Feature3', 'Feature4', 'Feature5',
+    'Feature14', 'Feature15', 'Feature17', 'Feature22',
+    'Feature39', 'Feature42', 'Feature43', 'Feature45',
+    'Feature46', 'Feature47', 'Feature48', 'Feature49',
+    'Feature50', 'Feature52', 'Feature53', 'Feature56',
+    'Feature57', 'Feature63'
+]
 
 print("\nLoading datasets...")
 # Load training data
 train_df = pd.read_excel("data/AI4healthcare.xlsx")
 # Load external test data
-test_df = pd.read_excel("data/HenanCancerHospital_features63_58.xlsx")
+test_df = pd.read_excel("data/GuangzhouMedicalHospital_features22_no_nan.xlsx")
 
-# Get all features except Label and excluded features
-all_features = [col for col in train_df.columns if col != 'Label' and col not in excluded_features]
+# 使用预定义的特征列表，而不是动态生成
+all_features = selected_features
 
 # Prepare data
 X_train = train_df[all_features].copy()
@@ -135,21 +142,15 @@ y_train_np = y_train.values.astype(np.int32)
 X_test_np = X_test.values.astype(np.float32)
 y_test_np = y_test.values.astype(np.int32)
 
-# Standardize features
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train_np)
-X_test_scaled = scaler.transform(X_test_np)
-
 print("\nData Information:")
-print("Training Data Shape:", X_train_scaled.shape)
-print("Test Data Shape:", X_test_scaled.shape)
+print("Training Data Shape:", X_train_np.shape)
+print("Test Data Shape:", X_test_np.shape)
 print("\nTraining Label Distribution:\n", pd.Series(y_train_np).value_counts())
 print("Test Label Distribution:\n", pd.Series(y_test_np).value_counts())
 
 # Get feature ranking using RFE
 print("\nGetting feature ranking using RFE...")
-base_model = TunedTabPFNWrapper(device='cuda', random_state=42, n_trials=500)
+base_model = AutoTabPFNWrapper(device='cuda', random_state=42, max_time=1)
 rfe = RFE(
     estimator=base_model,
     n_features_to_select=1,
@@ -158,9 +159,7 @@ rfe = RFE(
 )
 
 # 一次性完成所有特征选择
-print("\nPerforming RFE on test set...")
-# rfe.fit(X_train_scaled, y_train_np)
-rfe.fit(X_test_scaled, y_test_np)
+rfe.fit(X_train_np, y_train_np)
 
 # Create feature ranking DataFrame
 feature_ranks = pd.DataFrame({
@@ -172,7 +171,7 @@ print("\nFeature Ranking:")
 print(feature_ranks)
 
 # Save feature ranking
-feature_ranks.to_csv('./results/tuned_rfe_test_analysis/feature_ranking.csv', index=False)
+feature_ranks.to_csv('./results/auto_rfe_analysis_guangzhou_no_nan/feature_ranking.csv', index=False)
 
 # Initialize variables to store results
 all_results = []
@@ -185,14 +184,14 @@ for n_features in tqdm(range(1, len(all_features) + 1), desc='Evaluating feature
     selected_indices = [all_features.index(f) for f in selected_features]
     
     # Get selected features data
-    X_train_selected = X_train_scaled[:, selected_indices]
-    X_test_selected = X_test_scaled[:, selected_indices]
+    X_train_selected = X_train_np[:, selected_indices]
+    X_test_selected = X_test_np[:, selected_indices]
     
     # Train and evaluate model
-    model = TunedTabPFNClassifier(
+    model = AutoTabPFNClassifier(
         device='cuda',
         random_state=42,
-        n_trials=500
+        max_time=1
     )
     model.fit(X_train_selected, y_train_np)
     
@@ -238,7 +237,7 @@ results_df = pd.DataFrame(all_results)
 results_df = results_df.sort_values('test_auc', ascending=False)
 
 # Save results
-results_df.to_csv('./results/tuned_rfe_test_analysis/feature_selection_results.csv', index=False)
+results_df.to_csv('./results/auto_rfe_analysis_guangzhou_no_nan/feature_selection_results.csv', index=False)
 
 # Print best configuration
 print("\nBest Configuration:")
@@ -277,10 +276,10 @@ plt.legend()
 plt.grid(True)
 
 plt.tight_layout()
-plt.savefig('./results/tuned_rfe_test_analysis/performance_analysis.png', dpi=300, bbox_inches='tight')
+plt.savefig('./results/auto_rfe_analysis_guangzhou_no_nan/performance_analysis.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 print("\nResults have been saved to:")
-print("1. ./results/tuned_rfe_test_analysis/feature_ranking.csv")
-print("2. ./results/tuned_rfe_test_analysis/feature_selection_results.csv")
-print("3. ./results/tuned_rfe_test_analysis/performance_analysis.png") 
+print("1. ./results/auto_rfe_analysis_guangzhou_no_nan/feature_ranking.csv")
+print("2. ./results/auto_rfe_analysis_guangzhou_no_nan/feature_selection_results.csv")
+print("3. ./results/auto_rfe_analysis_guangzhou_no_nan/performance_analysis.png") 

@@ -1,0 +1,32 @@
+Best 8 Features Evaluation Results
+==================================================
+
+Features:
+1. Feature63
+2. Feature2
+3. Feature46
+4. Feature61
+5. Feature56
+6. Feature42
+7. Feature39
+8. Feature43
+
+Cross-validation Results:
+------------------------------
+accuracy: 0.7391 ± 0.0349
+auc: 0.8131 ± 0.0602
+f1: 0.8025 ± 0.0327
+acc_0: 0.5651 ± 0.1376
+acc_1: 0.8362 ± 0.0466
+
+External Validation Results:
+------------------------------
+accuracy: 0.6789
+auc: 0.7008
+f1: 0.7860
+acc_0: 0.2615
+acc_1: 0.8960
+
+Confusion Matrix:
+[[ 17  48]
+ [ 13 112]]
