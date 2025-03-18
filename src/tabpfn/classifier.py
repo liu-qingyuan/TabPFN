@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 
+import typing
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
@@ -25,6 +26,7 @@ from typing_extensions import Self
 
 import numpy as np
 import torch
+from sklearn import config_context
 from sklearn.base import BaseEstimator, ClassifierMixin, check_is_fitted
 from sklearn.preprocessing import LabelEncoder
 
@@ -43,10 +45,12 @@ from tabpfn.constants import (
 from tabpfn.preprocessing import (
     ClassifierEnsembleConfig,
     EnsembleConfig,
+    PreprocessorConfig,
     default_classifier_preprocessor_configs,
 )
 from tabpfn.utils import (
     _fix_dtypes,
+    _get_embeddings,
     _get_ordinal_encoder,
     infer_categorical_features,
     infer_device_and_type,
@@ -61,9 +65,7 @@ if TYPE_CHECKING:
     from sklearn.compose import ColumnTransformer
     from torch.types import _dtype
 
-    from tabpfn.inference import (
-        InferenceEngine,
-    )
+    from tabpfn.inference import InferenceEngine
     from tabpfn.model.config import InferenceConfig
 
     try:
@@ -373,6 +375,7 @@ class TabPFNClassifier(ClassifierMixin, BaseEstimator):
         tags.estimator_type = "classifier"
         return tags
 
+    @config_context(transform_output="default")
     def fit(self, X: XType, y: YType) -> Self:
         """Fit the model.
 
@@ -474,10 +477,11 @@ class TabPFNClassifier(ClassifierMixin, BaseEstimator):
             feature_shift_decoder=self.interface_config_.FEATURE_SHIFT_METHOD,
             polynomial_features=self.interface_config_.POLYNOMIAL_FEATURES,
             max_index=len(X),
-            preprocessor_configs=(
+            preprocessor_configs=typing.cast(
+                Sequence[PreprocessorConfig],
                 preprocess_transforms
                 if preprocess_transforms is not None
-                else default_classifier_preprocessor_configs()
+                else default_classifier_preprocessor_configs(),
             ),
             class_shift_method=self.interface_config_.CLASS_SHIFT_METHOD,
             n_classes=self.n_classes_,
@@ -517,6 +521,7 @@ class TabPFNClassifier(ClassifierMixin, BaseEstimator):
         y = np.argmax(proba, axis=1)
         return self.label_encoder_.inverse_transform(y)  # type: ignore
 
+    @config_context(transform_output="default")
     def predict_proba(self, X: XType) -> np.ndarray:
         """Predict the probabilities of the classes for the provided input samples.
 
@@ -576,3 +581,18 @@ class TabPFNClassifier(ClassifierMixin, BaseEstimator):
         # Normalize to guarantee proba sum to 1, required due to precision issues and
         # going from torch to numpy
         return output / output.sum(axis=1, keepdims=True)  # type: ignore
+
+    def get_embeddings(
+        self,
+        X: XType,
+        data_source: Literal["train", "test"] = "test",
+    ) -> np.ndarray:
+        """Get the embeddings for the input data `X`.
+
+        Parameters:
+            X (XType): The input data.
+            data_source str: Extract either the train or test embeddings
+        Returns:
+            np.ndarray: The computed embeddings for each fitted estimator.
+        """
+        return _get_embeddings(self, X, data_source)

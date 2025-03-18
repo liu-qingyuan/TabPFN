@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import io
+import os
+import sys
+import typing
 from itertools import product
 from typing import Callable, Literal
 
@@ -8,6 +11,7 @@ import numpy as np
 import pytest
 import sklearn.datasets
 import torch
+from sklearn import config_context
 from sklearn.base import check_is_fitted
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -199,8 +203,13 @@ def test_dict_vs_object_preprocessor_config(X_y: tuple[np.ndarray, np.ndarray]) 
 
     # Compare predictions for different output types
     for output_type in ["mean", "median", "mode"]:
-        pred_dict = model_dict.predict(X, output_type=output_type)
-        pred_obj = model_obj.predict(X, output_type=output_type)
+        # Cast output_type to a valid literal type for mypy
+        valid_output_type = typing.cast(
+            typing.Literal["mean", "median", "mode"],
+            output_type,
+        )
+        pred_dict = model_dict.predict(X, output_type=valid_output_type)
+        pred_obj = model_obj.predict(X, output_type=valid_output_type)
         np.testing.assert_array_almost_equal(
             pred_dict,
             pred_obj,
@@ -246,6 +255,10 @@ class ModelWrapper(nn.Module):
 # WARNING: unstable for scipy<1.11.0
 @pytest.mark.filterwarnings("ignore::torch.jit.TracerWarning")
 def test_onnx_exportable_cpu(X_y: tuple[np.ndarray, np.ndarray]) -> None:
+    if os.name == "nt":
+        pytest.skip("onnx export is not tested on windows")
+    if sys.version_info >= (3, 13):
+        pytest.xfail("onnx is not yet supported on Python 3.13")
     X, y = X_y
     with torch.no_grad():
         regressor = TabPFNRegressor(n_estimators=1, device="cpu", random_state=43)
@@ -280,3 +293,111 @@ def test_onnx_exportable_cpu(X_y: tuple[np.ndarray, np.ndarray]) -> None:
             opset_version=17,  # using 17 since we use torch>=2.1
             dynamic_axes=dynamic_axes,
         )
+
+
+@pytest.mark.parametrize("data_source", ["train", "test"])
+def test_get_embeddings(X_y: tuple[np.ndarray, np.ndarray], data_source: str) -> None:
+    """Test that get_embeddings returns valid embeddings for a fitted model."""
+    X, y = X_y
+    n_estimators = 3
+
+    model = TabPFNRegressor(n_estimators=n_estimators)
+    model.fit(X, y)
+
+    # Cast to Literal type for mypy
+    valid_data_source = typing.cast(Literal["train", "test"], data_source)
+    embeddings = model.get_embeddings(X, valid_data_source)
+
+    # Need to access the model through the executor
+    model_instance = typing.cast(typing.Any, model.executor_).model
+    encoder_shape = next(
+        m.out_features
+        for m in model_instance.encoder.modules()
+        if isinstance(m, nn.Linear)
+    )
+
+    assert isinstance(embeddings, np.ndarray)
+    assert embeddings.shape[0] == n_estimators
+    assert embeddings.shape[1] == X.shape[0]
+    assert embeddings.shape[2] == encoder_shape
+
+
+def test_overflow():
+    """Test which fails for scipy<1.11.0."""
+    # Fetch a small sample of the California housing dataset
+    X, y = sklearn.datasets.fetch_california_housing(return_X_y=True)
+    X, y = X[:20], y[:20]
+
+    # Create and fit the regressor
+    regressor = TabPFNRegressor(n_estimators=1, device="cpu", random_state=42)
+
+    regressor.fit(X, y)
+
+    predictions = regressor.predict(X)
+    assert predictions.shape == (X.shape[0],), "Predictions shape is incorrect"
+
+
+def test_pandas_output_config():
+    """Test compatibility with sklearn's output configuration settings."""
+    # Generate synthetic regression data
+    X, y = sklearn.datasets.make_regression(
+        n_samples=100,
+        n_features=10,
+        random_state=19,
+    )
+
+    # Initialize TabPFN
+    model = TabPFNRegressor(n_estimators=1, random_state=42)
+
+    # Get default predictions
+    model.fit(X, y)
+    default_pred = model.predict(X)
+
+    # Test with pandas output
+    with config_context(transform_output="pandas"):
+        model.fit(X, y)
+        pandas_pred = model.predict(X)
+        np.testing.assert_array_almost_equal(default_pred, pandas_pred)
+
+    # Test with polars output
+    with config_context(transform_output="polars"):
+        model.fit(X, y)
+        polars_pred = model.predict(X)
+        np.testing.assert_array_almost_equal(default_pred, polars_pred)
+
+
+def test_constant_feature_handling(X_y: tuple[np.ndarray, np.ndarray]) -> None:
+    """Test that constant features are properly handled and don't affect predictions."""
+    X, y = X_y
+
+    # Create a TabPFNRegressor with fixed random state for reproducibility
+    model = TabPFNRegressor(n_estimators=2, random_state=42)
+    model.fit(X, y)
+
+    # Get predictions on original data
+    original_predictions = model.predict(X)
+
+    # Create a new dataset with added constant features
+    X_with_constants = np.hstack(
+        [
+            X,
+            np.zeros((X.shape[0], 3)),  # Add 3 constant zero features
+            np.ones((X.shape[0], 2)),  # Add 2 constant one features
+            np.full((X.shape[0], 1), 5.0),  # Add 1 constant with value 5.0
+        ],
+    )
+
+    # Create and fit a new model with the same random state
+    model_with_constants = TabPFNRegressor(n_estimators=2, random_state=42)
+    model_with_constants.fit(X_with_constants, y)
+
+    # Get predictions on data with constant features
+    constant_predictions = model_with_constants.predict(X_with_constants)
+
+    # Verify predictions are the same (within numerical precision)
+    np.testing.assert_array_almost_equal(
+        original_predictions,
+        constant_predictions,
+        decimal=5,  # Allow small numerical differences
+        err_msg="Predictions changed after adding constant features",
+    )
