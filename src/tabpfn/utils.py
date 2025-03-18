@@ -4,8 +4,10 @@
 
 from __future__ import annotations
 
+import ctypes
 import os
 import sys
+import typing
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
@@ -15,7 +17,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import torch
-from sklearn.base import check_array, is_classifier
+from sklearn.base import check_is_fitted, is_classifier
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.preprocessing import FunctionTransformer, OrdinalEncoder
 from sklearn.utils.multiclass import check_classification_targets
@@ -26,6 +28,7 @@ from tabpfn.constants import (
     REGRESSION_NAN_BORDER_LIMIT_LOWER,
     REGRESSION_NAN_BORDER_LIMIT_UPPER,
 )
+from tabpfn.misc._sklearn_compat import check_array, validate_data
 from tabpfn.model.bar_distribution import FullSupportBarDistribution
 from tabpfn.model.loading import download_model, load_model
 
@@ -39,6 +42,53 @@ if TYPE_CHECKING:
     from tabpfn.regressor import TabPFNRegressor
 
 MAXINT_RANDOM_SEED = int(np.iinfo(np.int32).max)
+
+
+def _get_embeddings(
+    model: TabPFNClassifier | TabPFNRegressor,
+    X: XType,
+    data_source: Literal["train", "test"] = "test",
+) -> np.ndarray:
+    """Get the embeddings for the input data `X`.
+
+    Parameters:
+        model TabPFNClassifier | TabPFNRegressor: The fitted classifier or regressor.
+        X (XType): The input data.
+        data_source str: Extract either the train or test embeddings
+    Returns:
+        np.ndarray: The computed embeddings for each fitted estimator.
+    """
+    check_is_fitted(model)
+
+    data_map = {"train": "train_embeddings", "test": "test_embeddings"}
+
+    selected_data = data_map[data_source]
+
+    # Avoid circular imports
+    from tabpfn.preprocessing import ClassifierEnsembleConfig, RegressorEnsembleConfig
+
+    X = validate_X_predict(X, model)
+    X = _fix_dtypes(X, cat_indices=model.categorical_features_indices)
+    X = model.preprocessor_.transform(X)
+
+    embeddings: list[np.ndarray] = []
+
+    # Cast executor to Any to bypass the iter_outputs signature check
+    executor = typing.cast(typing.Any, model.executor_)
+    for output, config in executor.iter_outputs(
+        X,
+        device=model.device_,
+        autocast=model.use_autocast_,
+        only_return_standard_out=False,
+    ):
+        # Cast output to Any to allow dict-like access
+        output_dict = typing.cast(dict[str, torch.Tensor], output)
+        embed = output_dict[selected_data].squeeze(1)
+        assert isinstance(config, (ClassifierEnsembleConfig, RegressorEnsembleConfig))
+        assert embed.ndim == 2
+        embeddings.append(embed.squeeze().cpu().numpy())
+
+    return np.array(embeddings)
 
 
 def _repair_borders(borders: np.ndarray, *, inplace: Literal[True]) -> None:
@@ -129,11 +179,13 @@ def is_autocast_available(device_type: str) -> bool:
     """
     # Try to use PyTorch's built-in function first
     try:
-        from torch.amp.autocast_mode import (
-            is_autocast_available as torch_is_autocast_available,
-        )
-
-        return bool(torch_is_autocast_available(device_type))
+        # Check if the function is available in torch
+        if hasattr(torch.amp.autocast_mode, "is_autocast_available"):
+            # Use function directly
+            torch_is_autocast_available = torch.amp.autocast_mode.is_autocast_available
+            return bool(torch_is_autocast_available(device_type))
+        # Fall back to custom implementation
+        raise AttributeError("is_autocast_available not found")
     except (ImportError, AttributeError):
         # Fall back to custom implementation if the function isn't available
         return bool(
@@ -344,7 +396,13 @@ def load_model_criterion_config(
             model_name=model_name,
         )
         if res != "ok":
-            raise RuntimeError(f"Failed to download model to {model_path}!") from res[0]
+            repo_type = "clf" if which == "classifier" else "reg"
+            raise RuntimeError(
+                f"Failed to download model to {model_path}!\n\n"
+                f"For offline usage, please download the model manually from:\n"
+                f"https://huggingface.co/Prior-Labs/TabPFN-v2-{repo_type}/resolve/main/{model_name}\n\n"
+                f"Then place it at: {model_path}",
+            ) from res[0]
 
     loaded_model, criterion, config = load_model(path=model_path, model_seed=model_seed)
     loaded_model.cache_trainset_representation = cache_trainset_representation
@@ -471,14 +529,15 @@ def validate_Xy_fit(
     ignore_pretraining_limits: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, npt.NDArray[Any] | None, int]:
     """Validate the input data for fitting."""
-    # Calls `BaseEstimator._validate_data()` with specification
-    X, y = estimator._validate_data(
-        X,
-        y,
+    # Calls `validate_data()` with specification
+    X, y = validate_data(
+        estimator,
+        X=X,
+        y=y,
         # Parameters to `check_X_y()`
         accept_sparse=False,
         dtype=None,  # This is handled later in `fit()`
-        force_all_finite="allow-nan",
+        ensure_all_finite="allow-nan",
         ensure_min_samples=2,
         ensure_min_features=1,
         y_numeric=ensure_y_numeric,
@@ -519,7 +578,7 @@ def validate_Xy_fit(
 
     if is_classifier(estimator):
         check_classification_targets(y)
-    # Annoyingly, the `force_all_finite` above only applies to `X` and
+    # Annoyingly, the `ensure_all_finite` above only applies to `X` and
     # there is no way to specify this for `y`. The validation check above
     # will also only check for NaNs in `y` if `multi_output=True` which is
     # something we don't want. Hence, we run another check on `y` here.
@@ -529,7 +588,7 @@ def validate_Xy_fit(
     y = check_array(
         y,
         accept_sparse=False,
-        force_all_finite=True,
+        ensure_all_finite=True,
         dtype=None,  # type: ignore
         ensure_2d=False,
     )
@@ -545,17 +604,18 @@ def validate_X_predict(
     estimator: TabPFNRegressor | TabPFNClassifier,
 ) -> np.ndarray:
     """Validate the input data for prediction."""
-    return estimator._validate_data(  # type: ignore
-        X,
+    result = validate_data(
+        estimator,
+        X=X,
         # NOTE: Important that reset is False, i.e. doesn't reset estimator
         reset=False,
-        #
         # Parameters to `check_X_y()`
         accept_sparse=False,
         dtype=None,
-        force_all_finite="allow-nan",
+        ensure_all_finite="allow-nan",
         estimator=estimator,
     )
+    return typing.cast(np.ndarray, result)
 
 
 def infer_categorical_features(
@@ -783,3 +843,48 @@ def _transform_borders_one(
         )
 
     return logit_cancel_mask, descending_borders, borders_t
+
+
+# Terminology: Use memory to referent physical memory, swap for swap memory
+def get_total_memory_windows() -> float:
+    """Get the total memory of the system for windows OS, using windows API.
+
+    Returns:
+        The total memory of the system in GB.
+    """
+    import platform
+
+    if platform.system() != "Windows":
+        return 0.0  # Function should not be called on non-Windows platforms
+
+    # ref: https://github.com/microsoft/windows-rs/blob/c9177f7a65c764c237a9aebbd3803de683bedaab/crates/tests/bindgen/src/fn_return_void_sys.rs#L12
+    # ref: https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-memorystatusex
+    # this class is needed to load the memory status with GlobalMemoryStatusEx function
+    # using win32 API, for more details see microsoft docs link above
+    class _MEMORYSTATUSEX(ctypes.Structure):
+        _fields_: typing.ClassVar = [
+            ("dwLength", ctypes.c_ulong),
+            ("dwMemoryLoad", ctypes.c_ulong),
+            ("ullTotalPhys", ctypes.c_ulonglong),
+            ("ullAvailPhys", ctypes.c_ulonglong),
+            ("ullTotalPageFile", ctypes.c_ulonglong),
+            ("ullAvailPageFile", ctypes.c_ulonglong),
+            ("ullTotalVirtual", ctypes.c_ulonglong),
+            ("ullAvailVirtual", ctypes.c_ulonglong),
+            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ]
+
+    # Initialize the structure
+    mem_status = _MEMORYSTATUSEX()
+    # need to initialize lenght of structure, see microsft docs above
+    mem_status.dwLength = ctypes.sizeof(_MEMORYSTATUSEX)
+
+    try:
+        # Use typing.cast to help mypy understand this Windows-only code
+        windll = typing.cast(typing.Any, ctypes).windll
+        k32_lib = windll.LoadLibrary("kernel32.dll")
+        k32_lib.GlobalMemoryStatusEx(ctypes.byref(mem_status))
+        return float(mem_status.ullTotalPhys) / 1e9  # Convert bytes to GB
+    except (AttributeError, OSError):
+        # Fall back if not on Windows or if the function fails
+        return 0.0
