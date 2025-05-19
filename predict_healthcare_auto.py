@@ -227,8 +227,8 @@ if __name__ == "__main__":
     train_df = pd.read_excel("data/AI4healthcare.xlsx")
 
     # 加载预测数据
-    print("\n加载预测数据 (GuangzhouMedicalHospital_features22_no_nan.xlsx)...")
-    test_df = pd.read_excel("data/GuangzhouMedicalHospital_features22_no_nan.xlsx")
+    print("\n加载预测数据 (GuangzhouMedicalHospital_features23_no_nan.xlsx)...")
+    test_df = pd.read_excel("data/GuangzhouMedicalHospital_features23_no_nan.xlsx")
 
     # 定义选定的特征
     selected_features = [

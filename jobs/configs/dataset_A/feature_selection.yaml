@@ -1,0 +1,41 @@
+# feature_selection.yaml - 数据集A特征选择实验配置
+
+experiment:
+  name: A_feature_selection
+  template: feature_selection
+  script: scripts/experiment/run_feature_selection.py
+  
+  # 数据集配置
+  dataset: "AI4health"
+  
+  # 资源配置
+  resources:
+    gpu: "0"
+    memory: "16G"
+  
+  # 特征选择
+  features:
+    method: "RFE"
+    n_features_range: [5, 6, 7, 8, 9, 10]  # 评估不同特征数量
+    n_features: 7  # 默认特征数量
+    cv_folds: 5
+  
+  # 模型参数
+  model:
+    type: "TabPFN"
+    N_ensemble_configurations: 16
+    device: "cuda"
+  
+  # 评估指标
+  evaluation:
+    metrics:
+      - "auc"
+      - "accuracy"
+    visualization:
+      plot_feature_importance: true
+      plot_performance_vs_features: true
+  
+  # 结果保存路径
+  results:
+    save_dir: "results/feature_selection/AI4health"
+    save_selected_features: true 

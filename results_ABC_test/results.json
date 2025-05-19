@@ -1,0 +1,82 @@
+{
+  "parameters": {
+    "features": [
+      "Feature63",
+      "Feature2",
+      "Feature46",
+      "Feature56",
+      "Feature42",
+      "Feature39",
+      "Feature43"
+    ],
+    "categorical_features": [
+      "Feature63",
+      "Feature46"
+    ],
+    "max_time": 30,
+    "preset": "default",
+    "ges_scoring": "f1",
+    "max_models": 10,
+    "validation_method": "holdout",
+    "n_repeats": 150,
+    "n_folds": 10,
+    "holdout_fraction": 0.5,
+    "ges_n_iterations": 20,
+    "ignore_limits": false
+  },
+  "training_time": 35.275519371032715,
+  "A_dataset": {
+    "accuracy": 0.7762711864406779,
+    "auc": 0.8762603573924328,
+    "f1": 0.8374384236453202,
+    "acc_0": 0.5566037735849056,
+    "acc_1": 0.8994708994708994,
+    "time": 1.0469763278961182,
+    "confusion_matrix": [
+      [
+        59,
+        47
+      ],
+      [
+        19,
+        170
+      ]
+    ]
+  },
+  "B_dataset": {
+    "accuracy": 0.3473684210526316,
+    "auc": 0.6452923076923076,
+    "f1": 0.03125,
+    "acc_0": 0.9846153846153847,
+    "acc_1": 0.016,
+    "time": 1.0264301300048828,
+    "confusion_matrix": [
+      [
+        64,
+        1
+      ],
+      [
+        123,
+        2
+      ]
+    ]
+  },
+  "C_dataset": {
+    "accuracy": 0.4649122807017544,
+    "auc": 0.5012345679012346,
+    "f1": 0.06153846153846154,
+    "acc_0": 0.9444444444444444,
+    "acc_1": 0.03333333333333333,
+    "time": 1.007570743560791,
+    "confusion_matrix": [
+      [
+        51,
+        3
+      ],
+      [
+        58,
+        2
+      ]
+    ]
+  }
+}
