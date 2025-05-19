@@ -1,0 +1,49 @@
+# AB_to_C.yaml - 在A+B上训练，在C上测试的实验配置
+
+experiment:
+  name: AB_train_C_test
+  template: cross_dataset
+  script: scripts/predict/predict_cross_dataset.py
+  
+  # 数据集配置
+  datasets:
+    train: 
+      - "AI4health"        # A数据集
+      - "HenanCancerHospital"  # B数据集
+    test: "GuangzhouMedicalHospital"  # C数据集
+  
+  # 资源配置
+  resources:
+    gpu: "0"
+    memory: "16G"
+  
+  # 模型参数
+  model:
+    type: "TabPFN"
+    N_ensemble_configurations: 16
+    device: "cuda"
+  
+  # 特征选择
+  features:
+    method: "RFE"
+    n_features: 7
+  
+  # 域适应方法
+  domain_adaptation:
+    method: "none"  # 可选: none, CORAL, MMD
+  
+  # 评估指标
+  evaluation:
+    metrics:
+      - "auc"
+      - "accuracy"
+      - "precision"
+      - "recall"
+      - "f1"
+    cross_validation: 5
+  
+  # 结果保存路径
+  results:
+    save_dir: "results/cross_AB_C"
+    save_predictions: true
+    save_model: true 

@@ -1,0 +1,56 @@
+Best 7 Features Evaluation Results (Datasets A, B, C)
+======================================================================
+
+Features:
+1. Feature63 (categorical)
+2. Feature2
+3. Feature46 (categorical)
+4. Feature56
+5. Feature42
+6. Feature39
+7. Feature43
+
+Best Model Parameters:
+------------------------------
+max_time: 30
+preset: default
+ges_scoring: f1
+max_models: 10
+validation_method: holdout
+n_repeats: 150
+n_folds: 10
+holdout_fraction: 0.5
+ges_n_iterations: 20
+ignore_limits: False
+
+Cross-validation Results (Dataset A):
+------------------------------
+accuracy: 0.6817 ± 0.0905
+auc: 0.7646 ± 0.0885
+f1: 0.7645 ± 0.0720
+acc_0: 0.4238 ± 0.2005
+acc_1: 0.8209 ± 0.1143
+
+External Validation Results (Dataset B - Henan):
+------------------------------
+accuracy: 0.6789
+auc: 0.6938
+f1: 0.7782
+acc_0: 0.3385
+acc_1: 0.8560
+
+Confusion Matrix (Dataset B):
+[[ 22  43]
+ [ 18 107]]
+
+External Validation Results (Dataset C - Guangzhou):
+------------------------------
+accuracy: 0.4474
+auc: 0.4620
+f1: 0.5333
+acc_0: 0.2778
+acc_1: 0.6000
+
+Confusion Matrix (Dataset C):
+[[15 39]
+ [24 36]]

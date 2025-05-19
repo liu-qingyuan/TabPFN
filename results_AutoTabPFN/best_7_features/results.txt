@@ -1,0 +1,50 @@
+Feature Evaluation Results
+==================================================
+
+Parameters:
+------------------------------
+features: ['Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature42', 'Feature39', 'Feature43']
+categorical_features: ['Feature63', 'Feature46']
+max_time: 60
+preset: default
+ges_scoring: roc
+device: cuda
+random_state: 42
+ignore_limits: False
+max_models: None
+validation_method: holdout
+n_repeats: 80
+n_folds: None
+holdout_fraction: 0.33
+ges_n_iterations: 25
+
+Features:
+1. Feature63 (categorical)
+2. Feature2
+3. Feature46 (categorical)
+4. Feature56
+5. Feature42
+6. Feature39
+7. Feature43
+
+Cross-validation Results:
+------------------------------
+accuracy: 0.6852 ± 0.1028
+auc: 0.7705 ± 0.0861
+f1: 0.7627 ± 0.0817
+acc_0: 0.4640 ± 0.1748
+acc_1: 0.8045 ± 0.1136
+train_time: 56.58 ± 0.48 seconds
+
+External Validation Results:
+------------------------------
+accuracy: 0.6737
+auc: 0.6801
+f1: 0.7801
+acc_0: 0.2769
+acc_1: 0.8800
+train_time: 108.88 seconds
+
+Confusion Matrix:
+[[ 18  47]
+ [ 15 110]]
