@@ -1,0 +1,45 @@
+Best 7 Features Evaluation Results with AutoPostHocEnsemblePredictor
+==================================================
+
+Features:
+1. Feature63
+2. Feature2
+3. Feature46
+4. Feature56
+5. Feature42
+6. Feature39
+7. Feature43
+
+Model Configuration:
+------------------------------
+model_type: AutoPostHocEnsemblePredictor
+preset: default
+task_type: BINARY
+max_time: 30
+ges_scoring: auroc
+max_models: 10
+validation_method: cv
+n_repeats: 1
+n_folds: 5
+ges_n_iterations: 20
+ignore_limits: False
+
+Cross-validation Results:
+------------------------------
+accuracy: 0.7021 ± 0.0777
+auc: 0.7845 ± 0.0803
+f1: 0.7788 ± 0.0638
+acc_0: 0.4655 ± 0.1545
+acc_1: 0.8325 ± 0.1031
+
+External Validation Results:
+------------------------------
+accuracy: 0.6684
+auc: 0.6921
+f1: 0.7709
+acc_0: 0.3231
+acc_1: 0.8480
+
+Confusion Matrix:
+[[ 21  44]
+ [ 19 106]]

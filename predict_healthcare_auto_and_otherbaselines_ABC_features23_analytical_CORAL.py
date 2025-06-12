@@ -10,7 +10,6 @@ import os
 import logging
 import sys
 import scipy.linalg
-from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_matrix, roc_curve
 from tabpfn_extensions.post_hoc_ensembles.sklearn_interface import AutoTabPFNClassifier
 import torch
@@ -18,13 +17,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import StratifiedShuffleSplit
+from scipy.stats import entropy, wasserstein_distance
+from scipy.spatial.distance import cdist
 
 # 导入可视化模块
 from visualize_analytical_CORAL_tsne import (
     visualize_tsne,
-    visualize_feature_histograms, 
-    compute_domain_discrepancy,
-    compare_before_after_adaptation
+    visualize_feature_histograms 
+    # compute_domain_discrepancy, # Unused
+    # compare_before_after_adaptation # Unused
 )
 
 # 设置日志系统
@@ -49,6 +50,202 @@ stderr_handler.setFormatter(formatter)
 logging.root.addHandler(stdout_handler)
 logging.root.addHandler(stderr_handler)
 logging.root.setLevel(logging.INFO)  # 让 root logger 处理 INFO 及以上的日志
+
+def check_matrix_properties(X_data, data_name="Data", cat_idx_list=None, selected_features_names=None):
+    """
+    检查数据矩阵的属性，重点关注连续特征，以诊断协方差矩阵计算中的潜在问题。
+    """
+    if X_data is None or X_data.shape[0] == 0:
+        logging.warning(f"{data_name} 没有提供数据进行属性检查。")
+        return
+
+    # 默认类别特征索引（与 coral_transform 保持一致）
+    if cat_idx_list is None:
+        cat_idx_list = [0, 2, 3, 4, 12, 13, 16, 17, 18, 19, 22]
+    
+    all_idx = list(range(X_data.shape[1]))
+    cont_idx = [i for i in all_idx if i not in cat_idx_list]
+
+    if not cont_idx:
+        logging.info(f"{data_name} 没有连续特征需要检查")
+        return
+
+    # 提取连续特征
+    X_cont = X_data[:, cont_idx]
+    
+    # 1. 基本统计信息
+    logging.info(f"\n{data_name} 连续特征基本统计:")
+    logging.info(f"形状: {X_cont.shape}")
+    logging.info(f"数值范围: [{np.min(X_cont):.3f}, {np.max(X_cont):.3f}]")
+    
+    # 2. 检查是否存在无穷值
+    inf_mask = np.isinf(X_cont)
+    if np.any(inf_mask):
+        inf_counts = np.sum(inf_mask, axis=0)
+        inf_features = [(i, cont_idx[i], inf_counts[i]) for i in range(len(cont_idx)) if inf_counts[i] > 0]
+        logging.error(f"发现无穷值! 特征索引 (原始,连续) 和计数: {inf_features}")
+    
+    # 3. 检查是否存在 NaN
+    nan_mask = np.isnan(X_cont)
+    if np.any(nan_mask):
+        nan_counts = np.sum(nan_mask, axis=0)
+        nan_features = [(i, cont_idx[i], nan_counts[i]) for i in range(len(cont_idx)) if nan_counts[i] > 0]
+        logging.error(f"发现 NaN 值! 特征索引 (原始,连续) 和计数: {nan_features}")
+    
+    # 4. 检查方差
+    variances = np.var(X_cont, axis=0)
+    zero_var_idx = np.where(variances < 1e-10)[0]
+    if len(zero_var_idx) > 0:
+        zero_var_features = [(i, cont_idx[i], variances[i]) for i in zero_var_idx]
+        logging.error(f"发现零方差或接近零方差的特征! 特征索引 (原始,连续) 和方差: {zero_var_features}")
+    
+    # 5. 计算并检查协方差矩阵的条件数
+    try:
+        cov_matrix = np.cov(X_cont, rowvar=False)
+        if cov_matrix.shape[0] > 5:
+            logging.info(f"协方差矩阵 (前 5x5 部分):\n{cov_matrix[:5, :5]}")
+        else:
+            logging.info(f"协方差矩阵:\n{cov_matrix}")
+        
+        # 计算条件数
+        eigvals = np.linalg.eigvals(cov_matrix)
+        cond_num = np.max(np.abs(eigvals)) / np.min(np.abs(eigvals))
+        logging.info(f"协方差矩阵条件数: {cond_num:.2e}")
+        
+        if cond_num > 1e10:
+            logging.error(f"协方差矩阵病态! 条件数 = {cond_num:.2e}")
+            
+        # 检查特征值
+        min_eigval = np.min(np.abs(eigvals))
+        if min_eigval < 1e-10:
+            logging.error(f"协方差矩阵接近奇异! 最小特征值 = {min_eigval:.2e}")
+            
+    except np.linalg.LinAlgError as e:
+        logging.error(f"计算协方差矩阵或其特征值时发生错误: {str(e)}")
+    except Exception as e:
+        logging.error(f"计算协方差矩阵属性时发生未预期的错误: {str(e)}")
+        
+    # 6. 检查特征之间的相关性
+    try:
+        corr_matrix = np.corrcoef(X_cont, rowvar=False)
+        high_corr_pairs = []
+        for i in range(corr_matrix.shape[0]):
+            for j in range(i+1, corr_matrix.shape[1]):
+                if abs(corr_matrix[i,j]) > 0.95:
+                    feat_i = selected_features_names[cont_idx[i]] if selected_features_names else f"特征_{cont_idx[i]}"
+                    feat_j = selected_features_names[cont_idx[j]] if selected_features_names else f"特征_{cont_idx[j]}"
+                    high_corr_pairs.append((feat_i, feat_j, corr_matrix[i,j]))
+        
+        if high_corr_pairs:
+            logging.warning("发现高度相关的特征对:")
+            for pair in high_corr_pairs:
+                logging.warning(f"  {pair[0]} - {pair[1]}: {pair[2]:.3f}")
+                
+    except np.linalg.LinAlgError as e:
+        logging.error(f"计算相关系数矩阵时发生错误: {str(e)}")
+    except Exception as e:
+        logging.error(f"计算特征相关性时发生未预期的错误: {str(e)}")
+    
+    # 7. 检查是否存在无穷值
+    inf_mask = np.isinf(X_cont)
+    if np.any(inf_mask):
+        inf_counts = np.sum(inf_mask, axis=0)
+        inf_features = [(i, cont_idx[i], inf_counts[i]) for i in range(len(cont_idx)) if inf_counts[i] > 0]
+        logging.error(f"发现无穷值! 特征索引 (原始,连续) 和计数: {inf_features}")
+    
+    # 8. 检查是否存在 NaN
+    nan_mask = np.isnan(X_cont)
+    if np.any(nan_mask):
+        nan_counts = np.sum(nan_mask, axis=0)
+        nan_features = [(i, cont_idx[i], nan_counts[i]) for i in range(len(cont_idx)) if nan_counts[i] > 0]
+        logging.error(f"发现 NaN 值! 特征索引 (原始,连续) 和计数: {nan_features}")
+    
+    # 9. 检查方差
+    variances = np.var(X_cont, axis=0)
+    zero_var_idx = np.where(variances < 1e-10)[0]
+    if len(zero_var_idx) > 0:
+        zero_var_features = [(i, cont_idx[i], variances[i]) for i in zero_var_idx]
+        logging.error(f"发现零方差或接近零方差的特征! 特征索引 (原始,连续) 和方差: {zero_var_features}")
+    
+    # 10. 计算并检查协方差矩阵的条件数
+    cov_matrix = np.cov(X_cont, rowvar=False)
+    X_cont = X_data[:, cont_idx]
+
+    if X_cont.shape[0] < X_cont.shape[1] and X_cont.shape[0] > 0 : # Check if samples < features for continuous part
+        logging.warning(f"{data_name} (Continuous Features Part): Number of samples ({X_cont.shape[0]}) is less than number of continuous features ({X_cont.shape[1]}). Covariance matrix will likely be singular or ill-conditioned.")
+
+    logging.info(f"--- Checking Properties for {data_name} (Continuous Features Shape: {X_cont.shape}) ---")
+
+    # Check for zero variance columns
+    variances = np.var(X_cont, axis=0)
+    # Using a small threshold, verify it's appropriate for scaled data (usually std=1, var=1)
+    # If data isn't perfectly scaled, var can be small. 1e-9 is okay.
+    zero_var_cols_indices_in_X_cont = np.where(variances < 1e-9)[0] 
+    
+    if len(zero_var_cols_indices_in_X_cont) > 0:
+        if selected_features_names and cont_idx:
+            original_feature_names = [selected_features_names[cont_idx[i]] for i in zero_var_cols_indices_in_X_cont]
+            logging.warning(f"{data_name} has continuous columns with zero or near-zero variance at continuous_feature_indices: {zero_var_cols_indices_in_X_cont}. Corresponding original feature names: {original_feature_names}")
+        else:
+            logging.warning(f"{data_name} has continuous columns with zero or near-zero variance at continuous_feature_indices: {zero_var_cols_indices_in_X_cont}.")
+    else:
+        logging.info(f"{data_name}: No continuous columns with zero or near-zero variance found.")
+
+    # Check rank of the continuous data matrix
+    if X_cont.size > 0: # np.linalg.matrix_rank fails on empty array
+        rank_X_cont = np.linalg.matrix_rank(X_cont)
+        logging.info(f"{data_name} Rank of X_cont (continuous features): {rank_X_cont} (Full rank would be {min(X_cont.shape)})")
+    else:
+        logging.info(f"{data_name} X_cont is empty, skipping rank check.")
+
+
+    # Covariance matrix properties for continuous features
+    if X_cont.shape[0] > 1 : # Need at least 2 samples to compute covariance
+        # Covariance matrix (before regularization)
+        Cov_matrix = np.cov(X_cont, rowvar=False)
+        
+        if np.any(np.isnan(Cov_matrix)) or np.any(np.isinf(Cov_matrix)):
+            logging.error(f"{data_name}: Covariance matrix (no regularization) for continuous features contains NaNs or Infs!")
+            logging.error(f"Cov_matrix (first 5x5 snippet if large, else full):\n{Cov_matrix[:min(5, Cov_matrix.shape[0]), :min(5, Cov_matrix.shape[1])]}")
+            logging.error(f"X_cont (first 5x5 snippet if large, else full):\n{X_cont[:min(5, X_cont.shape[0]), :min(5, X_cont.shape[1])]}")
+        else:
+            rank_Cov = np.linalg.matrix_rank(Cov_matrix)
+            logging.info(f"{data_name} Rank of Covariance Matrix (no regularization, continuous features): {rank_Cov} (Full rank would be {Cov_matrix.shape[0]})")
+            
+            try:
+                cond_Cov = np.linalg.cond(Cov_matrix)
+                logging.info(f"{data_name} Condition Number of Covariance Matrix (no regularization, continuous features): {cond_Cov:.2e}")
+                if cond_Cov > 1e12: # Threshold for ill-conditioning
+                    logging.warning(f"{data_name}: Covariance matrix (no regularization, continuous features) is ill-conditioned or singular (Cond num: {cond_Cov:.2e}).")
+            except np.linalg.LinAlgError:
+                logging.warning(f"{data_name}: Could not compute condition number for Covariance Matrix (no regularization, continuous features) - likely singular.")
+
+            # Covariance matrix (with regularization, as used in coral_transform for Ct)
+            # The regularization in coral_transform is on Ct, which is cov(Xt_cont_centered).
+            # Here we check Cov_matrix of X_cont. This is a proxy check.
+            Cov_matrix_reg = Cov_matrix + 1e-5 * np.eye(Cov_matrix.shape[0])
+            rank_Cov_reg = np.linalg.matrix_rank(Cov_matrix_reg)
+            logging.info(f"{data_name} Rank of Covariance Matrix (with 1e-5 regularization, continuous features): {rank_Cov_reg}")
+            
+            try:
+                cond_Cov_reg = np.linalg.cond(Cov_matrix_reg)
+                logging.info(f"{data_name} Condition Number of Covariance Matrix (with 1e-5 regularization, continuous features): {cond_Cov_reg:.2e}")
+            except np.linalg.LinAlgError:
+                logging.warning(f"{data_name}: Could not compute condition number for regularized Covariance Matrix (continuous features).")
+            
+            try:
+                s_vals = scipy.linalg.svdvals(Cov_matrix_reg) 
+                logging.info(f"{data_name} Singular values of regularized Cov_matrix (proxy for Ct): min={np.min(s_vals):.2e}, max={np.max(s_vals):.2e}, count_near_zero (<1e-9)={np.sum(s_vals < 1e-9)}")
+                if np.any(s_vals < 1e-9):
+                    logging.warning(f"{data_name}: Regularized covariance matrix (proxy for Ct) has very small or zero singular values.")
+            except Exception as e:
+                logging.error(f"{data_name} Error computing singular values for regularized Cov_matrix: {e}")
+    elif X_cont.shape[0] <=1 and X_cont.size > 0:
+         logging.warning(f"{data_name}: Not enough samples ({X_cont.shape[0]}) in continuous features to compute covariance matrix for detailed check.")
+    else:
+        logging.info(f"{data_name}: Continuous features part (X_cont) is empty or has zero samples, skipping covariance checks.")
+    logging.info(f"--- End of Properties Check for {data_name} ---")
+
 
 # 定义PKUPH和Mayo模型
 class PKUPHModel:
@@ -271,6 +468,7 @@ def run_coral_adaptation_experiment(
     y_source,
     X_target,
     y_target,
+    selected_features_names, # Added parameter
     model_name='TabPFN-CORAL',
     tabpfn_params={'device': 'cuda', 'max_time': 60, 'random_state': 42},
     base_path='./results_analytical_coral',
@@ -301,6 +499,18 @@ def run_coral_adaptation_experiment(
     scaler = StandardScaler()
     X_source_scaled = scaler.fit_transform(X_source)
     X_target_scaled = scaler.transform(X_target)
+    
+    # ---- Begin Singularity Check for Target Data ----
+    # Define cat_idx as used in coral_transform for consistency in continuous feature identification
+    coral_cat_idx = [0, 2, 3, 4, 12, 13, 16, 17, 18, 19, 22] 
+    logging.info(f"\nPerforming matrix properties check for target data before CORAL transformation ({model_name})...")
+    check_matrix_properties(
+        X_target_scaled, 
+        data_name=f"Target Data Scaled ({model_name})", 
+        cat_idx_list=coral_cat_idx,
+        selected_features_names=selected_features_names
+    )
+    # ---- End Singularity Check ----
     
     # 分析源域和目标域的特征分布差异
     logging.info("Analyzing domain differences before alignment...")
@@ -377,6 +587,22 @@ def run_coral_adaptation_experiment(
     
     # 使用解析版CORAL进行特征对齐
     logging.info("\nApplying analytical CORAL transformation...")
+    
+    # 定义类别特征和连续特征的索引
+    coral_cat_idx = [0, 2, 3, 4, 12, 13, 16, 17, 18, 19, 22]
+    cont_idx_list = [i for i in range(X_source.shape[1]) if i not in coral_cat_idx]
+    
+    logging.info(f'类别特征索引: {coral_cat_idx}')
+    logging.info(f'连续特征索引: {cont_idx_list}')
+    
+    # 在执行 CORAL 变换之前检查矩阵属性
+    logging.info('\n检查源域数据属性:')
+    check_matrix_properties(X_source_scaled, "源域", coral_cat_idx, selected_features_names)
+    
+    logging.info('\n检查目标域数据属性:')
+    check_matrix_properties(X_target_scaled, "目标域", coral_cat_idx, selected_features_names)
+    
+    # 执行 CORAL 变换
     start_time = time.time()
     X_target_aligned = coral_transform(X_source_scaled, X_target_scaled)
     align_time = time.time() - start_time
@@ -495,7 +721,7 @@ def run_coral_adaptation_experiment(
         X_source=X_source_scaled,
         X_target=X_target_scaled,
         X_target_aligned=X_target_aligned,
-        feature_names=selected_features,  # 这里应该传递特征名称列表
+        feature_names=selected_features_names,  # Use passed parameter
         n_features_to_plot=None,  # Plot all features
         title=f'Feature Distribution Before and After CORAL Alignment: {model_name}',
         save_path=hist_save_path
@@ -541,13 +767,14 @@ def run_coral_adaptation_experiment(
     plt.close()
     
     # 如果使用了阈值优化，添加ROC曲线和阈值点
-    if optimize_decision_threshold:
+    if optimize_decision_threshold and 'optimal_threshold' in target_metrics: # Ensure optimal_threshold exists
         plt.figure(figsize=(8, 6))
         fpr, tpr, thresholds = roc_curve(y_target, y_target_proba[:, 1])
         plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {target_metrics["auc"]:.4f})')
         
         # 标出最佳阈值点
-        optimal_idx = np.where(thresholds >= optimal_threshold)[0][-1]
+        optimal_threshold = target_metrics['optimal_threshold'] # Get it from metrics
+        optimal_idx = np.where(thresholds >= optimal_threshold)[0][-1] if len(np.where(thresholds >= optimal_threshold)[0]) > 0 else (np.abs(thresholds - optimal_threshold)).argmin()
         plt.scatter(fpr[optimal_idx], tpr[optimal_idx], color='red', 
                     label=f'Optimal Threshold = {optimal_threshold:.4f}')
         
@@ -696,6 +923,7 @@ def run_class_conditional_coral_experiment(
     y_source,
     X_target,
     y_target,
+    selected_features_names, # Added parameter
     model_name='TabPFN-ClassCORAL',
     tabpfn_params={'device': 'cuda', 'max_time': 60, 'random_state': 42},
     base_path='./results_class_conditional_coral',
@@ -940,7 +1168,7 @@ def run_class_conditional_coral_experiment(
     plt.legend()
     plt.grid(axis='y', alpha=0.3)
     
-    # 绘制预测分布
+    # 绘制特征差异
     plt.subplot(1, 3, 3)
     
     labels = ['Direct', 'Class-CORAL']
@@ -975,13 +1203,14 @@ def run_class_conditional_coral_experiment(
     plt.close()
     
     # 如果使用了阈值优化，添加ROC曲线
-    if optimize_decision_threshold:
+    if optimize_decision_threshold and 'optimal_threshold' in target_metrics: # Ensure optimal_threshold exists
         plt.figure(figsize=(8, 6))
         fpr, tpr, thresholds = roc_curve(y_target, y_target_proba[:, 1])
         plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {target_metrics["auc"]:.4f})')
         
         # 标出最佳阈值点
-        optimal_idx = np.where(thresholds >= optimal_threshold)[0][-1]
+        optimal_threshold = target_metrics['optimal_threshold'] # Get it from metrics
+        optimal_idx = np.where(thresholds >= optimal_threshold)[0][-1] if len(np.where(thresholds >= optimal_threshold)[0]) > 0 else (np.abs(thresholds - optimal_threshold)).argmin()
         plt.scatter(fpr[optimal_idx], tpr[optimal_idx], color='red', 
                     label=f'Optimal Threshold = {optimal_threshold:.4f}')
         
@@ -1005,6 +1234,54 @@ def run_class_conditional_coral_experiment(
         plt.grid(True, alpha=0.3)
         plt.savefig(f"{base_path}/{model_name}_roc_curve.png", dpi=300)
         plt.close()
+    
+    # 特征直方图可视化
+    # 定义CORAL类型和域名称用于可视化
+    coral_type = "Class-Conditional CORAL with Labels" if use_target_labels else "Class-Conditional CORAL with Pseudo-Labels"
+    source_name = "Source Domain"
+    target_name = "Target Domain"
+    save_base = f"{base_path}/{model_name}"
+    
+    hist_save_path = f"{base_path}/{model_name}_histograms_visual.png"
+    visualize_feature_histograms(
+        X_source=X_source_scaled,
+        X_target=X_target_scaled,
+        X_target_aligned=X_target_aligned,
+        feature_names=selected_features_names,  # Ensure this uses the passed parameter
+        n_features_to_plot=None,  # Plot all features
+        title=f"{coral_type} Feature Distribution: {source_name} → {target_name}",
+        save_path=hist_save_path
+    )
+    
+    # 如果有伪标签，创建额外的类条件可视化
+    if yt_pseudo is not None:
+        # 为每个类别创建特定的可视化（可选）
+        classes = np.unique(yt_pseudo)
+        logging.info(f"创建{len(classes)}个类别的详细可视化")
+        
+        for cls in classes:
+            # 获取每个类别的索引
+            source_idx = y_source == cls
+            target_idx = yt_pseudo == cls
+            
+            if np.sum(source_idx) < 5 or np.sum(target_idx) < 5:
+                logging.warning(f"类别{cls}样本数太少，跳过类别特定可视化")
+                continue
+            
+            # 创建类别特定的可视化标题和保存路径
+            cls_title = f"{coral_type} Class {cls} Alignment: {source_name} → {target_name}"
+            cls_save_path = f"{save_base}_class{cls}_histograms.png"
+            
+            # 仅对该类别的样本创建直方图
+            visualize_feature_histograms(
+                X_source=X_source_scaled[source_idx],
+                X_target=X_target_scaled[target_idx],
+                X_target_aligned=X_target_aligned[target_idx],
+                feature_names=selected_features_names, # Use passed parameter
+                n_features_to_plot=10,  # 仅显示前10个特征以保持可读性
+                title=cls_title,
+                save_path=cls_save_path
+            )
     
     return {
         'source': source_metrics,
@@ -1234,8 +1511,8 @@ if __name__ == "__main__":
     logging.info("2. Loading HenanCancerHospital_features63_58.xlsx (B)...")
     df_henan = pd.read_excel("data/HenanCancerHospital_features63_58.xlsx")
     
-    logging.info("3. Loading GuangzhouMedicalHospital_features23_no_nan.xlsx (C)...")
-    df_guangzhou = pd.read_excel("data/GuangzhouMedicalHospital_features23_no_nan.xlsx")
+    logging.info("3. Loading GuangzhouMedicalHospital_features23_no_nan_new_fixed.xlsx (C)...")
+    df_guangzhou = pd.read_excel("data/GuangzhouMedicalHospital_features23_no_nan_new_fixed.xlsx")
 
     # 使用指定的23个特征
     selected_features = [
@@ -1272,6 +1549,25 @@ if __name__ == "__main__":
     
     X_guangzhou = df_guangzhou[selected_features].copy()
     y_guangzhou = df_guangzhou["Label"].copy()
+
+    # Impute NaNs with column means, then 0 for any columns that were all NaN
+    datasets_X = {"AI4health": X_ai4health, "Henan": X_henan, "Guangzhou": X_guangzhou}
+    logging.info("\\nImputing NaNs in feature matrices (X data)...")
+    for name, X_df in datasets_X.items():
+        if X_df.isnull().any().any(): # Check if there are any NaNs at all
+            logging.info(f"NaNs found in {name}. Performing imputation...")
+            # Calculate means for imputation
+            means = X_df.mean()
+            # First, fill NaNs with column means
+            X_df.fillna(means, inplace=True)
+            # Then, if any column was all NaN (so its mean was NaN, and fillna(means) didn't change it),
+            # fill these remaining NaNs with 0.
+            if X_df.isnull().any().any():
+                 logging.info(f"Further imputation for {name} (likely all-NaN columns filled with 0).")
+                 X_df.fillna(0, inplace=True)
+            logging.info(f"NaN imputation complete for {name}.")
+        else:
+            logging.info(f"No NaNs found in {name}. No imputation needed.")
 
     # 创建结果目录
     os.makedirs('./results_analytical_coral', exist_ok=True)
@@ -1385,6 +1681,7 @@ if __name__ == "__main__":
                 y_source=config['y_source'],
                 X_target=config['X_target'],
                 y_target=config['y_target'],
+                selected_features_names=selected_features, # Pass selected_features
                 model_name=f"TabPFN-Analytical-CORAL_{config['name']}",
                 base_path='./results_analytical_coral'
             )
@@ -1536,6 +1833,7 @@ if __name__ == "__main__":
                 y_source=config['y_source'],
                 X_target=config['X_target'],
                 y_target=config['y_target'],
+                selected_features_names=selected_features, # Pass selected_features
                 model_name=f"TabPFN-ClassCORAL_{config['name']}",
                 base_path='./results_class_conditional_coral',
                 optimize_decision_threshold=True,
@@ -1549,6 +1847,7 @@ if __name__ == "__main__":
                 y_source=config['y_source'],
                 X_target=config['X_target'],
                 y_target=config['y_target'],
+                selected_features_names=selected_features, # Pass selected_features
                 model_name=f"TabPFN-ClassCORAL_WithLabels_{config['name']}",
                 base_path='./results_class_conditional_coral',
                 optimize_decision_threshold=True,
@@ -1844,7 +2143,7 @@ if __name__ == "__main__":
                     X_source=X_source[source_idx],
                     X_target=X_target[target_idx],
                     X_target_aligned=X_target_aligned[target_idx],
-                    feature_names=selected_features,
+                    feature_names=selected_features, # 使用全局的selected_features变量
                     n_features_to_plot=10,  # 仅显示前10个特征以保持可读性
                     title=cls_title,
                     save_path=cls_save_path

@@ -25,32 +25,32 @@ ignore_limits: False
 
 Cross-validation Results (Dataset A):
 ------------------------------
-accuracy: 0.6817 ± 0.0905
-auc: 0.7646 ± 0.0885
-f1: 0.7645 ± 0.0720
-acc_0: 0.4238 ± 0.2005
-acc_1: 0.8209 ± 0.1143
+accuracy: 0.6955 ± 0.0830
+auc: 0.7707 ± 0.0786
+f1: 0.7728 ± 0.0627
+acc_0: 0.4746 ± 0.1760
+acc_1: 0.8155 ± 0.0723
 
 External Validation Results (Dataset B - Henan):
 ------------------------------
-accuracy: 0.6789
-auc: 0.6938
-f1: 0.7782
-acc_0: 0.3385
-acc_1: 0.8560
+accuracy: 0.6737
+auc: 0.6823
+f1: 0.7652
+acc_0: 0.4154
+acc_1: 0.8080
 
 Confusion Matrix (Dataset B):
-[[ 22  43]
- [ 18 107]]
+[[ 27  38]
+ [ 24 101]]
 
 External Validation Results (Dataset C - Guangzhou):
 ------------------------------
-accuracy: 0.4474
-auc: 0.4620
-f1: 0.5333
-acc_0: 0.2778
-acc_1: 0.6000
+accuracy: 0.4912
+auc: 0.4827
+f1: 0.5672
+acc_0: 0.3333
+acc_1: 0.6333
 
 Confusion Matrix (Dataset C):
-[[15 39]
- [24 36]]
+[[18 36]
+ [22 38]]

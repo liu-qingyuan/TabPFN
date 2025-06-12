@@ -51,9 +51,6 @@ logging.error("This is an error message")    # 进入output.log以及error.log
 logging.critical("This is a critical message")  # 进入output.log以及error.log
 
 
-
-
-
 # 尝试导入贝叶斯优化库
 try:
     from skopt import gp_minimize
@@ -403,7 +400,7 @@ plt.title('Performance Comparison Across Datasets')
 plt.xticks(x, labels)
 plt.legend()
 plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.tight_layout()
+plt.tight_layout()
 plt.savefig('./results/best_7_features_ABC/metrics_comparison.png', dpi=300)
 
 # 如果使用参数优化，替换main函数逻辑
