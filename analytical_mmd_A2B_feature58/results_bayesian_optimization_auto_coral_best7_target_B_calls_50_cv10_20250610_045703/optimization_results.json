@@ -1,0 +1,9 @@
+{
+  "best_params": {
+    "model_params": {
+      "max_time": 45,
+      "preset": "avoid_overfitting",
+      "ges_scoring": "roc",
+      "max_models": 25,
+      "validation_method": "cv",
+      "n_repeats": 

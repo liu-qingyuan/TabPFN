@@ -1,0 +1,450 @@
+{
+  "best_params": {
+    "max_time": 180,
+    "preset": "default",
+    "ges_scoring": "roc",
+    "max_models": 25,
+    "validation_method": "cv",
+    "n_repeats": 136,
+    "n_folds": 5,
+    "ges_n_iterations": 35,
+    "ignore_limits": false
+  },
+  "best_validation_auc": 0.7007575757575758,
+  "optimization_history": [
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "default",
+        "ges_scoring": "f1",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 60,
+        "n_folds": 5,
+        "ges_n_iterations": 27,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.659848484848485,
+      "test_auc": 0.6648648648648648,
+      "trial_id": 0
+    },
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "default",
+        "ges_scoring": "f1",
+        "max_models": 30,
+        "validation_method": "cv",
+        "n_repeats": 149,
+        "n_folds": 5,
+        "ges_n_iterations": 32,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.659848484848485,
+      "test_auc": 0.6648648648648648,
+      "trial_id": 1
+    },
+    {
+      "params": {
+        "max_time": 30,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "roc",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 73,
+        "n_folds": 5,
+        "ges_n_iterations": 32,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6813131313131315,
+      "test_auc": 0.6756756756756757,
+      "trial_id": 2
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "default",
+        "ges_scoring": "f1",
+        "max_models": 25,
+        "validation_method": "cv",
+        "n_repeats": 51,
+        "n_folds": 5,
+        "ges_n_iterations": 31,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6747474747474748,
+      "test_auc": 0.6824324324324326,
+      "trial_id": 3
+    },
+    {
+      "params": {
+        "max_time": 30,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 25,
+        "validation_method": "cv",
+        "n_repeats": 133,
+        "n_folds": 5,
+        "ges_n_iterations": 28,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6866161616161616,
+      "test_auc": 0.6783783783783784,
+      "trial_id": 4
+    },
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 134,
+        "n_folds": 5,
+        "ges_n_iterations": 28,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.659848484848485,
+      "test_auc": 0.6648648648648648,
+      "trial_id": 5
+    },
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "default",
+        "ges_scoring": "roc",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 134,
+        "n_folds": 5,
+        "ges_n_iterations": 31,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.7,
+      "test_auc": 0.6878378378378379,
+      "trial_id": 6
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "accuracy",
+        "max_models": 15,
+        "validation_method": "cv",
+        "n_repeats": 52,
+        "n_folds": 5,
+        "ges_n_iterations": 28,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 7
+    },
+    {
+      "params": {
+        "max_time": 30,
+        "preset": "default",
+        "ges_scoring": "f1",
+        "max_models": 25,
+        "validation_method": "cv",
+        "n_repeats": 143,
+        "n_folds": 5,
+        "ges_n_iterations": 38,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.6866161616161616,
+      "test_auc": 0.6783783783783784,
+      "trial_id": 8
+    },
+    {
+      "params": {
+        "max_time": 120,
+        "preset": "default",
+        "ges_scoring": "roc",
+        "max_models": 25,
+        "validation_method": "cv",
+        "n_repeats": 109,
+        "n_folds": 5,
+        "ges_n_iterations": 31,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6911616161616162,
+      "test_auc": 0.6743243243243243,
+      "trial_id": 9
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "f1",
+        "max_models": 15,
+        "validation_method": "cv",
+        "n_repeats": 54,
+        "n_folds": 5,
+        "ges_n_iterations": 22,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6936868686868688,
+      "test_auc": 0.681081081081081,
+      "trial_id": 10
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "roc",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 64,
+        "n_folds": 5,
+        "ges_n_iterations": 31,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6813131313131315,
+      "test_auc": 0.6756756756756757,
+      "trial_id": 11
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "f1",
+        "max_models": 30,
+        "validation_method": "cv",
+        "n_repeats": 80,
+        "n_folds": 5,
+        "ges_n_iterations": 29,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6936868686868688,
+      "test_auc": 0.681081081081081,
+      "trial_id": 12
+    },
+    {
+      "params": {
+        "max_time": 120,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "accuracy",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 141,
+        "n_folds": 5,
+        "ges_n_iterations": 33,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 13
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 119,
+        "n_folds": 5,
+        "ges_n_iterations": 25,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6866161616161616,
+      "test_auc": 0.6783783783783784,
+      "trial_id": 14
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "roc",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 75,
+        "n_folds": 5,
+        "ges_n_iterations": 34,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6813131313131315,
+      "test_auc": 0.6756756756756757,
+      "trial_id": 15
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "default",
+        "ges_scoring": "f1",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 85,
+        "n_folds": 5,
+        "ges_n_iterations": 34,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.6747474747474748,
+      "test_auc": 0.6824324324324326,
+      "trial_id": 16
+    },
+    {
+      "params": {
+        "max_time": 120,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "roc",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 74,
+        "n_folds": 5,
+        "ges_n_iterations": 29,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.6813131313131315,
+      "test_auc": 0.6756756756756757,
+      "trial_id": 17
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "f1",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 120,
+        "n_folds": 5,
+        "ges_n_iterations": 27,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 18
+    },
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "roc",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 90,
+        "n_folds": 5,
+        "ges_n_iterations": 37,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.6813131313131315,
+      "test_auc": 0.6756756756756757,
+      "trial_id": 19
+    },
+    {
+      "params": {
+        "max_time": 30,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 15,
+        "validation_method": "cv",
+        "n_repeats": 51,
+        "n_folds": 5,
+        "ges_n_iterations": 35,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.6866161616161616,
+      "test_auc": 0.6783783783783784,
+      "trial_id": 20
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "f1",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 138,
+        "n_folds": 5,
+        "ges_n_iterations": 25,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 21
+    },
+    {
+      "params": {
+        "max_time": 60,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "f1",
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 105,
+        "n_folds": 5,
+        "ges_n_iterations": 34,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 22
+    },
+    {
+      "params": {
+        "max_time": 30,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 122,
+        "n_folds": 5,
+        "ges_n_iterations": 26,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6866161616161616,
+      "test_auc": 0.6783783783783784,
+      "trial_id": 23
+    },
+    {
+      "params": {
+        "max_time": 180,
+        "preset": "default",
+        "ges_scoring": "roc",
+        "max_models": 25,
+        "validation_method": "cv",
+        "n_repeats": 136,
+        "n_folds": 5,
+        "ges_n_iterations": 35,
+        "ignore_limits": false
+      },
+      "validation_auc": 0.7007575757575758,
+      "test_auc": 0.6878378378378379,
+      "trial_id": 24
+    },
+    {
+      "params": {
+        "max_time": 120,
+        "preset": "avoid_overfitting",
+        "ges_scoring": "accuracy",
+        "max_models": 30,
+        "validation_method": "cv",
+        "n_repeats": 70,
+        "n_folds": 5,
+        "ges_n_iterations": 30,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6828282828282829,
+      "test_auc": 0.6797297297297298,
+      "trial_id": 25
+    },
+    {
+      "params": {
+        "max_time": 300,
+        "preset": "default",
+        "ges_scoring": "accuracy",
+        "max_models": 20,
+        "validation_method": "cv",
+        "n_repeats": 60,
+        "n_folds": 5,
+        "ges_n_iterations": 33,
+        "ignore_limits": true
+      },
+      "validation_auc": 0.6747474747474748,
+      "test_auc": 0.6824324324324326,
+      "trial_id": 26
+    }
+  ],
+  "good_configs": [],
+  "total_trials": 27
+}

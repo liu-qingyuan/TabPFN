@@ -1,10 +1,11 @@
 """Download all TabPFN model files for offline use."""
-
 from __future__ import annotations
+
+import sys
+print(sys.path)
 
 import argparse
 import logging
-import sys
 from pathlib import Path
 
 from tabpfn.model.loading import _user_cache_dir, download_all_models

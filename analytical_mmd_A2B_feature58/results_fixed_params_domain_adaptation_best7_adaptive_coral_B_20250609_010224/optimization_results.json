@@ -1,0 +1,29 @@
+{
+  "best_params": {
+    "model_params": {
+      "max_time": 30,
+      "preset": "default",
+      "ges_scoring_string": "f1",
+      "phe_init_args": {
+        "max_models": 10,
+        "validation_method": "cv",
+        "n_repeats": 150,
+        "n_folds": 5,
+        "ges_n_iterations": 20
+      },
+      "ignore_pretraining_limits": false
+    },
+    "mmd_params": {
+      "lr": 0.01,
+      "n_epochs": 100,
+      "batch_size": 32,
+      "lambda_reg": 0.001,
+      "gamma": 1.0,
+      "staged_training": false,
+      "dynamic_gamma": false
+    }
+  },
+  "best_score": 0.0,
+  "total_trials": 0,
+  "all_trials": []
+}

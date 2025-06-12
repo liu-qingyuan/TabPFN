@@ -1,0 +1,37 @@
+{
+  "source_validation": {
+    "acc": 0.8813559322033898,
+    "auc": 0.9749373433583961,
+    "f1": 0.9113924050632911,
+    "acc_0": 0.7619047619047619,
+    "acc_1": 0.9473684210526315
+  },
+  "target_direct": {
+    "acc": 0.6578947368421053,
+    "auc": 0.6803692307692307,
+    "f1": 0.7670250896057348,
+    "acc_0": 0.27692307692307694,
+    "acc_1": 0.856
+  },
+  "target_adapted": {
+    "acc": 0.34210526315789475,
+    "auc": 0.47963076923076925,
+    "f1": 0.015748031496062992,
+    "acc_0": 0.9846153846153847,
+    "acc_1": 0.008
+  },
+  "adaptation_info": {
+    "method": "linear",
+    "initial_mmd": 0.004792892798033301,
+    "final_mmd": 0.0,
+    "reduction": 100.0,
+    "align_info": {
+      "method": "linear",
+      "n_epochs": 200,
+      "lambda_reg": 0.001,
+      "gamma_used": 1.0,
+      "initial_mmd_corrected": 0.004792892798033301
+    },
+    "gamma_consistency_fixed": true
+  }
+}
