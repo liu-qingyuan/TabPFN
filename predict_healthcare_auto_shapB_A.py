@@ -2,11 +2,11 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+import os
+import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import time
-import os
 import logging
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_matrix
@@ -23,12 +23,23 @@ logging.disable(logging.INFO)
 def evaluate_metrics(y_true, y_pred, y_pred_proba):
     """计算所有评估指标"""
     conf_matrix = confusion_matrix(y_true, y_pred)
+    
+    # 安全的除法，避免除零错误
+    acc_0 = 0.0
+    acc_1 = 0.0
+    
+    if conf_matrix.shape == (2, 2):  # 确保是二分类问题
+        if (conf_matrix[0, 0] + conf_matrix[0, 1]) > 0:
+            acc_0 = conf_matrix[0, 0] / (conf_matrix[0, 0] + conf_matrix[0, 1])
+        if (conf_matrix[1, 0] + conf_matrix[1, 1]) > 0:
+            acc_1 = conf_matrix[1, 1] / (conf_matrix[1, 0] + conf_matrix[1, 1])
+    
     return {
         'acc': accuracy_score(y_true, y_pred),
         'auc': roc_auc_score(y_true, y_pred_proba),
         'f1': f1_score(y_true, y_pred),
-        'acc_0': conf_matrix[0, 0] / (conf_matrix[0, 0] + conf_matrix[0, 1]),
-        'acc_1': conf_matrix[1, 1] / (conf_matrix[1, 0] + conf_matrix[1, 1])
+        'acc_0': acc_0,
+        'acc_1': acc_1
     }
 
 def print_metrics(dataset_name, metrics):
@@ -130,64 +141,74 @@ def analyze_with_shap(
         
         print("SHAP array shape:", shap_array.shape)
         
-        # 根据形状处理SHAP值
-        if len(shap_array.shape) == 2:
-            # 二维数组 [样本数, 特征数]
-            abs_shap_values = np.abs(shap_array)
-            mean_abs_shap = np.mean(abs_shap_values, axis=0)
-        elif len(shap_array.shape) == 3:
-            # 三维数组处理
-            if shap_array.shape == (len(all_samples), len(feature_names), 2):
-                # 形状是 [样本数, 特征数, 类别数]
-                print("Detected shape [样本数, 特征数, 类别数]")
-                # 提取第1个类别的SHAP值 (正类)
-                abs_shap_values = np.abs(shap_array[:, :, 1])
-                # 对样本维度取平均
-                mean_abs_shap = np.mean(abs_shap_values, axis=0)
-                print(f"Feature dimension size: {mean_abs_shap.shape}")
-                
-                # 保存每个样本的原始SHAP值（非绝对值）以便后续可视化
-                raw_shap_values = shap_array[:, :, 1]
-            elif shap_array.shape[1] == len(feature_names):
-                # 如果第二个维度匹配特征数量
-                print(f"Second dimension matches feature count: {shap_array.shape[1]}")
-                # 取绝对值并对第一个维度取平均
+        # 根据形状处理SHAP值，增强错误处理
+        try:
+            if len(shap_array.shape) == 2:
+                # 二维数组 [样本数, 特征数]
                 abs_shap_values = np.abs(shap_array)
-                # 对第一个维度（样本）取平均
                 mean_abs_shap = np.mean(abs_shap_values, axis=0)
-                # 如果还有第三个维度，取第一个类别
-                if len(mean_abs_shap.shape) > 1 and mean_abs_shap.shape[1] == 2:
-                    print("Selecting SHAP values for positive class")
-                    mean_abs_shap = mean_abs_shap[:, 1]
+                raw_shap_values = shap_array
                 
-                # 保存每个样本的原始SHAP值
-                if len(shap_array.shape) == 3 and shap_array.shape[2] == 2:
-                    raw_shap_values = shap_array[:, :, 1]
-                else:
-                    raw_shap_values = shap_array
-            else:
-                # 其他情况，尝试常见的三维形状处理
-                print("Attempting common 3D shape handling")
-                if shap_array.shape[0] == 2:
-                    # 形状可能是 [类别数, 样本数, 特征数]
-                    abs_shap_values = np.abs(shap_array[1])  # 选择正类
-                    raw_shap_values = shap_array[1]  # 原始SHAP值
-                elif shap_array.shape[2] == 2:
-                    # 形状可能是 [样本数, 特征数, 类别数]
-                    abs_shap_values = np.abs(shap_array[:, :, 1])  # 选择正类
-                    raw_shap_values = shap_array[:, :, 1]  # 原始SHAP值
-                else:
-                    # 未知形状，尝试直接使用
-                    abs_shap_values = np.abs(shap_array)
-                    raw_shap_values = shap_array
-                
-                # 对样本维度取平均
-                if len(abs_shap_values.shape) > 1:
+            elif len(shap_array.shape) == 3:
+                # 三维数组处理
+                if shap_array.shape[2] == 2:
+                    # 形状是 [样本数, 特征数, 类别数]
+                    print("Detected shape [样本数, 特征数, 类别数]")
+                    # 提取第1个类别的SHAP值 (正类)
+                    abs_shap_values = np.abs(shap_array[:, :, 1])
+                    # 对样本维度取平均
                     mean_abs_shap = np.mean(abs_shap_values, axis=0)
+                    raw_shap_values = shap_array[:, :, 1]
+                    
+                elif shap_array.shape[0] == 2:
+                    # 形状可能是 [类别数, 样本数, 特征数]
+                    print("Detected shape [类别数, 样本数, 特征数]")
+                    abs_shap_values = np.abs(shap_array[1])  # 选择正类
+                    mean_abs_shap = np.mean(abs_shap_values, axis=0)
+                    raw_shap_values = shap_array[1]
+                    
                 else:
-                    mean_abs_shap = abs_shap_values
-        else:
-            raise ValueError(f"Unable to handle shape {shap_array.shape} of SHAP values")
+                    # 尝试第二个维度匹配特征数量
+                    if shap_array.shape[1] == len(feature_names):
+                        print(f"Second dimension matches feature count: {shap_array.shape[1]}")
+                        # 假设是 [样本数, 特征数, 其他维度]
+                        abs_shap_values = np.abs(shap_array[:, :, 0])  # 取第一个输出
+                        mean_abs_shap = np.mean(abs_shap_values, axis=0)
+                        raw_shap_values = shap_array[:, :, 0]
+                    else:
+                        # 默认处理：展平最后一个维度
+                        print("Using default 3D handling")
+                        reshaped = shap_array.reshape(shap_array.shape[0], -1)
+                        if reshaped.shape[1] >= len(feature_names):
+                            abs_shap_values = np.abs(reshaped[:, :len(feature_names)])
+                            mean_abs_shap = np.mean(abs_shap_values, axis=0)
+                            raw_shap_values = reshaped[:, :len(feature_names)]
+                        else:
+                            raise ValueError(f"Cannot match SHAP shape {shap_array.shape} to features")
+                            
+            else:
+                # 一维或更高维度
+                if len(shap_array.shape) == 1:
+                    if len(shap_array) == len(feature_names):
+                        mean_abs_shap = np.abs(shap_array)
+                        raw_shap_values = shap_array.reshape(1, -1)
+                    else:
+                        raise ValueError(f"1D SHAP array length {len(shap_array)} doesn't match feature count {len(feature_names)}")
+                else:
+                    raise ValueError(f"Unable to handle shape {shap_array.shape} of SHAP values")
+                    
+        except Exception as shape_error:
+            print(f"Error processing SHAP array shape {shap_array.shape}: {shape_error}")
+            # 回退策略：尝试直接使用
+            if hasattr(shap_array, 'flatten'):
+                flat_array = shap_array.flatten()
+                if len(flat_array) >= len(feature_names):
+                    mean_abs_shap = np.abs(flat_array[:len(feature_names)])
+                    raw_shap_values = flat_array[:len(feature_names)].reshape(1, -1)
+                else:
+                    raise ValueError(f"Flattened SHAP array too small: {len(flat_array)} < {len(feature_names)}")
+            else:
+                raise ValueError(f"Cannot process SHAP values with shape {shap_array.shape}")
         
         print(f"Calculated feature importance shape: {mean_abs_shap.shape}")
         

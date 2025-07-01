@@ -53,199 +53,100 @@ logging.root.setLevel(logging.INFO)  # 让 root logger 处理 INFO 及以上的�
 
 def check_matrix_properties(X_data, data_name="Data", cat_idx_list=None, selected_features_names=None):
     """
-    检查数据矩阵的属性，重点关注连续特征，以诊断协方差矩阵计算中的潜在问题。
+    检查矩阵的数值稳定性和统计属性
     """
-    if X_data is None or X_data.shape[0] == 0:
-        logging.warning(f"{data_name} 没有提供数据进行属性检查。")
+    if X_data.size == 0:
+        logging.warning(f"{data_name}: Empty data matrix, skipping checks.")
         return
-
-    # 默认类别特征索引（与 coral_transform 保持一致）
-    if cat_idx_list is None:
-        cat_idx_list = [0, 2, 3, 4, 12, 13, 16, 17, 18, 19, 22]
     
-    all_idx = list(range(X_data.shape[1]))
-    cont_idx = [i for i in all_idx if i not in cat_idx_list]
-
+    # 确定连续特征索引
+    if cat_idx_list is not None:
+        all_idx = list(range(X_data.shape[1]))
+        cont_idx = [i for i in all_idx if i not in cat_idx_list]
+    else:
+        cont_idx = list(range(X_data.shape[1]))
+    
     if not cont_idx:
-        logging.info(f"{data_name} 没有连续特征需要检查")
+        logging.info(f"{data_name}: No continuous features to check.")
         return
-
-    # 提取连续特征
+    
     X_cont = X_data[:, cont_idx]
     
-    # 1. 基本统计信息
-    logging.info(f"\n{data_name} 连续特征基本统计:")
-    logging.info(f"形状: {X_cont.shape}")
-    logging.info(f"数值范围: [{np.min(X_cont):.3f}, {np.max(X_cont):.3f}]")
-    
-    # 2. 检查是否存在无穷值
-    inf_mask = np.isinf(X_cont)
-    if np.any(inf_mask):
-        inf_counts = np.sum(inf_mask, axis=0)
-        inf_features = [(i, cont_idx[i], inf_counts[i]) for i in range(len(cont_idx)) if inf_counts[i] > 0]
-        logging.error(f"发现无穷值! 特征索引 (原始,连续) 和计数: {inf_features}")
-    
-    # 3. 检查是否存在 NaN
-    nan_mask = np.isnan(X_cont)
-    if np.any(nan_mask):
-        nan_counts = np.sum(nan_mask, axis=0)
-        nan_features = [(i, cont_idx[i], nan_counts[i]) for i in range(len(cont_idx)) if nan_counts[i] > 0]
-        logging.error(f"发现 NaN 值! 特征索引 (原始,连续) 和计数: {nan_features}")
-    
-    # 4. 检查方差
-    variances = np.var(X_cont, axis=0)
-    zero_var_idx = np.where(variances < 1e-10)[0]
-    if len(zero_var_idx) > 0:
-        zero_var_features = [(i, cont_idx[i], variances[i]) for i in zero_var_idx]
-        logging.error(f"发现零方差或接近零方差的特征! 特征索引 (原始,连续) 和方差: {zero_var_features}")
-    
-    # 5. 计算并检查协方差矩阵的条件数
-    try:
-        cov_matrix = np.cov(X_cont, rowvar=False)
-        if cov_matrix.shape[0] > 5:
-            logging.info(f"协方差矩阵 (前 5x5 部分):\n{cov_matrix[:5, :5]}")
-        else:
-            logging.info(f"协方差矩阵:\n{cov_matrix}")
-        
-        # 计算条件数
-        eigvals = np.linalg.eigvals(cov_matrix)
-        cond_num = np.max(np.abs(eigvals)) / np.min(np.abs(eigvals))
-        logging.info(f"协方差矩阵条件数: {cond_num:.2e}")
-        
-        if cond_num > 1e10:
-            logging.error(f"协方差矩阵病态! 条件数 = {cond_num:.2e}")
-            
-        # 检查特征值
-        min_eigval = np.min(np.abs(eigvals))
-        if min_eigval < 1e-10:
-            logging.error(f"协方差矩阵接近奇异! 最小特征值 = {min_eigval:.2e}")
-            
-    except np.linalg.LinAlgError as e:
-        logging.error(f"计算协方差矩阵或其特征值时发生错误: {str(e)}")
-    except Exception as e:
-        logging.error(f"计算协方差矩阵属性时发生未预期的错误: {str(e)}")
-        
-    # 6. 检查特征之间的相关性
-    try:
-        corr_matrix = np.corrcoef(X_cont, rowvar=False)
-        high_corr_pairs = []
-        for i in range(corr_matrix.shape[0]):
-            for j in range(i+1, corr_matrix.shape[1]):
-                if abs(corr_matrix[i,j]) > 0.95:
-                    feat_i = selected_features_names[cont_idx[i]] if selected_features_names else f"特征_{cont_idx[i]}"
-                    feat_j = selected_features_names[cont_idx[j]] if selected_features_names else f"特征_{cont_idx[j]}"
-                    high_corr_pairs.append((feat_i, feat_j, corr_matrix[i,j]))
-        
-        if high_corr_pairs:
-            logging.warning("发现高度相关的特征对:")
-            for pair in high_corr_pairs:
-                logging.warning(f"  {pair[0]} - {pair[1]}: {pair[2]:.3f}")
-                
-    except np.linalg.LinAlgError as e:
-        logging.error(f"计算相关系数矩阵时发生错误: {str(e)}")
-    except Exception as e:
-        logging.error(f"计算特征相关性时发生未预期的错误: {str(e)}")
-    
-    # 7. 检查是否存在无穷值
-    inf_mask = np.isinf(X_cont)
-    if np.any(inf_mask):
-        inf_counts = np.sum(inf_mask, axis=0)
-        inf_features = [(i, cont_idx[i], inf_counts[i]) for i in range(len(cont_idx)) if inf_counts[i] > 0]
-        logging.error(f"发现无穷值! 特征索引 (原始,连续) 和计数: {inf_features}")
-    
-    # 8. 检查是否存在 NaN
-    nan_mask = np.isnan(X_cont)
-    if np.any(nan_mask):
-        nan_counts = np.sum(nan_mask, axis=0)
-        nan_features = [(i, cont_idx[i], nan_counts[i]) for i in range(len(cont_idx)) if nan_counts[i] > 0]
-        logging.error(f"发现 NaN 值! 特征索引 (原始,连续) 和计数: {nan_features}")
-    
-    # 9. 检查方差
-    variances = np.var(X_cont, axis=0)
-    zero_var_idx = np.where(variances < 1e-10)[0]
-    if len(zero_var_idx) > 0:
-        zero_var_features = [(i, cont_idx[i], variances[i]) for i in zero_var_idx]
-        logging.error(f"发现零方差或接近零方差的特征! 特征索引 (原始,连续) 和方差: {zero_var_features}")
-    
-    # 10. 计算并检查协方差矩阵的条件数
-    cov_matrix = np.cov(X_cont, rowvar=False)
-    X_cont = X_data[:, cont_idx]
-
-    if X_cont.shape[0] < X_cont.shape[1] and X_cont.shape[0] > 0 : # Check if samples < features for continuous part
-        logging.warning(f"{data_name} (Continuous Features Part): Number of samples ({X_cont.shape[0]}) is less than number of continuous features ({X_cont.shape[1]}). Covariance matrix will likely be singular or ill-conditioned.")
-
     logging.info(f"--- Checking Properties for {data_name} (Continuous Features Shape: {X_cont.shape}) ---")
-
-    # Check for zero variance columns
-    variances = np.var(X_cont, axis=0)
-    # Using a small threshold, verify it's appropriate for scaled data (usually std=1, var=1)
-    # If data isn't perfectly scaled, var can be small. 1e-9 is okay.
-    zero_var_cols_indices_in_X_cont = np.where(variances < 1e-9)[0] 
     
-    if len(zero_var_cols_indices_in_X_cont) > 0:
-        if selected_features_names and cont_idx:
-            original_feature_names = [selected_features_names[cont_idx[i]] for i in zero_var_cols_indices_in_X_cont]
-            logging.warning(f"{data_name} has continuous columns with zero or near-zero variance at continuous_feature_indices: {zero_var_cols_indices_in_X_cont}. Corresponding original feature names: {original_feature_names}")
-        else:
-            logging.warning(f"{data_name} has continuous columns with zero or near-zero variance at continuous_feature_indices: {zero_var_cols_indices_in_X_cont}.")
-    else:
-        logging.info(f"{data_name}: No continuous columns with zero or near-zero variance found.")
-
-    # Check rank of the continuous data matrix
-    if X_cont.size > 0: # np.linalg.matrix_rank fails on empty array
-        rank_X_cont = np.linalg.matrix_rank(X_cont)
-        logging.info(f"{data_name} Rank of X_cont (continuous features): {rank_X_cont} (Full rank would be {min(X_cont.shape)})")
-    else:
-        logging.info(f"{data_name} X_cont is empty, skipping rank check.")
-
-
-    # Covariance matrix properties for continuous features
-    if X_cont.shape[0] > 1 : # Need at least 2 samples to compute covariance
-        # Covariance matrix (before regularization)
-        Cov_matrix = np.cov(X_cont, rowvar=False)
-        
-        if np.any(np.isnan(Cov_matrix)) or np.any(np.isinf(Cov_matrix)):
-            logging.error(f"{data_name}: Covariance matrix (no regularization) for continuous features contains NaNs or Infs!")
-            logging.error(f"Cov_matrix (first 5x5 snippet if large, else full):\n{Cov_matrix[:min(5, Cov_matrix.shape[0]), :min(5, Cov_matrix.shape[1])]}")
-            logging.error(f"X_cont (first 5x5 snippet if large, else full):\n{X_cont[:min(5, X_cont.shape[0]), :min(5, X_cont.shape[1])]}")
-        else:
-            rank_Cov = np.linalg.matrix_rank(Cov_matrix)
-            logging.info(f"{data_name} Rank of Covariance Matrix (no regularization, continuous features): {rank_Cov} (Full rank would be {Cov_matrix.shape[0]})")
+    # 1. 检查基本数值问题
+    inf_mask = np.isinf(X_cont)
+    if np.any(inf_mask):
+        inf_counts = np.sum(inf_mask, axis=0)
+        inf_features = [(i, cont_idx[i], inf_counts[i]) for i in range(len(cont_idx)) if inf_counts[i] > 0]
+        logging.error(f"发现无穷值! 特征索引 (原始,连续) 和计数: {inf_features}")
+    
+    nan_mask = np.isnan(X_cont)
+    if np.any(nan_mask):
+        nan_counts = np.sum(nan_mask, axis=0)
+        nan_features = [(i, cont_idx[i], nan_counts[i]) for i in range(len(cont_idx)) if nan_counts[i] > 0]
+        logging.error(f"发现 NaN 值! 特征索引 (原始,连续) 和计数: {nan_features}")
+    
+    # 2. 检查方差
+    variances = np.var(X_cont, axis=0)
+    zero_var_idx = np.where(variances < 1e-10)[0]
+    if len(zero_var_idx) > 0:
+        zero_var_features = [(i, cont_idx[i], variances[i]) for i in zero_var_idx]
+        logging.error(f"发现零方差或接近零方差的特征! 特征索引 (原始,连续) 和方差: {zero_var_features}")
+    
+    # 3. 检查协方差矩阵的数值稳定性
+    if X_cont.shape[0] > 1:  # 需要至少2个样本来计算协方差
+        try:
+            cov_matrix = np.cov(X_cont, rowvar=False)
             
-            try:
-                cond_Cov = np.linalg.cond(Cov_matrix)
-                logging.info(f"{data_name} Condition Number of Covariance Matrix (no regularization, continuous features): {cond_Cov:.2e}")
-                if cond_Cov > 1e12: # Threshold for ill-conditioning
-                    logging.warning(f"{data_name}: Covariance matrix (no regularization, continuous features) is ill-conditioned or singular (Cond num: {cond_Cov:.2e}).")
-            except np.linalg.LinAlgError:
-                logging.warning(f"{data_name}: Could not compute condition number for Covariance Matrix (no regularization, continuous features) - likely singular.")
-
-            # Covariance matrix (with regularization, as used in coral_transform for Ct)
-            # The regularization in coral_transform is on Ct, which is cov(Xt_cont_centered).
-            # Here we check Cov_matrix of X_cont. This is a proxy check.
-            Cov_matrix_reg = Cov_matrix + 1e-5 * np.eye(Cov_matrix.shape[0])
-            rank_Cov_reg = np.linalg.matrix_rank(Cov_matrix_reg)
-            logging.info(f"{data_name} Rank of Covariance Matrix (with 1e-5 regularization, continuous features): {rank_Cov_reg}")
+            # 检查协方差矩阵中的异常值
+            if np.any(np.isnan(cov_matrix)) or np.any(np.isinf(cov_matrix)):
+                logging.error(f"{data_name}: 协方差矩阵包含 NaN 或无穷值!")
+                return
             
+            # 计算条件数
             try:
-                cond_Cov_reg = np.linalg.cond(Cov_matrix_reg)
-                logging.info(f"{data_name} Condition Number of Covariance Matrix (with 1e-5 regularization, continuous features): {cond_Cov_reg:.2e}")
-            except np.linalg.LinAlgError:
-                logging.warning(f"{data_name}: Could not compute condition number for regularized Covariance Matrix (continuous features).")
+                eigvals = np.linalg.eigvals(cov_matrix)
+                max_eigval = np.max(np.real(eigvals))
+                min_eigval = np.min(np.real(eigvals))
+                
+                if min_eigval > 0:
+                    cond_num = max_eigval / min_eigval
+                    logging.info(f"协方差矩阵条件数: {cond_num:.2e}")
+                    
+                    if cond_num > 1e10:
+                        logging.error(f"协方差矩阵病态! 条件数 = {cond_num:.2e}")
+                else:
+                    logging.error(f"协方差矩阵奇异! 最小特征值 = {min_eigval:.2e}")
+                    
+            except np.linalg.LinAlgError as e:
+                logging.error(f"计算协方差矩阵特征值时发生错误: {str(e)}")
+                
+        except Exception as e:
+            logging.error(f"计算协方差矩阵时发生错误: {str(e)}")
+    
+    # 4. 检查特征相关性
+    try:
+        if X_cont.shape[0] > 1 and X_cont.shape[1] > 1:
+            corr_matrix = np.corrcoef(X_cont, rowvar=False)
+            high_corr_pairs = []
             
-            try:
-                s_vals = scipy.linalg.svdvals(Cov_matrix_reg) 
-                logging.info(f"{data_name} Singular values of regularized Cov_matrix (proxy for Ct): min={np.min(s_vals):.2e}, max={np.max(s_vals):.2e}, count_near_zero (<1e-9)={np.sum(s_vals < 1e-9)}")
-                if np.any(s_vals < 1e-9):
-                    logging.warning(f"{data_name}: Regularized covariance matrix (proxy for Ct) has very small or zero singular values.")
-            except Exception as e:
-                logging.error(f"{data_name} Error computing singular values for regularized Cov_matrix: {e}")
-    elif X_cont.shape[0] <=1 and X_cont.size > 0:
-         logging.warning(f"{data_name}: Not enough samples ({X_cont.shape[0]}) in continuous features to compute covariance matrix for detailed check.")
-    else:
-        logging.info(f"{data_name}: Continuous features part (X_cont) is empty or has zero samples, skipping covariance checks.")
+            for i in range(corr_matrix.shape[0]):
+                for j in range(i+1, corr_matrix.shape[1]):
+                    if abs(corr_matrix[i,j]) > 0.95:
+                        feat_i = selected_features_names[cont_idx[i]] if selected_features_names else f"特征_{cont_idx[i]}"
+                        feat_j = selected_features_names[cont_idx[j]] if selected_features_names else f"特征_{cont_idx[j]}"
+                        high_corr_pairs.append((feat_i, feat_j, corr_matrix[i,j]))
+            
+            if high_corr_pairs:
+                logging.warning("发现高度相关的特征对:")
+                for pair in high_corr_pairs:
+                    logging.warning(f"  {pair[0]} - {pair[1]}: {pair[2]:.3f}")
+                    
+    except Exception as e:
+        logging.error(f"计算特征相关性时发生错误: {str(e)}")
+    
     logging.info(f"--- End of Properties Check for {data_name} ---")
-
 
 # 定义PKUPH和Mayo模型
 class PKUPHModel:

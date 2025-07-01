@@ -1,7 +1,4 @@
-try:
-    import joblib
-except ImportError:
-    from sklearn.externals import joblib
+import joblib
 
 import pandas as pd
 import numpy as np
