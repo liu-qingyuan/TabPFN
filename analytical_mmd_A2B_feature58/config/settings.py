@@ -17,6 +17,12 @@ BEST_7_FEATURES = [
     'Feature56', 'Feature42', 'Feature39', 'Feature43'
 ]
 
+# 最佳11特征配置 (用户指定的特征)
+BEST_10_FEATURES = [
+    'Feature63', 'Feature2', 'Feature46', 'Feature61', 
+    'Feature56', 'Feature42', 'Feature39', 'Feature43', 'Feature48', 'Feature5'
+]
+
 # 类别特征名称 (与CORAL版本保持一致)
 CAT_FEATURE_NAMES = [
     'Feature1', 'Feature3', 'Feature4', 'Feature5', 'Feature6', 'Feature7', 'Feature8', 'Feature9', 'Feature10', 'Feature11',
@@ -26,11 +32,20 @@ CAT_FEATURE_NAMES = [
 # 最佳7特征中的类别特征
 BEST_7_CAT_FEATURES = ['Feature63', 'Feature46']
 
+# 最佳11特征中的类别特征
+BEST_11_CAT_FEATURES = ['Feature63', 'Feature46', 'Feature5']
+
 # 类别特征索引 (在58个特征中的位置)
 CAT_IDX = [SELECTED_FEATURES.index(f) for f in CAT_FEATURE_NAMES if f in SELECTED_FEATURES]
 
 # 最佳7特征中的类别特征索引
 BEST_7_CAT_IDX = [BEST_7_FEATURES.index(f) for f in BEST_7_CAT_FEATURES if f in BEST_7_FEATURES]
+
+# 最佳10特征对应的类别特征（从BEST_10_FEATURES中筛选出的类别特征）
+BEST_10_CAT_FEATURES = [f for f in BEST_10_FEATURES if f in ['Feature63', 'Feature46', 'Feature61']]
+
+# 最佳10特征中的类别特征索引
+BEST_10_CAT_IDX = [BEST_10_FEATURES.index(f) for f in BEST_10_CAT_FEATURES if f in BEST_10_FEATURES]
 
 # 多模型配置
 MODEL_CONFIGS = {
@@ -187,7 +202,7 @@ EXPERIMENT_CONFIG = {
     'test_size': 0.2,  # 源域验证集比例
     'random_state': 42,
     'optimize_threshold': True,  # 是否优化决策阈值
-    'cross_validation': False,  # 是否使用交叉验证
+    'cross_validation': True,  # 是否使用交叉验证
     'save_visualizations': True,  # 是否保存可视化结果
     'save_models': False  # 是否保存训练好的模型
 }
@@ -216,7 +231,7 @@ def get_features_by_type(feature_type: str = 'all'):
     根据类型获取特征列表
     
     参数:
-    - feature_type: 特征类型 ('all', 'best7', 'categorical')
+    - feature_type: 特征类型 ('all', 'best7', 'best11', 'categorical')
     
     返回:
     - list: 特征名称列表
@@ -225,6 +240,8 @@ def get_features_by_type(feature_type: str = 'all'):
         return SELECTED_FEATURES
     elif feature_type == 'best7':
         return BEST_7_FEATURES
+    elif feature_type == 'best10':
+        return BEST_10_FEATURES
     elif feature_type == 'categorical':
         return CAT_FEATURE_NAMES
     else:
@@ -235,7 +252,7 @@ def get_categorical_indices(feature_type: str = 'all'):
     根据特征类型获取类别特征索引
     
     参数:
-    - feature_type: 特征类型 ('all', 'best7')
+    - feature_type: 特征类型 ('all', 'best7', 'best11')
     
     返回:
     - list: 类别特征索引列表
@@ -244,6 +261,8 @@ def get_categorical_indices(feature_type: str = 'all'):
         return CAT_IDX
     elif feature_type == 'best7':
         return BEST_7_CAT_IDX
+    elif feature_type == 'best10':
+        return BEST_10_CAT_IDX
     else:
         raise ValueError(f"不支持的特征类型: {feature_type}")
 

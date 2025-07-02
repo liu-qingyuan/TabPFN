@@ -1,0 +1,11 @@
+Cancer_Type,Total_Samples,Correctly_Predicted_as_Positive,Wrongly_Predicted_as_Negative,Detection_Rate,Avg_Malignant_Probability
+Adenocarcinoma,99,79,20,0.797979797979798,0.66157365
+Squamous Cell Carcinoma,10,7,3,0.7,0.58503306
+Poorly Differentiated Squamous Cell Carcinoma,4,3,1,0.75,0.72381765
+Small Cell Carcinoma,4,2,2,0.5,0.48988515
+Moderately Differentiated Squamous Cell Carcinoma,2,2,0,1.0,0.8524805
+Adenosquamous Carcinoma,2,2,0,1.0,0.79390013
+Adenocarcinoma of Right Lower Lobe,1,1,0,1.0,0.83563167
+Carcinoid (Adeno/Oat Cell),1,1,0,1.0,0.8997916
+Moderately Differentiated Adenocarcinoma,1,1,0,1.0,0.7517667
+Poorly Differentiated Adenocarcinoma,1,1,0,1.0,0.8673675

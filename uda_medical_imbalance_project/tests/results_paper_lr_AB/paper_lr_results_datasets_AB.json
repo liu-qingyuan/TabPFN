@@ -1,0 +1,40 @@
+{
+  "数据集A": {
+    "dataset": "A",
+    "accuracy": 0.7220338983050848,
+    "auc": 0.7682939003693721,
+    "f1": 0.8101851851851852,
+    "precision": 0.720164609053498,
+    "recall": 0.9259259259259259,
+    "risk_score_mean": 0.5823992881355929,
+    "risk_score_std": 0.6322238402644862,
+    "risk_score_min": -1.5171400000000004,
+    "risk_score_max": 2.18966,
+    "features_used": 11,
+    "features_missing": 0,
+    "sample_count": 295,
+    "positive_samples": "189",
+    "negative_samples": "106",
+    "acc_negative": 0.3584905660377358,
+    "acc_positive": 0.9259259259259259
+  },
+  "数据集B": {
+    "dataset": "B",
+    "accuracy": 0.6736842105263158,
+    "auc": 0.6758153846153847,
+    "f1": 0.7919463087248322,
+    "precision": 0.6820809248554913,
+    "recall": 0.944,
+    "risk_score_mean": 0.7842558947368419,
+    "risk_score_std": 0.5721203804960423,
+    "risk_score_min": -1.0733,
+    "risk_score_max": 3.6665799999999997,
+    "features_used": 11,
+    "features_missing": 0,
+    "sample_count": 190,
+    "positive_samples": "125",
+    "negative_samples": "65",
+    "acc_negative": 0.15384615384615385,
+    "acc_positive": 0.944
+  }
+}

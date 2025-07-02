@@ -1,0 +1,11 @@
+Original_Index,True_Label,Predicted_Label,Malignant_Probability,Cancer_Type,T_Stage,N_Stage,Stage_Raw,Correct_Prediction
+2,1,0,0.42891183,Adenocarcinoma,1,0.0,T1N0M0,False
+3,1,0,0.33079988,Adenocarcinoma,is,0.0,TisN0M0,False
+5,1,0,0.42512995,Squamous Cell Carcinoma,4,0.0,T4N0M0,False
+38,1,0,0.4640248,Small Cell Carcinoma,2,0.0,T2N0M0,False
+51,1,0,0.45502704,Adenocarcinoma,3,0.0,T3N0M0,False
+60,1,0,0.39380327,Squamous Cell Carcinoma,2,1.0,T2N1M0,False
+61,1,0,0.48508117,Adenocarcinoma,1,0.0,T1N0M0,False
+63,1,0,0.49423194,Adenocarcinoma,1,0.0,T1N0M0,False
+93,1,0,0.4480937,Adenocarcinoma,1,1.0,T1N1M0,False
+123,1,0,0.45206246,Adenocarcinoma,1,0.0,T1N0M0,False

@@ -23,13 +23,24 @@ from skopt.utils import use_named_args
 import warnings
 import time
 
-# 导入 AutoTabPFNClassifier
+# 导入 TabPFN 相关模型
 try:
     from tabpfn_extensions.post_hoc_ensembles.sklearn_interface import AutoTabPFNClassifier
     AUTO_TABPFN_AVAILABLE = True
 except ImportError:
     logging.warning("AutoTabPFN不可用，请安装tabpfn_extensions")
     AUTO_TABPFN_AVAILABLE = False
+
+try:
+    from tabpfn_extensions import TabPFNClassifier
+    BASE_TABPFN_AVAILABLE = True
+except ImportError:
+    try:
+        from tabpfn import TabPFNClassifier
+        BASE_TABPFN_AVAILABLE = True
+    except ImportError:
+        logging.warning("原生TabPFN不可用，请安装tabpfn或tabpfn_extensions")
+        BASE_TABPFN_AVAILABLE = False
 
 from ..config.settings import (
     DATA_PATHS, LABEL_COL, get_features_by_type, get_categorical_indices, MMD_METHODS, get_model_config
@@ -308,20 +319,31 @@ class StandardDomainAdaptationOptimizer:
         )
         
         # 源域数据划分：训练集 vs 验证集
-        self.X_source_train, self.X_source_val, self.y_source_train, self.y_source_val = train_test_split(
-            X_A_scaled, y_A,
-            test_size=self.source_val_split,
-            stratify=y_A,
-            random_state=self.random_state
-        )
-        
-        # 同时划分原始数据（用于MMD域适应）
-        self.X_source_train_raw, self.X_source_val_raw, _, _ = train_test_split(
-            X_A_raw, y_A,
-            test_size=self.source_val_split,
-            stratify=y_A,
-            random_state=self.random_state
-        )
+        if self.source_val_split > 0:
+            # 正常划分
+            self.X_source_train, self.X_source_val, self.y_source_train, self.y_source_val = train_test_split(
+                X_A_scaled, y_A,
+                test_size=self.source_val_split,
+                stratify=y_A,
+                random_state=self.random_state
+            )
+            
+            # 同时划分原始数据（用于MMD域适应）
+            self.X_source_train_raw, self.X_source_val_raw, _, _ = train_test_split(
+                X_A_raw, y_A,
+                test_size=self.source_val_split,
+                stratify=y_A,
+                random_state=self.random_state
+            )
+        else:
+            # 使用全部数据，不进行划分
+            self.X_source_train = X_A_scaled
+            self.X_source_val = X_A_scaled  # 验证集与训练集相同
+            self.y_source_train = y_A
+            self.y_source_val = y_A
+            
+            self.X_source_train_raw = X_A_raw
+            self.X_source_val_raw = X_A_raw
         
         # 目标域数据：仅用于最终测试
         self.X_target_test = X_target_scaled
@@ -329,13 +351,20 @@ class StandardDomainAdaptationOptimizer:
         self.X_target_test_raw = X_target_raw
         
         # 打印数据信息
-        logging.info(f"数据划分完成:")
-        logging.info(f"  源域训练集: {self.X_source_train.shape[0]} 样本")
-        logging.info(f"  源域验证集: {self.X_source_val.shape[0]} 样本")
-        logging.info(f"  目标域测试集: {self.X_target_test.shape[0]} 样本")
-        logging.info(f"  源域训练集标签分布: {np.bincount(self.y_source_train.astype(int))}")
-        logging.info(f"  源域验证集标签分布: {np.bincount(self.y_source_val.astype(int))}")
-        logging.info(f"  目标域测试集标签分布: {np.bincount(self.y_target_test.astype(int))}")
+        if self.source_val_split > 0:
+            logging.info(f"数据划分完成:")
+            logging.info(f"  源域训练集: {self.X_source_train.shape[0]} 样本")
+            logging.info(f"  源域验证集: {self.X_source_val.shape[0]} 样本")
+            logging.info(f"  目标域测试集: {self.X_target_test.shape[0]} 样本")
+            logging.info(f"  源域训练集标签分布: {np.bincount(self.y_source_train.astype(int))}")
+            logging.info(f"  源域验证集标签分布: {np.bincount(self.y_source_val.astype(int))}")
+            logging.info(f"  目标域测试集标签分布: {np.bincount(self.y_target_test.astype(int))}")
+        else:
+            logging.info(f"数据准备完成（使用全部源域数据）:")
+            logging.info(f"  源域数据: {self.X_source_train.shape[0]} 样本")
+            logging.info(f"  目标域测试集: {self.X_target_test.shape[0]} 样本")
+            logging.info(f"  源域标签分布: {np.bincount(self.y_source_train.astype(int))}")
+            logging.info(f"  目标域测试集标签分布: {np.bincount(self.y_target_test.astype(int))}")
 
     def define_search_space(self) -> List:
         """定义超参数搜索空间"""
@@ -466,6 +495,7 @@ class StandardDomainAdaptationOptimizer:
                         phe_init_args=phe_init_args
                     )
                 else:
+                    # 使用普通TabPFN或其他模型
                     model_config = {
                         'categorical_feature_indices': self.categorical_indices if self.use_categorical else []
                     }
@@ -625,6 +655,7 @@ class StandardDomainAdaptationOptimizer:
                 phe_init_args=phe_init_args
             )
         else:
+            # 使用普通TabPFN或其他模型
             model_config = {
                 'categorical_feature_indices': self.categorical_indices if self.use_categorical else []
             }
@@ -741,19 +772,19 @@ class StandardDomainAdaptationOptimizer:
         
         return baseline_results
 
-    def evaluate_autotabpfn_source_cv(self, cv_folds: int = 10) -> Dict[str, Any]:
-        """评估AutoTabPFN在源域上的性能（交叉验证或8:2划分）"""
+    def evaluate_tabpfn_source_cv(self, cv_folds: int = 10) -> Dict[str, Any]:
+        """评估TabPFN在源域上的性能（交叉验证或8:2划分）"""
         if cv_folds <= 0:
-            logging.info("评估AutoTabPFN源域8:2划分性能...")
+            logging.info("评估TabPFN源域8:2划分性能...")
             logging.info("注意：此评估使用全部数据集A，与域适应实验的数据划分独立")
-            return self._evaluate_autotabpfn_source_split()
+            return self._evaluate_tabpfn_source_split()
         else:
-            logging.info(f"评估AutoTabPFN源域{cv_folds}折交叉验证性能...")
+            logging.info(f"评估TabPFN源域{cv_folds}折交叉验证性能...")
             logging.info("注意：此评估使用全部数据集A，与域适应实验的数据划分独立")
-            return self._evaluate_autotabpfn_source_cv_internal(cv_folds)
+            return self._evaluate_tabpfn_source_cv_internal(cv_folds)
         
-    def _evaluate_autotabpfn_source_split(self) -> Dict[str, Any]:
-        """使用8:2划分评估AutoTabPFN在源域上的性能"""
+    def _evaluate_tabpfn_source_split(self) -> Dict[str, Any]:
+        """使用8:2划分评估TabPFN在源域上的性能"""
         # 重新加载完整的源域数据集A
         from ..config.settings import DATA_PATHS, LABEL_COL
         import pandas as pd
@@ -784,25 +815,33 @@ class StandardDomainAdaptationOptimizer:
         model_params = self.best_params['model_params']
         
         try:
-            from tabpfn_extensions.post_hoc_ensembles.sklearn_interface import AutoTabPFNClassifier
-            
-            # 准备phe_init_args参数
-            phe_init_args = {}
-            for key in ['max_models', 'validation_method', 'n_repeats', 'n_folds', 'holdout_fraction', 'ges_n_iterations']:
-                if key in model_params:
-                    phe_init_args[key] = model_params[key]
-            
-            # 创建模型
-            model = AutoTabPFNClassifier(
-                device='cuda',
-                max_time=model_params.get('max_time', 60),
-                preset=model_params.get('preset', 'default'),
-                ges_scoring_string=model_params.get('ges_scoring', 'roc'),
-                random_state=self.random_state,
-                categorical_feature_indices=self.categorical_indices,
-                ignore_pretraining_limits=model_params.get('ignore_limits', False),
-                phe_init_args=phe_init_args if phe_init_args else None
-            )
+            # 根据模型类型创建不同的模型
+            if self.model_type == 'auto':
+                
+                # 准备phe_init_args参数
+                phe_init_args = {}
+                for key in ['max_models', 'validation_method', 'n_repeats', 'n_folds', 'holdout_fraction', 'ges_n_iterations']:
+                    if key in model_params:
+                        phe_init_args[key] = model_params[key]
+                
+                # 创建AutoTabPFN模型
+                model = AutoTabPFNClassifier(
+                    device='cuda',
+                    max_time=model_params.get('max_time', 60),
+                    preset=model_params.get('preset', 'default'),
+                    ges_scoring_string=model_params.get('ges_scoring', 'roc'),
+                    random_state=self.random_state,
+                    categorical_feature_indices=self.categorical_indices,
+                    ignore_pretraining_limits=model_params.get('ignore_limits', False),
+                    phe_init_args=phe_init_args if phe_init_args else None
+                )
+            else:
+                # 使用普通TabPFN或其他模型
+                model_config = {
+                    'categorical_feature_indices': self.categorical_indices if self.use_categorical else []
+                }
+                model_config.update(model_params)
+                model = get_model(self.model_type, **model_config)
             
             # 训练和评估
             model.fit(X_train_80, y_train_80)
@@ -819,7 +858,7 @@ class StandardDomainAdaptationOptimizer:
             auc = roc_auc_score(y_val_20, y_proba_1d)
             f1 = f1_score(y_val_20, y_pred, zero_division=0)
             
-            logging.info(f"AutoTabPFN源域8:2划分结果:")
+            logging.info(f"TabPFN源域8:2划分结果:")
             logging.info(f"  AUC: {auc:.4f}")
             logging.info(f"  ACC: {accuracy:.4f}")
             logging.info(f"  F1:  {f1:.4f}")
@@ -835,8 +874,8 @@ class StandardDomainAdaptationOptimizer:
             logging.error(f"8:2划分评估失败: {e}")
             return None
     
-    def _evaluate_autotabpfn_source_cv_internal(self, cv_folds: int) -> Dict[str, Any]:
-        """使用交叉验证评估AutoTabPFN在源域上的性能"""
+    def _evaluate_tabpfn_source_cv_internal(self, cv_folds: int) -> Dict[str, Any]:
+        """使用交叉验证评估TabPFN在源域上的性能"""
         # 重新加载完整的源域数据集A（不受训练/验证划分限制）
         from ..config.settings import DATA_PATHS, LABEL_COL
         import pandas as pd
@@ -871,27 +910,35 @@ class StandardDomainAdaptationOptimizer:
             X_cv_val = X_full_source_scaled[val_idx]
             y_cv_val = y_full_source[val_idx]
             
-            # 创建和训练AutoTabPFN模型
+            # 创建和训练TabPFN模型
             try:
-                from tabpfn_extensions.post_hoc_ensembles.sklearn_interface import AutoTabPFNClassifier
-                
-                # 使用最佳参数创建模型
-                # 准备phe_init_args参数
-                phe_init_args = {}
-                for key in ['max_models', 'validation_method', 'n_repeats', 'n_folds', 'holdout_fraction', 'ges_n_iterations']:
-                    if key in model_params:
-                        phe_init_args[key] = model_params[key]
-                
-                cv_model = AutoTabPFNClassifier(
-                    device='cuda',
-                    max_time=model_params.get('max_time', 60),
-                    preset=model_params.get('preset', 'default'),
-                    ges_scoring_string=model_params.get('ges_scoring', 'roc'),
-                    random_state=self.random_state,
-                    categorical_feature_indices=self.categorical_indices,
-                    ignore_pretraining_limits=model_params.get('ignore_limits', False),
-                    phe_init_args=phe_init_args if phe_init_args else None
-                )
+                # 根据模型类型创建不同的模型
+                if self.model_type == 'auto':
+                    
+                    # 使用最佳参数创建模型
+                    # 准备phe_init_args参数
+                    phe_init_args = {}
+                    for key in ['max_models', 'validation_method', 'n_repeats', 'n_folds', 'holdout_fraction', 'ges_n_iterations']:
+                        if key in model_params:
+                            phe_init_args[key] = model_params[key]
+                    
+                    cv_model = AutoTabPFNClassifier(
+                        device='cuda',
+                        max_time=model_params.get('max_time', 60),
+                        preset=model_params.get('preset', 'default'),
+                        ges_scoring_string=model_params.get('ges_scoring', 'roc'),
+                        random_state=self.random_state,
+                        categorical_feature_indices=self.categorical_indices,
+                        ignore_pretraining_limits=model_params.get('ignore_limits', False),
+                        phe_init_args=phe_init_args if phe_init_args else None
+                    )
+                else:
+                    # 使用普通TabPFN或其他模型
+                    model_config = {
+                        'categorical_feature_indices': self.categorical_indices if self.use_categorical else []
+                    }
+                    model_config.update(model_params)
+                    cv_model = get_model(self.model_type, **model_config)
                 
                 cv_model.fit(X_cv_train, y_cv_train)
                 
@@ -924,7 +971,7 @@ class StandardDomainAdaptationOptimizer:
             'f1': {'mean': np.mean(cv_scores['f1']), 'std': np.std(cv_scores['f1'])}
         }
         
-        logging.info(f"AutoTabPFN源域{cv_folds}折CV结果:")
+        logging.info(f"TabPFN源域{cv_folds}折CV结果:")
         logging.info(f"  AUC: {cv_metrics['auc']['mean']:.4f} ± {cv_metrics['auc']['std']:.4f}")
         logging.info(f"  ACC: {cv_metrics['accuracy']['mean']:.4f} ± {cv_metrics['accuracy']['std']:.4f}")
         logging.info(f"  F1:  {cv_metrics['f1']['mean']:.4f} ± {cv_metrics['f1']['std']:.4f}")
@@ -1082,7 +1129,7 @@ class StandardDomainAdaptationOptimizer:
                 # 移除模型对象，只保存结果
                 serializable_baseline = {}
                 for model_name, results in baseline_results.items():
-                    if 'error' not in results:
+                    if isinstance(results, dict) and 'error' not in results:
                         serializable_baseline[model_name] = {
                             'source_validation': results['source_validation'],
                             'target_direct': results['target_direct'],

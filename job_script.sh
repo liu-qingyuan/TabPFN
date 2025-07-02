@@ -4,6 +4,40 @@
 #SBATCH --output=output.log    # 任务输出日志
 #SBATCH --error=error.log      # 错误日志
 
+# python predict_healthcare_class.py
+
+# python predict_healthcare_class_kmeans_smote_fscore.py
+# python predict_healthcare_class_kmeans_smote.py
+# python feature_number_fscore_analysis_B.py
+# python feature_number_RFE_analysis_B.py
+
+# python tests/test_dataset_b_tabpfn_cv10_comparison.py
+
+
+
+cd uda_medical_imbalance_project 
+
+
+# python tests/debug_sa_auc.py
+# python tests/test_sa_fix.py
+
+# python tests/test_kliep_medical_bias_correction.py
+# python tests/test_kmm_proper_tuning.py
+# python tests/test_adapt_methods.py
+# python tests/test_tca_gamma_optimization.py
+# python tests/test_cross_validation.py
+# python tests/test_paper_methods_datasets_AB.py
+# python tests/test_baseline_models.py
+# python tests/test_paper_methods.py
+# python tests/debug_feature_selection.py
+# python tests/test_uda_visualization.py
+# python examples/real_data_visualization.py
+python scripts/run_complete_analysis.py
+
+# python debug_calibration.py
+
+
+
 # cd /home/24052432g/TabPFN/analytical_mmd_A2B_feature58
 
 
@@ -92,6 +126,14 @@
 #     --target-domain B \
 #     --output-dir ./results_fixed_params_domain_adaptation_best7_adaptive_tca_B_$(date +%Y%m%d_%H%M%S)
 
+# python scripts/run_fixed_params_domain_adaptation.py --help
+# python scripts/run_fixed_params_domain_adaptation.py --target-domain B --feature-type best10 --domain-adapt-method coral --source-cv-folds 0 --source-cv-folds 10 --output-dir ./results_fixed_params_domain_adaptation_basetabpfn_best10_coral_B_cv-folds_10_$(date +%Y%m%d_%H%M%S)
+
+# python scripts/run_fixed_params_domain_adaptation.py --target-domain B --feature-type best --domain-adapt-method coral --source-cv-folds 0 --source-cv-folds 10 --output-dir ./results_fixed_params_domain_adaptation_basetabpfn_best7_coral_B_cv-folds_10_$(date +%Y%m%d_%H%M%S)
+
+
+# python scripts/run_fixed_params_domain_adaptation.py --target-domain B --feature-type best10 --domain-adapt-method jda --source-val-split 0 --source-cv-folds 10 --output-dir ./results_fixed_params_domain_adaptation_basetabpfn_best10_jda_B_cv-folds_10_$(date +%Y%m%d_%H%M%S)
+
 
 # python scripts/run_fixed_params_domain_adaptation.py \
 #     --feature-type best7 \
@@ -114,4 +156,6 @@
 # python scripts/test_baseline_models.py
 # python predict_healthcare_auto_externals.py
 
-python predict_healthcare_AutoPostHocEnsemblePredictor_external_best_7_features.py
+# python predict_healthcare_AutoPostHocEnsemblePredictor_external_best_7_features.py
+
+

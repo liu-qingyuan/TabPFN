@@ -59,7 +59,7 @@ def parse_arguments():
 
 预设参数说明:
   使用经过调优的最佳参数组合，包括：
-  - AutoTabPFN: max_time=30, preset=default, ges_scoring=f1
+  - TabPFN: n_estimators=32, softmax_temperature=0.9, device=cuda
   - MMD: lr=0.01, n_epochs=200, batch_size=32
         """
     )
@@ -76,9 +76,9 @@ def parse_arguments():
     parser.add_argument(
         '--feature-type',
         type=str,
-        choices=['best7', 'all'],
-        default='best7',
-        help='特征类型 (默认: best7)'
+        choices=['best7', 'best10', 'all'],
+        default='best10',
+        help='特征类型 (默认: best10)'
     )
     
     parser.add_argument(
@@ -118,7 +118,7 @@ def parse_arguments():
         '--source-cv-folds',
         type=int,
         default=10,
-        help='源域交叉验证折数 (设为0表示使用8:2划分而不是交叉验证, 默认: 10)'
+        help='源域交叉验证折数 (设为0表示使用全部数据进行域适应而不是交叉验证, 默认: 10)'
     )
     
     # 数据划分参数
@@ -183,19 +183,15 @@ def setup_logging(log_file: Optional[str] = None) -> logging.Logger:
 def get_best_params(use_mmd: bool = True) -> Dict[str, Any]:
     """获取预设的最佳参数"""
     
-    # 最佳模型参数 (根据调优结果)
+    # 最佳模型参数 (使用普通TabPFN参数)
     best_model_params = {
-        'max_time': 30,
-        # 'max_time': 60,
-        'preset': 'default',
-        'ges_scoring': 'f1',
-        'max_models': 10, 
-        'validation_method': 'cv',  # 修改为cv，更适合域适应
-        'n_repeats': 1,
-        'n_folds': 5,  # 修改为5折，与标准设置一致
-        # 'n_folds': 10,  # 修改为5折，与标准设置一致
-        'ges_n_iterations': 20,
-        'ignore_limits': False
+        'device': 'cuda',
+        'n_estimators': 32,
+        'softmax_temperature': 0.9,
+        'balance_probabilities': False,
+        'average_before_softmax': False,
+        'ignore_pretraining_limits': True,
+        'random_state': 42
     }
     
     # MMD参数 
@@ -220,7 +216,7 @@ def generate_output_dir(args: argparse.Namespace) -> str:
     domain_method = getattr(args, 'domain_adapt_method', getattr(args, 'mmd_method', 'linear'))
     components = [
         'results_fixed_params',
-        'auto',  # 固定使用auto模型
+        'base',  # 使用base模型 (普通TabPFN)
         domain_method,
         args.feature_type
     ]
@@ -257,13 +253,16 @@ class FixedParamsDomainAdaptation:
             self.save_path = generate_output_dir(args)
         
         # 创建优化器（但不进行优化）
+        # 当source_cv_folds为0时，设置source_val_split为0（使用全部数据）
+        val_split = 0.0 if args.source_cv_folds == 0 else args.source_val_split
+        
         self.optimizer = StandardDomainAdaptationOptimizer(
-            model_type='auto',
+            model_type='base',  # 使用base模型 (普通TabPFN)
             feature_type=args.feature_type,
             mmd_method=getattr(args, 'domain_adapt_method', args.mmd_method if hasattr(args, 'mmd_method') else 'linear'),
             use_class_conditional=args.use_class_conditional,
             use_categorical=not args.no_categorical,
-            source_val_split=args.source_val_split,
+            source_val_split=val_split,
             cv_folds=5,  # 固定为5折
             n_calls=1,  # 不进行优化，只运行1次
             random_state=args.random_state,
@@ -280,7 +279,7 @@ class FixedParamsDomainAdaptation:
         
         # 打印实验配置
         logging.info("实验配置:")
-        logging.info(f"  模型类型: auto (AutoTabPFN)")
+        logging.info(f"  模型类型: base (普通TabPFN)")
         logging.info(f"  特征类型: {self.args.feature_type}")
         domain_method = getattr(self.args, 'domain_adapt_method', getattr(self.args, 'mmd_method', 'linear'))
         logging.info(f"  域适应方法: {domain_method}")
@@ -293,9 +292,9 @@ class FixedParamsDomainAdaptation:
         logging.info("数据划分策略:")
         if self.args.source_cv_folds > 0:
             logging.info(f"  源域CV评估: 使用全部数据集A进行{self.args.source_cv_folds}折交叉验证")
+            logging.info(f"  域适应实验: 数据集A按{int((1-self.args.source_val_split)*100)}%/{int(self.args.source_val_split*100)}%划分为训练/验证集")
         else:
-            logging.info(f"  源域评估: 使用数据集A的8:2划分进行评估")
-        logging.info(f"  域适应实验: 数据集A按{int((1-self.args.source_val_split)*100)}%/{int(self.args.source_val_split*100)}%划分为训练/验证集")
+            logging.info(f"  域适应实验: 使用全部数据集A进行域适应（无划分）")
         logging.info(f"  随机种子: {self.args.random_state}")
         logging.info(f"  结果保存路径: {self.save_path}")
         
@@ -323,36 +322,36 @@ class FixedParamsDomainAdaptation:
             self.optimizer.best_score = 0.0  # 占位符，因为没有进行优化
             
             logging.info("\n" + "=" * 50)
-            logging.info("训练AutoTabPFN模型")
+            logging.info("训练TabPFN模型")
             logging.info("=" * 50)
             logging.info("跳过贝叶斯优化，直接使用预设的最佳参数")
             
             # 4. 训练最终模型
             self.optimizer.train_final_model()
             
-            # 4.5. 评估AutoTabPFN源域性能（8:2划分或CV）
-            autotabpfn_source_cv = None
+            # 4.5. 评估TabPFN源域性能（8:2划分或CV）
+            tabpfn_source_cv = None
             if self.args.source_cv_folds > 0:
                 logging.info("\n" + "=" * 50)
-                logging.info("评估AutoTabPFN源域交叉验证性能")
+                logging.info("评估TabPFN源域交叉验证性能")
                 logging.info("=" * 50)
                 
                 try:
-                    autotabpfn_source_cv = self.optimizer.evaluate_autotabpfn_source_cv(cv_folds=self.args.source_cv_folds)
+                    tabpfn_source_cv = self.optimizer.evaluate_tabpfn_source_cv(cv_folds=self.args.source_cv_folds)
                 except Exception as e:
-                    logging.error(f"AutoTabPFN源域CV评估失败: {e}")
+                    logging.error(f"TabPFN源域CV评估失败: {e}")
             else:
                 logging.info("\n" + "=" * 50)
-                logging.info("评估AutoTabPFN源域8:2划分性能")
+                logging.info("跳过TabPFN源域性能评估")
                 logging.info("=" * 50)
-                logging.info("使用与域适应相同的8:2数据划分进行评估")
+                logging.info("使用全部数据进行域适应，无需单独的源域评估")
             
             # 5. 评估最终模型
             evaluation_results = self.optimizer.evaluate_final_model()
             
             # 将源域CV结果添加到评估结果中
-            if autotabpfn_source_cv is not None:
-                evaluation_results['source_cv'] = autotabpfn_source_cv
+            if tabpfn_source_cv is not None:
+                evaluation_results['source_cv'] = tabpfn_source_cv
             
             # 6. 保存结果
             optimization_results = {
@@ -377,7 +376,7 @@ class FixedParamsDomainAdaptation:
                 'evaluation': evaluation_results,
                 'baseline_models': baseline_results,
                 'config': {
-                    'model_type': 'auto',
+                    'model_type': 'base',
                     'feature_type': self.args.feature_type,
                     'domain_adapt_method': getattr(self.args, 'domain_adapt_method', getattr(self.args, 'mmd_method', 'linear')),
                     'target_domain': self.args.target_domain,
@@ -429,8 +428,8 @@ class FixedParamsDomainAdaptation:
                 else:
                     logging.error(f"{model_name.upper()} 模型评估失败: {results['error']}")
         
-        # 打印AutoTabPFN结果
-        logging.info("\n🚀 AutoTabPFN模型性能:")
+        # 打印TabPFN结果
+        logging.info("\n🚀 TabPFN模型性能:")
         logging.info("-" * 50)
         
         source_metrics = evaluation_results['source_validation']
@@ -446,15 +445,17 @@ class FixedParamsDomainAdaptation:
                 logging.info(f"  源域{self.args.source_cv_folds}折CV (全部数据集A) - AUC: {source_cv_metrics['auc']['mean']:.4f} ± {source_cv_metrics['auc']['std']:.4f}")
                 logging.info(f"  源域{self.args.source_cv_folds}折CV (全部数据集A) - ACC: {source_cv_metrics['accuracy']['mean']:.4f} ± {source_cv_metrics['accuracy']['std']:.4f}")
                 logging.info(f"  源域{self.args.source_cv_folds}折CV (全部数据集A) - F1:  {source_cv_metrics['f1']['mean']:.4f} ± {source_cv_metrics['f1']['std']:.4f}")
-            else:
-                logging.info(f"  源域8:2划分 (全部数据集A) - AUC: {source_cv_metrics['auc']['mean']:.4f} ± {source_cv_metrics['auc']['std']:.4f}")
-                logging.info(f"  源域8:2划分 (全部数据集A) - ACC: {source_cv_metrics['accuracy']['mean']:.4f} ± {source_cv_metrics['accuracy']['std']:.4f}")
-                logging.info(f"  源域8:2划分 (全部数据集A) - F1:  {source_cv_metrics['f1']['mean']:.4f} ± {source_cv_metrics['f1']['std']:.4f}")
-            logging.info("")
+                logging.info("")
+            # 当source_cv_folds=0时，不显示源域性能，因为使用了全部数据进行域适应
         
-        logging.info(f"  源域验证集 (80%数据集A用于域适应) AUC: {source_metrics['auc']:.4f}")
-        logging.info(f"  源域验证集 (80%数据集A用于域适应) ACC: {source_metrics['acc']:.4f}")
-        logging.info(f"  源域验证集 (80%数据集A用于域适应) F1:  {source_metrics['f1']:.4f}")
+        if self.args.source_cv_folds > 0:
+            logging.info(f"  源域验证集 ({int(self.args.source_val_split*100)}%数据集A用于域适应验证) AUC: {source_metrics['auc']:.4f}")
+            logging.info(f"  源域验证集 ({int(self.args.source_val_split*100)}%数据集A用于域适应验证) ACC: {source_metrics['acc']:.4f}")
+            logging.info(f"  源域验证集 ({int(self.args.source_val_split*100)}%数据集A用于域适应验证) F1:  {source_metrics['f1']:.4f}")
+        else:
+            logging.info(f"  源域性能 (全部数据集A用于域适应) AUC: {source_metrics['auc']:.4f}")
+            logging.info(f"  源域性能 (全部数据集A用于域适应) ACC: {source_metrics['acc']:.4f}")
+            logging.info(f"  源域性能 (全部数据集A用于域适应) F1:  {source_metrics['f1']:.4f}")
         logging.info(f"  目标域直接预测 AUC: {direct_metrics['auc']:.4f}")
         logging.info(f"  目标域直接预测 ACC: {direct_metrics['acc']:.4f}")
         logging.info(f"  目标域直接预测 F1:  {direct_metrics['f1']:.4f}")
@@ -484,41 +485,41 @@ class FixedParamsDomainAdaptation:
         logging.info("\n📊 模型性能对比分析:")
         logging.info("-" * 50)
         
-        # AutoTabPFN域差距
+        # TabPFN域差距
         source_auc = source_metrics['auc']
         target_direct_auc = direct_metrics['auc']
-        autotabpfn_domain_gap = source_auc - target_direct_auc
+        tabpfn_domain_gap = source_auc - target_direct_auc
         
         if source_auc > 0:
-            logging.info(f"AutoTabPFN 域差距: {autotabpfn_domain_gap:.4f} ({autotabpfn_domain_gap/source_auc*100:.1f}%)")
+            logging.info(f"TabPFN 域差距: {tabpfn_domain_gap:.4f} ({tabpfn_domain_gap/source_auc*100:.1f}%)")
         else:
-            logging.info(f"AutoTabPFN 域差距: {autotabpfn_domain_gap:.4f} (源域AUC为0，无法计算百分比)")
+            logging.info(f"TabPFN 域差距: {tabpfn_domain_gap:.4f} (源域AUC为0，无法计算百分比)")
         
         # 与基线模型对比
         if baseline_results and self.args.include_baselines:
-            logging.info("\n基线模型 vs AutoTabPFN (目标域AUC对比):")
+            logging.info("\n基线模型 vs TabPFN (目标域AUC对比):")
             
             for model_name, results in baseline_results.items():
                 if 'error' not in results:
                     baseline_target_auc = results['target_direct']['auc']
-                    autotabpfn_auc = adapted_metrics['auc'] if adapted_metrics and not self.args.no_mmd else direct_metrics['auc']
+                    tabpfn_auc = adapted_metrics['auc'] if adapted_metrics and not self.args.no_mmd else direct_metrics['auc']
                     
-                    improvement_vs_baseline = autotabpfn_auc - baseline_target_auc
+                    improvement_vs_baseline = tabpfn_auc - baseline_target_auc
                     improvement_pct_vs_baseline = improvement_vs_baseline / baseline_target_auc * 100 if baseline_target_auc > 0 else 0
                     
                     if baseline_target_auc > 0:
-                        logging.info(f"  AutoTabPFN vs {model_name.upper()}: {improvement_vs_baseline:+.4f} ({improvement_pct_vs_baseline:+.1f}%)")
+                        logging.info(f"  TabPFN vs {model_name.upper()}: {improvement_vs_baseline:+.4f} ({improvement_pct_vs_baseline:+.1f}%)")
                     else:
-                        logging.info(f"  AutoTabPFN vs {model_name.upper()}: {improvement_vs_baseline:+.4f} (基线AUC为0，无法计算百分比)")
+                        logging.info(f"  TabPFN vs {model_name.upper()}: {improvement_vs_baseline:+.4f} (基线AUC为0，无法计算百分比)")
                     
                     if improvement_vs_baseline > 0:
-                        logging.info(f"    ✓ AutoTabPFN优于{model_name.upper()}模型")
+                        logging.info(f"    ✓ TabPFN优于{model_name.upper()}模型")
                     else:
-                        logging.info(f"    ✗ AutoTabPFN未能超越{model_name.upper()}模型")
+                        logging.info(f"    ✗ TabPFN未能超越{model_name.upper()}模型")
         
-        if autotabpfn_domain_gap > 0.1:
+        if tabpfn_domain_gap > 0.1:
             logging.info("\n⚠️  存在显著的域差距，域适应很有必要")
-        elif autotabpfn_domain_gap > 0.05:
+        elif tabpfn_domain_gap > 0.05:
             logging.info("\n⚠️  存在中等的域差距，域适应可能有帮助")
         else:
             logging.info("\n✓ 域差距较小，模型具有良好的跨域泛化能力")
@@ -526,7 +527,7 @@ class FixedParamsDomainAdaptation:
         logging.info(f"\n实验结果已保存到: {self.save_path}")
         logging.info("包含以下文件:")
         logging.info("  - optimization_results.json: 实验配置和参数")
-        logging.info("  - evaluation_results.json: AutoTabPFN模型评估结果")
+        logging.info("  - evaluation_results.json: TabPFN模型评估结果")
         if baseline_results:
             logging.info("  - baseline_models_results.json: 基线模型评估结果")
         logging.info("  - experiment_config.json: 实验配置信息")

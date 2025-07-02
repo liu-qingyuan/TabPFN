@@ -1,0 +1,30 @@
+{
+  "model_type": "base",
+  "feature_type": "best10",
+  "mmd_method": "coral",
+  "use_class_conditional": false,
+  "use_categorical": true,
+  "source_val_split": 0.2,
+  "cv_folds": 5,
+  "n_calls": 1,
+  "random_state": 42,
+  "target_domain": "B",
+  "use_source_cv_for_mmd_tuning": false,
+  "features": [
+    "Feature63",
+    "Feature2",
+    "Feature46",
+    "Feature61",
+    "Feature56",
+    "Feature42",
+    "Feature39",
+    "Feature43",
+    "Feature48",
+    "Feature5"
+  ],
+  "categorical_indices": [
+    0,
+    2,
+    3
+  ]
+}

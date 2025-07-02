@@ -1,0 +1,139 @@
+# UDA Medical Imbalance Project - 默认实验配置
+# 本配置文件包含了完整的实验参数设置
+
+# 实验基本信息
+experiment:
+  name: "medical_uda_experiment"
+  description: "UDA方法在医疗数据上的对比实验"
+  version: "1.0.0"
+  
+# 数据路径配置
+data:
+  source_path: "data/source_domain.xlsx"
+  target_path: "data/target_domain.xlsx"
+  
+# 输出配置
+output:
+  dir: "experiments"
+  
+# 随机种子
+random_state: 42
+
+# 数据预处理配置
+preprocessing:
+  # 特征选择（7-10个特征）
+  feature_count: 7
+  categorical_features: []  # 类别特征列表（默认空）
+  
+  # 标准化方法
+  scaler: "standard"  # standard | robust
+  
+  # 类别不平衡处理（可选）
+  imbalance_method: "smote"  # smote | borderline_smote | adasyn | null
+  
+  # SMOTE参数
+  smote_k_neighbors: 5
+  smote_random_state: 42
+
+# 源域方法对比配置
+source_domain:
+  # 交叉验证
+  cv_folds: 10
+  cv_random_state: 42
+  
+  # 对比模型
+  models:
+    - "tabpfn"
+    - "paper_method"
+    - "pkuph_baseline" 
+    - "mayo_baseline"
+
+# UDA算法配置
+uda:
+  # 协变量偏移方法
+  covariate_shift_methods:
+    - "DM"
+    
+  # 隐藏协变量偏移 - 线性/核方法
+  linear_kernel_methods:
+    - "SA"
+    - "TCA"
+    - "JDA"
+    - "CORAL"
+    
+  # 深度学习方法
+  deep_methods:
+    - "DANN"
+    - "ADDA"
+    - "WDGRL"
+    - "DeepCORAL"
+    - "MCD"
+    - "MDD"
+    - "CDAN"
+    
+  # 最优传输方法
+  optimal_transport_methods:
+    - "POT"
+    
+  # 算法特定参数
+  uda_params:
+    CORAL:
+      lambda_value: 1.0
+    TCA:
+      n_components: 10
+      kernel: "linear"
+      mu: 1.0
+    JDA:
+      n_components: 10
+      kernel: "linear"
+      mu: 1.0
+      n_iter: 10
+    DANN:
+      epochs: 100
+      batch_size: 32
+      lr: 0.001
+      lambda_value: 1.0
+    POT:
+      reg: 0.1
+      metric: "sqeuclidean"
+
+# 评估配置
+evaluation:
+  # 评估指标
+  metrics:
+    - "auc"
+    - "accuracy"
+    - "f1"
+    - "precision"
+    - "recall"
+    
+  # 混淆矩阵标签
+  class_labels:
+    - "阴性"
+    - "阳性"
+    
+  # ROC配置
+  roc_pos_label: 1
+
+# 可视化配置
+visualization:
+  # 降维可视化
+  enable_pca: true
+  enable_tsne: true
+  tsne_perplexity: 30
+  tsne_n_iter: 1000
+  
+  # 分布对比
+  enable_distribution_plots: true
+  enable_distance_metrics: true
+  
+  # 距离度量类型
+  distance_metrics:
+    - "kl_divergence"
+    - "wasserstein"
+    - "mmd"
+    
+  # 图表样式
+  figure_size: [10, 8]
+  dpi: 300
+  style: "seaborn-v0_8" 

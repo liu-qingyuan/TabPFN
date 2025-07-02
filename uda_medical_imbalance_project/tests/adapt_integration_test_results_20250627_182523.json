@@ -1,0 +1,39 @@
+{
+  "environment_check": {
+    "tabpfn_available": true,
+    "adapt_methods_available": true,
+    "data_modules_available": true
+  },
+  "data_info": {
+    "source_samples": 295,
+    "target_samples": 190,
+    "features": [
+      "Feature63",
+      "Feature2",
+      "Feature46",
+      "Feature61",
+      "Feature56",
+      "Feature42",
+      "Feature39",
+      "Feature43"
+    ]
+  },
+  "baseline_performance": {
+    "accuracy": 0.6684210526315789,
+    "f1": 0.7773851590106007,
+    "precision": 0.6962025316455697,
+    "recall": 0.88,
+    "auc": 0.6963692307692309
+  },
+  "kmm_performance": {
+    "accuracy": 0.6631578947368421,
+    "f1": 0.7611940298507462,
+    "precision": 0.7132867132867133,
+    "recall": 0.816,
+    "auc": 0.6539076923076923
+  },
+  "improvements": {
+    "auc_improvement": -0.04246153846153855
+  },
+  "test_timestamp": "2025-06-27T18:25:23.195317"
+}
