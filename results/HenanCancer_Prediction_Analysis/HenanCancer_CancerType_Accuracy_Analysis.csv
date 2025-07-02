@@ -1,0 +1,3 @@
+Cancer_Type,Total_Samples,Positive_Samples,Negative_Samples,Overall_Accuracy,Positive_Accuracy,Negative_Accuracy,AUC,Correct_Predictions,Wrong_Predictions
+Adenocarcinoma,99,99,0,0.9292929292929293,0.9292929292929293,0,,92,7
+Squamous Cell Carcinoma,10,10,0,0.8,0.8,0,,8,2

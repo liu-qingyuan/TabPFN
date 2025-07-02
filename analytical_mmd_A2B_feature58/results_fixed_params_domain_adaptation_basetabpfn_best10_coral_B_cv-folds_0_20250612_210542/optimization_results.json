@@ -1,0 +1,25 @@
+{
+  "best_params": {
+    "model_params": {
+      "device": "cuda",
+      "n_estimators": 32,
+      "softmax_temperature": 0.9,
+      "balance_probabilities": false,
+      "average_before_softmax": false,
+      "ignore_pretraining_limits": true,
+      "random_state": 42
+    },
+    "mmd_params": {
+      "lr": 0.01,
+      "n_epochs": 100,
+      "batch_size": 32,
+      "lambda_reg": 0.001,
+      "gamma": 1.0,
+      "staged_training": false,
+      "dynamic_gamma": false
+    }
+  },
+  "best_score": 0.0,
+  "total_trials": 0,
+  "all_trials": []
+}

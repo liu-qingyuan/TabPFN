@@ -1,0 +1,33 @@
+{
+  "source_validation": {
+    "acc": 1.0,
+    "auc": 1.0,
+    "f1": 1.0,
+    "acc_0": 1.0,
+    "acc_1": 1.0
+  },
+  "target_direct": {
+    "acc": 0.6473684210526316,
+    "auc": 0.640123076923077,
+    "f1": 0.7527675276752768,
+    "acc_0": 0.3230769230769231,
+    "acc_1": 0.816
+  },
+  "target_adapted": {
+    "acc": 0.6578947368421053,
+    "auc": 0.6692923076923076,
+    "f1": 0.7636363636363637,
+    "acc_0": 0.3076923076923077,
+    "acc_1": 0.84
+  },
+  "adaptation_info": {
+    "method": "coral",
+    "initial_coral_loss": 0.016607958222807667,
+    "final_coral_loss": 0.0011050122272300488,
+    "improvement_percent": 93.34648960212016,
+    "regularization": 1e-06,
+    "standardized": true,
+    "transformation_matrix_condition": 4.281645126938442,
+    "success": true
+  }
+}

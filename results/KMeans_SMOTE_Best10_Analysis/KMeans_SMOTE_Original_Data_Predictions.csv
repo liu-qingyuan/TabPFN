@@ -1,0 +1,191 @@
+True_Label,Predicted_Label,Malignant_Probability,Cancer_Type,T_Stage,Stage_Raw,Correct_Prediction
+1,1,0.66863674,Squamous Cell Carcinoma,1,T1N0M0,True
+1,1,0.90564394,Adenocarcinoma,2,T2N1M0,True
+1,0,0.49145564,Adenocarcinoma,1,T1N0M0,False
+1,1,0.5719276,Adenocarcinoma,is,TisN0M0,True
+1,1,0.81900764,Poorly Differentiated Squamous Cell Carcinoma,1,T1N3M0,True
+1,1,0.6144619,Squamous Cell Carcinoma,4,T4N0M0,True
+1,1,0.90979904,Adenocarcinoma,2,T2N2M0,True
+1,1,0.84931445,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9156646,Poorly Differentiated Squamous Cell Carcinoma,1,T1N1M0,True
+1,1,0.63755727,Adenocarcinoma,2,T2N0M0,True
+1,1,0.7708577,Poorly Differentiated Squamous Cell Carcinoma,1,T1N0M0,True
+1,1,0.7410354,Small Cell Carcinoma,2,T2N0M0,True
+1,1,0.9205858,Squamous Cell Carcinoma,2,T2N0M0,True
+1,1,0.72842276,Adenocarcinoma,1,T1N0M0,True
+1,1,0.78652954,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8400851,Adenocarcinoma,1,T1N0M0,True
+1,1,0.60320795,Adenocarcinoma,2,T2N2M0,True
+1,1,0.84618866,Adenocarcinoma,1,T1N0M0,True
+1,1,0.7500119,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9482534,Adenocarcinoma of Right Lower Lobe,1,T1N0M0,True
+1,1,0.7198912,Adenocarcinoma,1,T1N2M0,True
+1,1,0.66404986,Small Cell Carcinoma,2,T2N2M0,True
+1,1,0.72927177,Carcinoid (Adeno/Oat Cell),2,T2N0M0,True
+1,1,0.8748158,Moderately Differentiated Adenocarcinoma,2,T2N0M0,True
+1,1,0.6621927,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8401624,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8597812,Moderately Differentiated Squamous Cell Carcinoma,1,T1N0M0,True
+1,1,0.89461476,Adenocarcinoma,2,T2N2M0,True
+1,1,0.8622598,Adenocarcinoma,2,T2N2M0,True
+1,1,0.88847154,Adenocarcinoma,2,T2N3M0,True
+1,1,0.8884473,Adenocarcinoma,2,T2N1M0,True
+1,1,0.9433286,Adenocarcinoma,1,T1N1M0,True
+1,1,0.72123826,Adenocarcinoma,1,T1N0M0,True
+1,1,0.84395826,Adenocarcinoma,1,T1N0M0,True
+1,1,0.831825,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8731527,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9277911,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8923961,Adenocarcinoma,2,T2N0M0,True
+1,0,0.4489939,Small Cell Carcinoma,2,T2N0M0,False
+1,1,0.8189496,Adenocarcinoma,1,T1N0M0,True
+1,1,0.77305627,Adenocarcinoma,1,T1N2M0,True
+1,1,0.77627975,Adenocarcinoma,2,T2N0M0,True
+1,1,0.95991695,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9513155,Adenocarcinoma,2,T2N0M0,True
+1,1,0.96480274,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9040841,Adenocarcinoma,2,T2N2MO,True
+1,1,0.8141058,Adenocarcinoma,1,T1N0M0,True
+1,1,0.920672,Adenocarcinoma,1,T1N0M0,True
+1,1,0.92553484,Squamous Cell Carcinoma,1,T1N2M0,True
+1,1,0.9228,Small Cell Carcinoma,2,T2N2MO,True
+1,1,0.9125368,Adenocarcinoma,4,T4N2M0,True
+1,1,0.57919836,Adenocarcinoma,3,T3N0M0,True
+1,1,0.8443314,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9298543,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9173672,Adenocarcinoma,2,T2N1MO,True
+1,1,0.8047118,Poorly Differentiated Adenocarcinoma,2,T2N0M0,True
+1,1,0.9513375,Adenocarcinoma,1,T1N1N0,True
+1,1,0.8980038,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8848363,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9504253,Adenocarcinoma,1,T1N0M0,True
+1,1,0.7949073,Squamous Cell Carcinoma,2,T2N1M0,True
+1,1,0.6592043,Adenocarcinoma,1,T1N0M0,True
+1,1,0.89576256,Adenosquamous Carcinoma,1,T1N2M0,True
+1,1,0.75440717,Adenocarcinoma,1,T1N0M0,True
+1,1,0.6832379,Squamous Cell Carcinoma,1,T1N1M0,True
+1,1,0.78296477,Adenocarcinoma,1,T1N2M0,True
+1,1,0.842777,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8552266,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9028448,Moderately Differentiated Squamous Cell Carcinoma,2,T2N0M0,True
+1,1,0.8559218,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9551825,Adenocarcinoma,2,T2N0M0,True
+1,1,0.76122,Adenocarcinoma,1,T1N0M0,True
+1,1,0.93623734,Adenocarcinoma,2,T2N0M0,True
+1,1,0.88793343,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9078404,Poorly Differentiated Squamous Cell Carcinoma,4,T4N2M0,True
+1,1,0.91235775,Adenocarcinoma,1,T1N0M0,True
+1,1,0.95994365,Adenocarcinoma,2,T2N1M0,True
+1,1,0.9664956,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9235722,Adenocarcinoma,1,T1N0M0,True
+1,1,0.84990704,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9431454,Adenocarcinoma,2,T2N1M0,True
+1,1,0.7439014,Adenocarcinoma,1,T1N1M0,True
+1,1,0.7839202,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8779974,Adenocarcinoma,2,T2N1M0,True
+1,1,0.92002344,Squamous Cell Carcinoma,1,T1N1M0,True
+1,1,0.9536158,Adenocarcinoma,3,T3N0M0,True
+1,1,0.7520921,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9753014,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8988595,Adenocarcinoma,1,T1N0M0,True
+1,1,0.89465576,Adenocarcinoma,2,T2N1M0,True
+1,1,0.95055556,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8144922,Squamous Cell Carcinoma,2,T2N1M0,True
+1,1,0.776264,Adenocarcinoma,2,T2N0M0,True
+1,0,0.27424616,Adenocarcinoma,1,T1N1M0,False
+1,1,0.6078996,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8245116,Adenocarcinoma,2,T2N2M0,True
+1,1,0.91026026,Adenocarcinoma,2,T2N2M0,True
+1,1,0.90447605,Adenocarcinoma,1,T1N2M0,True
+1,1,0.81901425,Squamous Cell Carcinoma,2,T2N0M0,True
+1,1,0.9369756,Adenocarcinoma,2,T2N1M0,True
+1,1,0.7170352,Adenocarcinoma,is,TisN0M0,True
+1,1,0.85144436,Adenocarcinoma,2,T2N0M0,True
+1,1,0.962724,Adenocarcinoma,1,T1N1M0,True
+1,1,0.8671345,Adenocarcinoma,2,T2N1M0,True
+1,1,0.96417,Adenocarcinoma,2,T2N0M0,True
+1,1,0.9128435,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8306373,Adenocarcinoma,1,T1N0M0,True
+1,1,0.91097677,Adenocarcinoma,1,T1N0M0,True
+1,1,0.9142083,Adenocarcinoma,2,T2N0M0,True
+1,1,0.8992265,Adenocarcinoma,2,T2N1M0,True
+1,1,0.8515043,Adenocarcinoma,1,T1N0M0,True
+1,1,0.81227463,Adenocarcinoma,2,T2N1M0,True
+1,1,0.88727516,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8455692,Adenocarcinoma,1,T1N0M0,True
+1,1,0.878747,Adenocarcinoma,1,T1N0M0,True
+1,1,0.7705864,Adenocarcinoma,1,T1N0M0,True
+1,1,0.86594754,Adenocarcinoma,1,T1N1M0,True
+1,1,0.90683377,Adenosquamous Carcinoma,2,T2N0M0,True
+1,1,0.92277104,Squamous Cell Carcinoma,3,T3N1M0,True
+1,1,0.9517731,Adenocarcinoma,1,T1N0M0,True
+1,1,0.87925744,Adenocarcinoma,2,T2N0M0,True
+1,1,0.93151724,Adenocarcinoma,1,T1N0M0,True
+1,1,0.8664843,Adenocarcinoma,1,T1N1M0,True
+1,1,0.67846364,Adenocarcinoma,1,T1N0M0,True
+1,1,0.873051,Adenocarcinoma,1,T1N1M0,True
+0,0,0.19529352,,,,True
+0,0,0.034205772,,,,True
+0,0,0.39290488,,,,True
+0,0,0.03745526,,,,True
+0,0,0.23307757,,,,True
+0,1,0.59306407,,,,False
+0,1,0.7631984,,,,False
+0,0,0.20324637,,,,True
+0,0,0.1369837,,,,True
+0,0,0.013872237,,,,True
+0,0,0.3249347,,,,True
+0,0,0.4273315,,,,True
+0,0,0.2186715,,,,True
+0,1,0.59685725,,,,False
+0,1,0.64227754,,,,False
+0,0,0.11306743,,,,True
+0,0,0.2963503,,,,True
+0,0,0.21371788,,,,True
+0,0,0.32470936,,,,True
+0,1,0.57120353,,,,False
+0,0,0.024416681,,,,True
+0,0,0.15066218,,,,True
+0,1,0.63901806,,,,False
+0,0,0.07002532,,,,True
+0,0,0.31326568,,,,True
+0,0,0.2725688,,,,True
+0,0,0.33318818,,,,True
+0,0,0.09973255,,,,True
+0,0,0.40884104,,,,True
+0,1,0.50388277,,,,False
+0,0,0.2610093,,,,True
+0,0,0.29363236,,,,True
+0,0,0.357863,,,,True
+0,0,0.106044814,,,,True
+0,0,0.23364252,,,,True
+0,0,0.11320786,,,,True
+0,0,0.36251464,,,,True
+0,0,0.060105633,,,,True
+0,0,0.20333363,,,,True
+0,0,0.055124346,,,,True
+0,0,0.24577016,,,,True
+0,0,0.44383955,,,,True
+0,0,0.31673026,,,,True
+0,0,0.074787214,,,,True
+0,0,0.2932857,,,,True
+0,1,0.64995235,,,,False
+0,0,0.21158384,,,,True
+0,0,0.46852124,,,,True
+0,0,0.14984605,,,,True
+0,0,0.31384325,,,,True
+0,0,0.03368094,,,,True
+0,0,0.25514105,,,,True
+0,0,0.25914514,,,,True
+0,0,0.20502135,,,,True
+0,0,0.28882775,,,,True
+0,0,0.029224321,,,,True
+0,0,0.40706083,,,,True
+0,1,0.7340734,,,,False
+0,0,0.026785074,,,,True
+0,0,0.34807917,,,,True
+0,0,0.45228395,,,,True
+0,0,0.056798562,,,,True
+0,0,0.0393645,,,,True
+0,0,0.4099319,,,,True
+0,0,0.35303712,,,,True
