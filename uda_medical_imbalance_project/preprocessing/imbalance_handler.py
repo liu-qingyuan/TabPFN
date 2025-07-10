@@ -1,7 +1,12 @@
 """
 UDA Medical Imbalance Project - 类别不平衡处理模块
 
-本模块提供SMOTE、BorderlineSMOTE、ADASYN等不平衡数据处理方法
+本模块提供SMOTE、BorderlineSMOTE、ADASYN等不平衡数据处理方法，
+集成了统一的异常处理和数据验证机制。
+
+作者: UDA Medical Team
+日期: 2024-01-30
+版本: 2.0.0
 """
 
 import numpy as np
@@ -12,6 +17,12 @@ from imblearn.over_sampling import SMOTE, SMOTENC, BorderlineSMOTE, ADASYN, KMea
 from imblearn.combine import SMOTETomek, SMOTEENN
 from imblearn.under_sampling import RandomUnderSampler, EditedNearestNeighbours, TomekLinks
 import logging
+
+# 导入统一的异常处理和验证系统
+from utils.exceptions import PreprocessingError, DataValidationError, handle_exceptions
+from utils.validators import DataValidator
+from utils.performance import TimerContext, profile_function
+from utils.helpers import ensure_array, ensure_dataframe
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +202,8 @@ class ImbalanceHandler(BaseEstimator, TransformerMixin):
             logger.error(f"初始化采样器失败: {e}")
             raise
     
+    @handle_exceptions(reraise=True)
+    @profile_function(track_memory=True, track_cpu=False)
     def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]):
         """
         拟合采样器
@@ -201,32 +214,59 @@ class ImbalanceHandler(BaseEstimator, TransformerMixin):
             
         Returns:
             self
+            
+        Raises:
+            PreprocessingError: 数据预处理失败时
+            DataValidationError: 数据验证失败时
         """
-        # 转换数据格式
-        X_array = self._convert_to_array(X)
-        y_array = self._convert_to_array(y, is_target=True)
-        
-        # 记录原始分布
-        self.original_distribution = self._get_class_distribution(y_array)
-        logger.info(f"原始类别分布: {self.original_distribution}")
-        
-        # 检查是否需要处理不平衡
-        if not self._needs_resampling(y_array):
-            logger.warning("数据已经平衡，跳过重采样")
-            self.sampler = None
-            return self
-        
-        # 拟合采样器
-        if self.sampler is not None:
+        with TimerContext(f"ImbalanceHandler.fit({self.method})", auto_log=True):
             try:
-                self.sampler.fit(X_array, y_array)
-                logger.info(f"{self.method}采样器拟合完成")
-            except Exception as e:
-                logger.error(f"采样器拟合失败: {e}")
+                # 验证输入数据
+                DataValidator.validate_features(X, min_features=1)
+                DataValidator.validate_labels(y, min_samples_per_class=1)
+                DataValidator.validate_data_consistency(X, y)
+                
+                # 转换数据格式
+                X_array = ensure_array(X)
+                y_array = ensure_array(y)
+                
+                # 记录原始分布
+                self.original_distribution = self._get_class_distribution(y_array)
+                logger.info(f"原始类别分布: {self.original_distribution}")
+                
+                # 检查是否需要处理不平衡
+                if not self._needs_resampling(y_array):
+                    logger.warning("数据已经平衡，跳过重采样")
+                    self.sampler = None
+                    return self
+                
+                # 拟合采样器
+                if self.sampler is not None:
+                    try:
+                        self.sampler.fit(X_array, y_array)
+                        logger.info(f"{self.method}采样器拟合完成")
+                    except Exception as e:
+                        raise PreprocessingError(
+                            f"采样器拟合失败: {str(e)}",
+                            preprocessing_step="imbalance_fit",
+                            input_shape=X_array.shape,
+                            cause=e
+                        )
+                
+                return self
+                
+            except (PreprocessingError, DataValidationError):
                 raise
-        
-        return self
+            except Exception as e:
+                raise PreprocessingError(
+                    f"不平衡处理拟合过程中发生未知错误: {str(e)}",
+                    preprocessing_step="imbalance_fit",
+                    input_shape=X.shape if hasattr(X, 'shape') else None,
+                    cause=e
+                )
     
+    @handle_exceptions(reraise=True)
+    @profile_function(track_memory=True, track_cpu=False)
     def transform(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]) -> Tuple[np.ndarray, np.ndarray]:
         """
         应用不平衡处理变换
@@ -237,29 +277,64 @@ class ImbalanceHandler(BaseEstimator, TransformerMixin):
             
         Returns:
             重采样后的(X, y)
+            
+        Raises:
+            PreprocessingError: 数据预处理失败时
+            DataValidationError: 数据验证失败时
         """
-        # 如果采样器为None，直接返回原数据
-        if self.sampler is None:
-            logger.info("采样器为空，返回原始数据")
-            return self._convert_to_array(X), self._convert_to_array(y, is_target=True)
-        
-        # 转换数据格式
-        X_array = self._convert_to_array(X)
-        y_array = self._convert_to_array(y, is_target=True)
-        
-        try:
-            # 应用重采样
-            X_resampled, y_resampled = self.sampler.fit_resample(X_array, y_array)
-            
-            # 记录重采样后的分布
-            self.resampled_distribution = self._get_class_distribution(y_resampled)
-            logger.info(f"重采样后类别分布: {self.resampled_distribution}")
-            
-            return X_resampled, y_resampled
-            
-        except Exception as e:
-            logger.error(f"重采样失败: {e}")
-            raise
+        with TimerContext(f"ImbalanceHandler.transform({self.method})", auto_log=True):
+            try:
+                # 验证输入数据
+                DataValidator.validate_features(X, min_features=1)
+                DataValidator.validate_labels(y, min_samples_per_class=1)
+                DataValidator.validate_data_consistency(X, y)
+                
+                # 如果采样器为None，直接返回原数据
+                if self.sampler is None:
+                    logger.info("采样器为空，返回原始数据")
+                    return ensure_array(X), ensure_array(y)
+                
+                # 转换数据格式
+                X_array = ensure_array(X)
+                y_array = ensure_array(y)
+                
+                try:
+                    # 应用重采样
+                    X_resampled, y_resampled = self.sampler.fit_resample(X_array, y_array)
+                    
+                    # 记录重采样后的分布
+                    self.resampled_distribution = self._get_class_distribution(y_resampled)
+                    logger.info(f"重采样后类别分布: {self.resampled_distribution}")
+                    
+                    # 验证输出数据
+                    if X_resampled.shape[1] != X_array.shape[1]:
+                        raise PreprocessingError(
+                            f"重采样后特征数量不一致: 原始={X_array.shape[1]}, 重采样后={X_resampled.shape[1]}",
+                            preprocessing_step="imbalance_transform",
+                            input_shape=X_array.shape,
+                            output_shape=X_resampled.shape
+                        )
+                    
+                    logger.info(f"重采样完成: {X_array.shape} -> {X_resampled.shape}")
+                    return X_resampled, y_resampled
+                    
+                except Exception as e:
+                    raise PreprocessingError(
+                        f"重采样失败: {str(e)}",
+                        preprocessing_step="imbalance_resample",
+                        input_shape=X_array.shape,
+                        cause=e
+                    )
+                    
+            except (PreprocessingError, DataValidationError):
+                raise
+            except Exception as e:
+                raise PreprocessingError(
+                    f"不平衡处理变换过程中发生未知错误: {str(e)}",
+                    preprocessing_step="imbalance_transform",
+                    input_shape=X.shape if hasattr(X, 'shape') else None,
+                    cause=e
+                )
     
     def fit_transform(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]) -> Tuple[np.ndarray, np.ndarray]:
         """
