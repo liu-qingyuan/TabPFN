@@ -1,0 +1,18 @@
+Characteristic,Train Cohort (A),Test Cohort (B)
+Sample Size,n = 295,n = 190
+upper_lobe,n = 295,n = 190
+,  No/Negative: 174 (59.0%),  No/Negative: 92 (48.4%)
+,  Yes/Positive: 121 (41.0%),  Yes/Positive: 98 (51.6%)
+age,56.95 ± 11.03,58.26 ± 9.57
+lobe_location_upper,n = 295,n = 190
+,  Category 1: 161 (54.6%),  Category 1: 98 (51.6%)
+,  Category 2: 29 (9.8%),  Category 2: 18 (9.5%)
+,  Category 3: 105 (35.6%),  Category 3: 74 (38.9%)
+DLCO1,5.90 ± 2.89,6.31 ± 1.55
+VC,3.33 ± 0.80,2.92 ± 0.73
+CEA,4.23 ± 6.90,4.15 ± 10.61
+CRE,73.41 ± 17.16,62.94 ± 13.64
+NSE,13.07 ± 3.90,13.82 ± 4.36
+Outcome (Malignant),n = 295,n = 190
+,  No/Negative: 106 (35.9%),  No/Negative: 65 (34.2%)
+,  Yes/Positive: 189 (64.1%),  Yes/Positive: 125 (65.8%)

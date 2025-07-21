@@ -2,98 +2,40 @@
 
 ## 📋 项目概述
 
-本项目是一个专注于医疗数据不平衡问题与无监督域适应（UDA）的综合性机器学习实验框架。基于您提供的需求规范，我们构建了一个结构化、可复现的实验平台。
+本项目是一个专注于医疗数据不平衡问题与无监督域适应（UDA）的综合性机器学习实验项目，基于ADAPT库实现多种域适应算法，提供完整的可视化分析和性能评估框架。
 
-## 🎯 核心功能
+## 🌟 项目特色
 
-### 1. 数据预处理流程
-
-- **RFE预筛选特征集**：基于递归特征消除预筛选的最优特征组合
-  - **BEST7特征集**：7个特征中包含2个类别特征（Feature63, Feature46）
-  - **BEST8特征集**：8个特征中包含2个类别特征（Feature63, Feature46）
-  - **BEST9特征集**：9个特征中包含2个类别特征（Feature63, Feature46）
-  - **BEST10特征集**：10个特征中包含3个类别特征（Feature63, Feature46, Feature5）
-  - **ALL63特征集**：63个特征中包含多个类别特征
-- **标准化处理**：提供StandardScaler、RobustScaler和NoScaler（不标准化）三种选择
-- **类别不平衡处理**：集成10种不平衡处理方法，包括SMOTE系列、ADASYN、组合方法和欠采样
-- **类别特征处理**：自动识别和处理类别特征，支持混合数据类型
-
-### 2. 源域方法对比
-
-- **10折交叉验证**：确保结果的稳定性和可靠性
-- **多模型支持**：
-  - TabPFN模型（自动表格深度学习）
-  - 论文方法（领域特定方法）
-  - PKUPH基线模型（北京大学人民医院标准）
-  - Mayo基线模型（梅奥诊所标准）
-
-### 3. UDA算法体系
-
-#### 3.1 协变量偏移方法
-- **DM (Discriminative Method)**：实例重加权方法
-
-#### 3.2 隐藏协变量偏移方法
-
-**线性和核方法**：
-- **SA (Subspace Alignment)**：子空间对齐
-- **TCA (Transfer Component Analysis)**：迁移成分分析
-- **JDA (Joint Distribution Adaptation)**：联合分布适应
-- **CORAL (CORrelation ALignment)**：相关性对齐
-
-**深度学习方法**：
-- **DANN (Domain-Adversarial Neural Networks)**
-- **ADDA (Adversarial Discriminative Domain Adaptation)**
-- **WDGRL (Wasserstein Distance Guided Representation Learning)**
-- **DeepCORAL (Deep CORAL)**
-- **MCD (Maximum Classifier Discrepancy)**
-- **MDD (Margin Disparity Discrepancy)**
-- **CDAN (Conditional Domain Adversarial Network)**
-
-#### 3.3 最优传输方法
-- **POT (Python Optimal Transport)**
-
-### 4. 可视化分析
-
-#### 4.1 域适应前后对比
-- **PCA降维可视化**：观察域间分布变化
-- **t-SNE可视化**：非线性降维展示聚类效果
-- **特征分布对比**：
-  - KL散度计算和可视化
-  - Wasserstein距离度量
-  - MMD距离分析
-
-#### 4.2 性能指标可视化
-- **ROC-AUC曲线**：多方法ROC对比
-- **混淆矩阵**：分类结果详细分析
-- **性能雷达图**：多指标综合展示
-- **方法对比柱状图**：直观性能对比
-
-### 5. 性能评估体系
-
-- **主要指标**：AUC、准确率、F1、精确率、召回率
-- **目标域评估**：同时提供加DA和不加DA的结果对比
-- **统计分析**：均值、标准差、显著性检验
+- 🏥 **医疗数据专用**：针对多医院医疗数据集的跨域适应和不平衡处理
+- ⚖️ **不平衡数据处理**：集成SMOTE、BorderlineSMOTE、ADASYN等先进方法
+- 🔄 **基于ADAPT库的UDA算法**：使用成熟的adapt-python库实现多种域适应方法
+- 🤖 **多模型对比**：TabPFN、经典基线模型、论文方法全面对比
+- 📊 **专业UDA可视化**：PCA、t-SNE、标准化距离度量、性能对比等多维度可视化
+- 🔧 **模块化设计**：每个组件独立可测试、可配置、易扩展
+- 📈 **全面评估**：ROC-AUC、准确率、F1、精确率召回率等多指标评估
+- 🎯 **灵活配置**：支持多种特征选择、标准化和不平衡处理策略
+- 🚀 **一键式完整分析**：通过CompleteAnalysisRunner实现端到端自动化分析流程
 
 ## 🏗️ 项目架构
+
+### 目录结构
 
 ```
 uda_medical_imbalance_project/
 ├── 📁 config/                    # 配置管理
-│   ├── experiment_config.py      # 实验配置类
-│   └── __init__.py              # 模块初始化
+│   ├── model_config.py          # 模型配置（TabPFN、基线、论文方法）
+│   ├── uda_config.py            # UDA算法配置
+│   └── experiment_config.py     # 实验全局配置
 ├── 📁 data/                     # 数据处理
-│   └── loader.py               # 医疗数据加载器
-├── 📁 preprocessing/            # 数据预处理
+│   ├── loader.py               # 医疗数据加载器
+│   └── validator.py            # 数据验证器
+├── 📁 preprocessing/            # 数据预处理与UDA可视化
 │   ├── scalers.py              # 标准化（Standard/Robust）
 │   ├── imbalance_handler.py    # 不平衡处理（SMOTE等）
-│   └── categorical_encoder.py  # 类别特征编码
-├── 📁 uda/                      # 无监督域适应
-│   ├── covariate_shift/        # 协变量偏移方法
-│   ├── hidden_shift/           # 隐藏协变量偏移方法
-│   │   ├── linear_kernel/      # 线性和核方法
-│   │   ├── deep/              # 深度学习方法
-│   │   └── optimal_transport/  # 最优传输方法
-│   └── uda_factory.py          # UDA方法工厂
+│   ├── uda_processor.py        # UDA数据处理器
+│   └── uda_visualizer.py       # UDA专业可视化分析器
+├── 📁 uda/                      # 基于ADAPT库的域适应
+│   └── adapt_methods.py        # ADAPT库UDA方法包装器
 ├── 📁 modeling/                 # 机器学习模型
 │   ├── baseline_models.py      # 基线模型（PKUPH、Mayo）
 │   └── paper_methods.py        # 论文方法实现
@@ -102,198 +44,446 @@ uda_medical_imbalance_project/
 │   ├── cross_validation.py     # 交叉验证
 │   ├── performance_analyzer.py # 性能分析
 │   └── comparator.py           # 方法对比
-├── 📁 visualization/           # 可视化
-│   ├── dimensionality_plots.py # PCA、t-SNE可视化
-│   ├── distribution_plots.py   # 特征分布对比
-│   ├── distance_plots.py       # 距离度量可视化
-│   ├── performance_plots.py    # 性能指标图表
-│   └── comparison_plots.py     # 方法对比图表
+├── 📁 examples/                # 使用示例
+│   ├── quick_start_example.py  # 快速开始示例
+│   ├── uda_usage_example.py    # UDA方法使用示例
+│   ├── real_data_visualization.py # 真实数据可视化
+│   └── uda_visualization_example.py # UDA可视化示例
 ├── 📁 scripts/                 # 执行脚本
-│   ├── main_experiment.py      # 主实验脚本
-│   └── run_full_uda_experiment.py # 完整实验流程
-├── 📁 examples/                # 示例代码
-│   └── quick_start_example.py  # 快速开始示例
+│   ├── run_complete_analysis.py     # 完整分析流程（新增核心引擎）
+│   ├── run_source_domain_comparison.py # 源域方法对比
+│   ├── run_uda_methods.py            # UDA方法运行
+│   ├── run_preprocessing.py          # 预处理流程
+│   └── visualize_results.py          # 结果可视化
 ├── 📁 tests/                   # 测试套件
-│   ├── test_categorical_features.py    # 类别特征测试
-│   ├── test_real_data_scalers.py       # 标准化器测试
-│   ├── test_imbalance_handler.py       # 不平衡处理器测试
+│   ├── test_categorical_features.py  # 类别特征测试
+│   ├── test_real_data_scalers.py     # 标准化器测试
+│   ├── test_imbalance_handler.py     # 不平衡处理器测试
 │   ├── test_imbalance_comprehensive.py # 全面不平衡处理测试
-│   ├── imgs/                           # 测试生成的图像
-│   │   ├── scalers/                    # 标准化器测试图像
-│   │   └── imbalance_handler/          # 不平衡处理器测试图像
-│   ├── conftest.py                     # 测试配置
-│   └── __init__.py                     # 测试模块初始化
-├── 📁 utils/                   # 工具函数
+│   └── test_adapt_methods.py         # ADAPT方法测试
+├── 📁 results/                 # 实验结果输出
 ├── 📁 docs/                    # 详细文档
-├── 📁 configs/                 # 配置文件
-│   └── default_config.yaml    # 默认配置
-├── README.md                   # 项目说明
-├── requirements.txt            # 依赖列表
-└── pytest.ini                 # 测试配置
+└── 📁 configs/                 # 配置文件
 ```
 
-## 📊 数据使用规范
+## 🚀 CompleteAnalysisRunner - 核心分析引擎
 
-### 数据域定义
-- **源域 (X_source, Y_source)**：全部数据用于训练和UDA特征对齐
-- **目标域 (X_target)**：全部无标签数据用于UDA特征对齐
-- **目标域标签 (Y_target)**：仅用于模型最终性能评估
+### 完整分析流程
 
-### 数据流程
+**CompleteAnalysisRunner** 是项目的核心分析引擎，提供端到端的自动化分析流程，包含六个主要步骤：
+
+1. **数据加载与预处理** - 双重加载策略确保兼容性
+2. **源域交叉验证** - TabPFN vs 传统基线 vs 机器学习基线
+3. **UDA方法对比** - 无UDA基线 vs UDA方法 vs 其他基线
+4. **可视化生成** - ROC曲线、校准曲线、决策曲线、雷达图
+5. **报告生成** - 自动识别最佳方法和域适应效果
+6. **结果保存** - 结构化输出所有结果和可视化
+
+### 技术架构层次
+
+项目采用分层技术架构，**CompleteAnalysisRunner** 作为核心引擎协调各层组件：
+
+- **数据层**：管理多医院医疗数据集和特征集
+- **预处理层**：数据加载、特征选择、标准化、不平衡处理
+- **模型层**：TabPFN、传统基线、机器学习基线、UDA方法
+- **评估层**：交叉验证、性能指标、域适应评估、预测数据收集
+- **可视化层**：ROC曲线、校准曲线、决策曲线、雷达图、UDA专业可视化
+- **输出层**：结构化保存JSON结果、Markdown报告、PNG图表
+
+### 双重数据加载策略
+
+CompleteAnalysisRunner采用智能的双重数据加载策略：
+
+1. **CV分析数据加载** (`load_data_for_cv`)
+   - 使用 `selected58` 特征集（兼容所有基线模型）
+   - TabPFN从中选择指定的特征子集
+   - 传统基线（PKUPH、Mayo、Paper_LR）使用全部58个特征
+   - 机器学习基线使用指定特征集配置
+
+2. **UDA分析数据加载** (`load_data_for_uda`)
+   - 使用指定的特征集（如best8）
+   - 应用完整的预处理流程（标准化 + 不平衡处理）
+   - 确保UDA方法获得最优的数据质量
+
+## 🔬 核心功能详解
+
+### 1. 数据预处理流程
+
+#### 1.1 预筛选特征集
+- **特征来源**：基于RFE（递归特征消除）预筛选的最优特征
+- **可选特征集**：
+  - **best7**：7个最优特征
+  - **best8**：8个最优特征  
+  - **best9**：9个最优特征
+  - **best10**：10个最优特征
+  - **all63**：全部63个选定特征
+- **类别特征处理**：自动识别和处理混合数据类型
+
+#### 1.2 标准化方法
+```python
+# 可选的标准化方法
+scalers = {
+    'standard': StandardScaler(),
+    'robust': RobustScaler(),
+    'none': NoScaler()  # 不进行标准化
+}
 ```
-原始数据 → RFE预筛选特征集 → 标准化 → 不平衡处理 → UDA对齐 → 模型训练 → 评估
+
+#### 1.3 类别不平衡处理
+```python
+# 支持的不平衡处理方法
+imbalance_methods = {
+    'none': None,                           # 不进行重采样
+    'smote': SMOTE(),                       # 标准SMOTE
+    'smotenc': SMOTENC(),                   # 处理类别特征的SMOTE
+    'borderline_smote': BorderlineSMOTE(),  # 边界线SMOTE
+    'kmeans_smote': KMeansSMOTE(),         # K-means聚类SMOTE
+    'svm_smote': SVMSMOTE(),               # SVM-SMOTE
+    'adasyn': ADASYN(),                    # 自适应合成采样
+    'smote_tomek': SMOTETomek(),           # SMOTE + Tomek清理
+    'smote_enn': SMOTEENN(),               # SMOTE + ENN清理
+    'random_under': RandomUnderSampler()   # 随机欠采样
+}
 ```
+
+### 2. 基于ADAPT库的UDA方法
+
+#### 2.1 实例重加权方法 (Instance-Based)
+
+**KMM (Kernel Mean Matching)**
+```python
+kmm_method = create_adapt_method(
+    method_name='KMM',
+    estimator=LogisticRegression(penalty="none"),
+    kernel='rbf',        # 核函数类型
+    gamma=1.0,          # 核函数带宽
+    verbose=0,
+    random_state=42
+)
+```
+
+**KLIEP (Kullback-Leibler Importance Estimation Procedure)**
+```python
+kliep_method = create_adapt_method(
+    method_name='KLIEP',
+    estimator=LogisticRegression(penalty="none"),
+    gamma=1.0,
+    verbose=0,
+    random_state=42
+)
+```
+
+#### 2.2 特征对齐方法 (Feature-Based)
+
+**CORAL (CORrelation ALignment)**
+```python
+coral_method = create_adapt_method(
+    method_name='CORAL',
+    estimator=LogisticRegression(penalty="none"),
+    lambda_=1.0,        # 正则化参数
+    verbose=0,
+    random_state=42
+)
+```
+
+**SA (Subspace Alignment)**
+```python
+sa_method = create_adapt_method(
+    method_name='SA',
+    estimator=LogisticRegression(penalty="none"),
+    n_components=None,   # 主成分数量
+    verbose=0,
+    random_state=42
+)
+```
+
+**TCA (Transfer Component Analysis)**
+```python
+tca_method = create_adapt_method(
+    method_name='TCA',
+    estimator=LogisticRegression(penalty="none"),
+    n_components=6,      # 传输成分数量
+    mu=0.1,             # 正则化参数
+    kernel='linear',     # 核函数类型
+    verbose=0,
+    random_state=42
+)
+```
+
+**fMMD (feature-based Maximum Mean Discrepancy)**
+```python
+fmmd_method = create_adapt_method(
+    method_name='FMMD',
+    estimator=LogisticRegression(penalty="none"),
+    gamma=1.0,
+    verbose=0,
+    random_state=42
+)
+```
+
+#### 2.3 深度学习方法 (Deep Learning)
+
+**DANN (Domain-Adversarial Neural Networks)**
+```python
+dann_method = create_adapt_method(
+    method_name='DANN',
+    lambda_=1.0,        # 域适应损失权重
+    lr=0.001,           # 学习率
+    epochs=100,         # 训练轮数
+    batch_size=32,      # 批次大小
+    verbose=0,
+    random_state=42
+)
+```
+
+## 🎨 UDA专业可视化分析
+
+### UDAVisualizer功能特点
+
+**UDAVisualizer** 提供完整的域适应效果可视化分析：
+
+```python
+from preprocessing.uda_visualizer import UDAVisualizer
+
+# 创建可视化器
+visualizer = UDAVisualizer(
+    figsize=(12, 8),
+    save_plots=True,
+    output_dir="results/uda_visualization"
+)
+
+# 完整可视化分析
+results = visualizer.visualize_domain_adaptation_complete(
+    X_source, y_source, X_target, y_target,
+    uda_method=uda_method,
+    method_name="TCA"
+)
+```
+
+### 主要可视化功能
+
+#### 1. 降维可视化
+- **PCA可视化**：主成分分析展示域间分布
+- **t-SNE可视化**：非线性降维展示聚类效果
+- **域适应前后对比**：直观展示UDA效果
+
+#### 2. 标准化距离度量
+```python
+# 支持的标准化距离指标
+distance_metrics = {
+    'normalized_linear_discrepancy': '标准化线性差异',
+    'normalized_frechet_distance': '标准化Frechet距离', 
+    'normalized_wasserstein_distance': '标准化Wasserstein距离',
+    'normalized_kl_divergence': '标准化KL散度'
+}
+```
+
+**特点**：
+- 只显示标准化版本的距离指标，确保跨不同UDA方法的可比性
+- 避免维度变化导致的数值异常问题
+- 提供稳定可靠的域适应效果评估
+
+#### 3. 智能特征处理
+- **维度兼容性检查**：自动处理特征维度变化的UDA方法
+- **特征变换策略**：
+  - TCA/SA/FMMD：可能改变特征维度，特殊处理
+  - CORAL：协方差对齐，维度不变
+  - KMM/KLIEP：实例重加权，不改变特征
+- **回退机制**：维度不匹配时自动使用原始特征空间进行距离计算
+
+#### 4. 性能对比可视化
+- **基线对比**：UDA方法 vs 无域适应基线
+- **多指标展示**：准确率、AUC、F1、精确率、召回率
+- **改进程度量化**：域适应带来的性能提升
 
 ## 🚀 快速开始
 
-### 1. 安装依赖
+### 环境要求
+
+```bash
+Python >= 3.8
+CUDA >= 11.0 (推荐GPU加速)
+```
+
+### 安装依赖
+
 ```bash
 cd uda_medical_imbalance_project
 pip install -r requirements.txt
 ```
 
-### 2. 运行示例
+### 一键运行完整分析
+
 ```bash
-# 快速开始示例
-python examples/quick_start_example.py
+# 运行完整分析流程（推荐）
+python scripts/run_complete_analysis.py
 
-# 完整实验流程
-python scripts/main_experiment.py --log-level INFO
+# 这将自动执行：
+# 1. 源域10折交叉验证对比（TabPFN vs 基线模型）
+# 2. UDA域适应方法对比（TCA、SA、CORAL、KMM等）
+# 3. 生成完整可视化分析报告
+# 4. 输出性能对比和改进建议
 ```
 
-### 3. 自定义配置
+### 运行示例脚本
+
 ```bash
-# 使用自定义配置运行
-python scripts/run_full_uda_experiment.py --config configs/custom_config.yaml
+# 完整分析流程（推荐）- 一键运行所有分析
+python scripts/run_complete_analysis.py
+
+# 独立模块示例
+python examples/quick_start_example.py          # 快速开始示例
+python examples/uda_usage_example.py            # UDA方法使用示例
+python examples/real_data_visualization.py      # 真实数据可视化分析
+python examples/uda_visualization_example.py    # UDA可视化示例
+
+# 分步骤运行（高级用户）
+python scripts/run_source_domain_comparison.py  # 仅源域方法对比
+python scripts/run_uda_methods.py              # 仅UDA方法分析
+python scripts/visualize_results.py            # 仅结果可视化
 ```
 
-## 📈 实验配置示例
+## 📊 CompleteAnalysisRunner使用指南
 
-```yaml
-# 数据预处理配置
-preprocessing:
-  feature_set: "best7"         # 特征集选择 (best7|best8|best9|best10|all63)
-  scaler: "standard"           # 标准化方法 (standard|robust|none)
-  imbalance_method: "smote"    # 不平衡处理方法 (none|smote|smotenc|borderline_smote|kmeans_smote|svm_smote|adasyn|smote_tomek|smote_enn|random_under)
-  categorical_features: []      # 类别特征列表（自动从settings.py获取）
+### 基本配置参数
 
-# UDA方法配置
-uda:
-  linear_kernel_methods:
-    - "SA"
-    - "TCA" 
-    - "JDA"
-    - "CORAL"
-  deep_methods:
-    - "DANN"
-    - "DeepCORAL"
-  optimal_transport_methods:
-    - "POT"
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `feature_set` | str | 'best8' | 特征集选择，影响TabPFN和机器学习基线的特征数量 |
+| `scaler_type` | str | 'none' | 标准化方法，只影响TabPFN和UDA方法 |
+| `imbalance_method` | str | 'none' | 不平衡处理方法，只影响TabPFN和UDA方法 |
+| `cv_folds` | int | 10 | 交叉验证折数，影响所有CV分析 |
+| `random_state` | int | 42 | 随机种子，确保结果可重复性 |
+| `output_dir` | Optional[str] | None | 输出目录，None时自动生成 |
+| `verbose` | bool | True | 是否显示详细执行信息 |
 
-# 评估配置
-evaluation:
-  metrics:
-    - "auc"
-    - "accuracy"
-    - "f1"
-    - "precision"
-    - "recall"
+### 分析流程详解
+
+#### 1. 数据加载与预处理
+- **双重数据加载策略**
+- **智能特征对齐**
+- **自动回退机制**
+
+#### 2. 源域10折交叉验证
+- **TabPFN方法**：使用指定特征集 + 预处理配置
+- **传统基线**：PKUPH、Mayo、Paper_LR（使用selected58特征集）
+- **机器学习基线**：SVM、DT、RF、GBDT、XGBoost（使用相同配置）
+
+#### 3. UDA方法对比分析
+- **基线对比**：TabPFN无UDA vs 传统基线 vs 机器学习基线
+- **UDA方法**：TCA、SA、CORAL、KMM等ADAPT库方法
+- **目标域测试**：所有方法在目标域B上评估
+
+#### 4. 专业可视化生成
+- **ROC曲线对比**：源域CV vs UDA方法性能对比
+- **校准曲线分析**：模型预测概率校准效果
+- **决策曲线分析**：临床决策价值评估
+- **性能雷达图**：多维度性能指标可视化
+
+#### 5. 分析报告生成
+- **Markdown格式报告**：包含所有性能指标和结论
+- **最佳方法识别**：自动识别各类别中的最佳方法
+- **域适应效果评估**：量化UDA方法的改进程度
+
+#### 6. 结果保存与输出
+- **JSON结果文件**：完整的实验结果和配置
+- **可视化图表**：PNG格式的专业图表
+- **分析报告**：详细的Markdown分析报告
+
+## 📈 实验结果输出
+
+### CompleteAnalysisRunner输出结构
+
+```
+results/complete_analysis_YYYYMMDD_HHMMSS/
+├── 📋 analysis_report.md                    # 完整分析报告
+├── 📊 complete_results.json                 # 完整实验结果
+├── 📈 source_domain_cv_results.json         # 源域CV详细结果
+├── 🔄 uda_methods_results.json              # UDA方法详细结果
+├── 📊 performance_comparison.png            # 性能对比图
+├── 📈 roc_curves_comparison.png             # ROC曲线对比
+├── 📉 calibration_curves.png                # 校准曲线分析
+├── 🎯 decision_curve_analysis.png           # 决策曲线分析
+├── 🕸️ performance_radar_chart.png           # 性能雷达图
+└── 📁 uda_[method_name]/                    # 各UDA方法详细分析
+    ├── TCA_RealData_dimensionality_reduction.png
+    ├── TCA_RealData_distance_metrics.png
+    └── TCA_RealData_performance_comparison.png
 ```
 
-## 🎯 实验输出
+### 预期输出示例
 
-### 结果目录结构
+运行 `python scripts/run_complete_analysis.py` 后，您将看到：
+
+```bash
+🏥 完整医疗数据UDA分析流程
+============================================================
+🔧 完整分析流程初始化
+   特征集: best8
+   标准化: none
+   不平衡处理: none
+   交叉验证: 10折
+   输出目录: results/complete_analysis_20241230_143025
+
+📊 加载医疗数据...
+✅ 数据加载完成:
+   源域A: (200, 58), 类别分布: {0: 120, 1: 80}
+   目标域B: (180, 58), 类别分布: {0: 95, 1: 85}
+
+🔬 源域10折交叉验证对比
+✅ TabPFN 完成: AUC: 0.8456, Accuracy: 0.7892
+✅ Paper_LR 完成: AUC: 0.8234, Accuracy: 0.7654
+✅ PKUPH 完成: AUC: 0.8012, Accuracy: 0.7423
+
+🔄 UDA方法对比分析
+✅ TabPFN_NoUDA 完成: AUC: 0.7892, Accuracy: 0.7234
+✅ TCA 完成: AUC: 0.8123, Accuracy: 0.7456
+✅ CORAL 完成: AUC: 0.8045, Accuracy: 0.7389
+
+📊 生成对比可视化图表
+✅ ROC曲线对比 已保存
+✅ 校准曲线分析 已保存
+✅ 决策曲线分析 已保存
+✅ 性能雷达图 已保存
+
+📋 生成最终分析报告
+✅ 完整分析流程完成！
+📁 所有结果已保存到: results/complete_analysis_20241230_143025
+📋 分析报告: results/complete_analysis_20241230_143025/analysis_report.md
 ```
-experiments/experiment_YYYYMMDD_HHMMSS/
-├── config/                 # 实验配置备份
-├── preprocessed_data/      # 预处理后的数据
-├── uda_results/           # UDA变换结果
-├── model_predictions/     # 模型预测结果
-├── evaluation_metrics/    # 评估指标
-├── visualizations/        # 可视化图表
-│   ├── pca_plots/
-│   ├── tsne_plots/
-│   ├── distribution_plots/
-│   └── performance_plots/
-└── experiment_report.html # 实验报告
+
+## 🧪 测试验证体系
+
+### 运行测试
+
+```bash
+# 运行所有测试
+pytest tests/
+
+# 运行特定测试文件
+pytest tests/test_adapt_methods.py -v
+
+# 运行不平衡处理器测试
+python tests/test_imbalance_handler.py
+
+# 运行全面不平衡处理测试（包含可视化）
+python tests/test_imbalance_comprehensive.py
 ```
-
-## 📝 关键特性
-
-### 1. 模块化设计
-- 每个组件独立可测试、可配置、易扩展
-- 清晰的接口定义和工厂模式
-
-### 2. 灵活配置
-- YAML配置文件支持
-- 命令行参数覆盖
-- 多种预定义配置模板
-
-### 3. 全面测试
-- 单元测试覆盖
-- 集成测试支持
-- 性能测试框架
-
-### 4. 丰富可视化
-- 英文图像标签（符合科技写作标准）
-- 多维度对比分析
-- 高质量图表输出
-
-### 5. 实验跟踪
-- 完整的实验记录
-- 可重现的实验配置
-- 详细的性能报告
-
-## 🧪 测试验证
-
-### 标准化器测试结果
-
-通过运行 `tests/test_real_data_scalers.py`，我们验证了不同标准化器的效果：
-
-#### 标准化器类型
-- **StandardScaler**：基于均值和标准差的标准化（均值0，标准差1）
-- **RobustScaler**：基于中位数和IQR的鲁棒标准化（中位数0，IQR标准化）
-- **NoScaler**：不进行标准化，保持原始数据不变
 
 ### 类别特征测试结果
 
-通过运行 `tests/test_categorical_features.py`，我们验证了不同特征集的类别特征配置：
+#### BEST特征集分析（RFE预筛选）
 
-#### BEST7特征集分析（RFE预筛选）
-- **总特征数**：7个
-- **类别特征**：2个（Feature63, Feature46）
-- **数值特征**：5个（Feature2, Feature39, Feature42, Feature43, Feature56）
-- **类别特征比例**：28.6%
-
-#### BEST8特征集分析（RFE预筛选）
-- **总特征数**：8个
-- **类别特征**：2个（Feature63, Feature46）
-- **数值特征**：6个（Feature2, Feature61, Feature56, Feature42, Feature39, Feature43）
-- **类别特征比例**：25.0%
-
-#### BEST9特征集分析（RFE预筛选）
-- **总特征数**：9个
-- **类别特征**：2个（Feature63, Feature46）
-- **数值特征**：7个（Feature2, Feature61, Feature56, Feature42, Feature39, Feature43, Feature48）
-- **类别特征比例**：22.2%
-
-#### BEST10特征集分析（RFE预筛选）
-- **总特征数**：10个
-- **类别特征**：3个（Feature63, Feature46, Feature5）
-- **数值特征**：7个（Feature2, Feature61, Feature56, Feature42, Feature39, Feature43, Feature48）
-- **类别特征比例**：30.0%
-
-#### ALL特征集分析
-- **总特征数**：58个
-- **类别特征**：20个
-- **数值特征**：38个
-- **类别特征比例**：34.5%
+- **BEST7特征集**：7个特征中包含2个类别特征（Feature63, Feature46）
+- **BEST8特征集**：8个特征中包含2个类别特征（Feature63, Feature46）
+- **BEST9特征集**：9个特征中包含2个类别特征（Feature63, Feature46）
+- **BEST10特征集**：10个特征中包含3个类别特征（Feature63, Feature46, Feature5）
+- **ALL63特征集**：63个特征中包含多个类别特征
 
 ### 不平衡处理器测试结果
 
-通过运行 `tests/test_imbalance_comprehensive.py`，我们验证了10种不平衡处理方法的效果：
+#### 支持的10种不平衡处理方法
 
-#### 支持的不平衡处理方法
 - **none**：不进行重采样，保持原始数据分布
 - **smote**：标准SMOTE合成少数类样本
 - **smotenc**：处理类别特征的SMOTE变体
@@ -305,92 +495,32 @@ experiments/experiment_YYYYMMDD_HHMMSS/
 - **smote_enn**：SMOTE + Edited Nearest Neighbours清理组合方法
 - **random_under**：随机欠采样多数类
 
-#### 测试数据集特征
-- **原始数据**：295个样本（106正例，189负例），不平衡比例约1:1.78
-- **特征集**：使用BEST10特征集（10个特征，包含3个类别特征）
-- **类别特征**：Feature63, Feature46, Feature5
+#### 处理效果特点
 
-#### 处理效果摘要
 - **过采样方法**：生成377-378个样本，实现完全或接近完全平衡
 - **组合方法**：在过采样基础上清理噪声，样本数略少于纯过采样
 - **欠采样方法**：减少到212个样本，实现完全平衡但信息损失较大
 
-#### 可视化输出
-测试生成的可视化图像保存在 `tests/imgs/imbalance_handler/` 目录：
-- **综合对比图**：6个子图展示不同方法的效果对比
-- **PCA降维可视化**：展示各方法处理前后的2D数据分布
-- **t-SNE降维可视化**：非线性降维展示聚类效果
-- **详细统计表格**：各方法的样本数量和平衡改善评分
+## 📝 最新更新 (v2.0)
 
-### 测试运行方式
+### 🎨 UDA可视化分析器重大改进
+- **修复距离度量计算**：解决了维度变化导致的指标异常问题
+- **标准化指标优先**：只显示标准化版本的距离度量，确保跨方法可比性
+- **智能特征处理**：自动处理不同UDA方法的特征变换策略
+- **跳过特征分布可视化**：避免特征尺度差异导致的可视化问题
 
-```bash
-# 运行标准化器测试（包含可视化）
-cd uda_medical_imbalance_project
-python tests/test_real_data_scalers.py
+### 🔧 技术改进
+- **维度兼容性检查**：自动检测并处理特征维度变化
+- **回退机制**：维度不匹配时使用原始特征空间计算距离
+- **稳定性提升**：移除不稳定的非标准化指标显示
 
-# 运行类别特征测试
-python tests/test_categorical_features.py
+### 📊 距离度量优化
+- **标准化线性差异**：基于ADAPT库的专业实现
+- **标准化Frechet距离**：提供稳定的分布距离度量
+- **标准化Wasserstein距离**：自定义实现，遵循ADAPT库标准
+- **标准化KL散度**：改进的散度计算方法
 
-# 运行不平衡处理器测试
-python tests/test_imbalance_handler.py
-
-# 运行全面不平衡处理测试（包含可视化）
-python tests/test_imbalance_comprehensive.py
-
-# 运行所有测试
-pytest tests/ -v
-```
-
-## 🔬 技术实现细节
-
-### 不平衡处理器实现特点
-
-#### 1. 智能类别特征处理
-- **自动检测**：通过`settings.py`中的`get_categorical_features_for_feature_set()`函数自动获取类别特征索引
-- **混合数据支持**：所有方法都能正确处理包含类别特征的混合数据类型
-- **SMOTENC集成**：组合方法（SMOTETomek、SMOTEENN）自动使用SMOTENC作为基础SMOTE方法
-
-#### 2. 组合方法配置策略
-```python
-# SMOTETomek配置：SMOTENC + Tomek Links清理
-if categorical_indices:
-    smote_sampler = SMOTENC(categorical_features=categorical_indices, random_state=42)
-else:
-    smote_sampler = SMOTE(random_state=42)
-sampler = SMOTETomek(smote=smote_sampler, random_state=42)
-
-# SMOTEENN配置：SMOTENC + ENN清理  
-if categorical_indices:
-    smote_sampler = SMOTENC(categorical_features=categorical_indices, random_state=42)
-else:
-    smote_sampler = SMOTE(random_state=42)
-sampler = SMOTEENN(smote=smote_sampler, random_state=42)
-```
-
-#### 3. 平衡判断逻辑
-- **不平衡阈值**：当少数类比例 < 0.5时判断为不平衡
-- **智能跳过**：对于已经平衡的数据集，某些方法会智能跳过重采样
-- **强制执行模式**：测试模式下可强制执行所有方法以便对比分析
-
-#### 4. 可视化集成
-- **PCA降维**：2D可视化展示重采样前后的数据分布变化
-- **t-SNE降维**：非线性降维揭示数据的聚类结构
-- **统计对比**：详细的样本数量、平衡比例、改善评分统计
-- **方法分组**：按过采样、组合方法、欠采样分组展示效果
-
-## 🔧 技术栈
-
-- **核心框架**：Python 3.8+, NumPy, Pandas, Scikit-learn
-- **深度学习**：PyTorch，TF
-- **域适应**：Adapt-python
-- **不平衡处理**：Imbalanced-learn
-- **可视化**：Matplotlib, Seaborn, Plotly
-- **配置管理**：PyYAML, Hydra
-- **测试框架**：Pytest
-- **实验跟踪**：MLflow, WandB
-
-## 🎓 符合项目规则
+## 🎯 符合项目规则
 
 本项目严格遵循TabPFN项目规则：
 
@@ -400,22 +530,32 @@ sampler = SMOTEENN(smote=smote_sampler, random_state=42)
 4. **结果目录组织**：独立results目录，可解释性分析子目录
 5. **模型评估标准**：AUC为主要指标，考虑多指标稳定性
 
+## 🔧 技术栈
+
+- **核心框架**：Python 3.8+, NumPy, Pandas, Scikit-learn
+- **域适应**：Adapt-python（核心库）
+- **不平衡处理**：Imbalanced-learn
+- **深度学习**：PyTorch（可选）
+- **可视化**：Matplotlib, Seaborn
+- **配置管理**：PyYAML
+- **测试框架**：Pytest
+
 ## 🤝 使用建议
 
-1. **开始实验前**：仔细阅读配置文件，根据数据集特点调整参数
-2. **特征选择**：建议从7个特征开始，逐步增加到10个进行对比
-3. **UDA方法选择**：先测试简单方法（CORAL、SA），再尝试复杂方法
-4. **性能评估**：重点关注AUC和F1分数，考虑医疗场景的特殊需求
-5. **结果解释**：结合可视化分析理解域适应的效果
+1. **开始实验前**：运行`python scripts/run_complete_analysis.py`获得完整分析
+2. **特征选择**：建议从best8特征开始，这是经过RFE优化的配置
+3. **UDA方法选择**：先测试简单方法（CORAL、SA），再尝试复杂方法（TCA、KMM）
+4. **性能评估**：重点关注AUC指标，结合可视化分析理解域适应效果
+5. **结果解释**：查看生成的analysis_report.md获得详细分析结论
 
 ## 📚 进一步扩展
 
 - 添加更多医疗数据集支持
-- 集成更多先进的域适应方法
+- 集成更多ADAPT库中的先进域适应方法
 - 添加自动超参数优化
 - 支持多GPU并行训练
-- 集成模型解释性分析工具
+- 集成模型解释性分析工具（SHAP等）
 
 ---
 
-**注意**：本项目遵循中文回复 + 英文图像标签的统一语言输出风格，确保科研标准的图表质量。 
+**注意**：本项目遵循中文回复 + 英文图像标签的统一语言输出风格，确保科研标准的图表质量。所有可视化图表中的标签、图例、标题、坐标轴名称均使用英文，符合国际科技写作标准。 

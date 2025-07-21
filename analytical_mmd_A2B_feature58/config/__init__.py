@@ -1,1 +1,0 @@
-# MMD config module 

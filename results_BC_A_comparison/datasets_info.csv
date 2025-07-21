@@ -1,5 +1,0 @@
-Dataset,Samples,Features,Positive_Samples,Negative_Samples
-A (AI4health),295,22,189,106
-B (Henan),190,22,125,65
-C (Guangzhou),114,22,60,54
-B+C Combined,304,22,185,119

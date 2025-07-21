@@ -36,7 +36,7 @@ y = df["Label"].copy()   # 标签向量 (二分类)
 ```mermaid
 graph TD
     A["数据加载<br/>AI4Health数据集"] --> B["特征提取<br/>63个原始特征"]
-    B --> C["RFE特征选择<br/>TabPFN作为基础模型"]
+    B --> C["RFE特征选择<br/>Our Model作为基础模型"]
     C --> D["特征重要性排序<br/>"]
     D --> E["模型训练<br/>使用选定特征"]
     E --> F["10折交叉验证<br/>性能评估"]
