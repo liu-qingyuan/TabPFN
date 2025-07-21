@@ -1,3 +1,0 @@
-Dataset,Samples,Features,Positive_Samples,Negative_Samples
-B (Training),190,58,125,65
-A (Testing),295,58,189,106

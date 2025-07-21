@@ -425,7 +425,8 @@ class CompleteAnalysisRunner:
             return {}
         
         # 选择要测试的UDA方法
-        uda_methods_to_test = ['TCA', 'SA', 'CORAL', 'KMM']
+        # uda_methods_to_test = ['TCA', 'SA', 'CORAL', 'KMM']
+        uda_methods_to_test = ['TCA']
         uda_results = {}
         
         # 创建基础估计器
@@ -533,13 +534,13 @@ class CompleteAnalysisRunner:
                     print(f"\n--- 测试基线模型: {model_name} ---")
                 
                 try:
-                    # 参考test_cross_validation.py的做法，使用交叉验证评估器
+                    # 基线模型使用10折交叉验证
                     from evaluation.cross_validation import CrossValidationEvaluator
                     
                     # 创建基线模型评估器
                     evaluator = CrossValidationEvaluator(
                         model_type=model_name.lower(),
-                        feature_set='selected58',  # 基线模型使用selected58特征集
+                        feature_set='selected58',  # 强制使用selected58特征集
                         scaler_type='none',        # 基线模型不使用标准化
                         imbalance_method='none',   # 基线模型不使用不平衡处理
                         cv_folds=10,
@@ -550,14 +551,12 @@ class CompleteAnalysisRunner:
                     if self.verbose:
                         print(f"   模型配置: {model_name}")
                         print(f"   特征集: selected58")
-                        print(f"   特征数量: {len(evaluator.features)}")
-                        print(f"   预处理: 无")
+                        print(f"   实际使用特征数: {len(evaluator.features)}")
+                        print(f"   实际使用特征: {evaluator.features}")
+                        print(f"   测试方式: 10折交叉验证")
                     
-                    # 运行10折交叉验证（在目标域B上）
-                    if X_target_selected58 is not None and y_target_selected58 is not None:
-                        cv_result = evaluator.run_cross_validation(X_target_selected58, y_target_selected58)
-                    else:
-                        raise ValueError("目标域数据不可用")
+                    # 基线模型在目标域B上进行10折交叉验证
+                    cv_result = evaluator.run_cross_validation(X_target_selected58, y_target_selected58)
                     
                     if cv_result['summary'] and 'auc_mean' in cv_result['summary']:
                         summary = cv_result['summary']
@@ -581,7 +580,10 @@ class CompleteAnalysisRunner:
                             'precision': float(summary.get('precision_mean', 0)),
                             'recall': float(summary.get('recall_mean', 0)),
                             'is_baseline': True,
-                            'test_type': 'target_domain_cv'  # 标记为目标域交叉验证
+                            'test_type': 'target_domain_cv',  # 标记为目标域交叉验证
+                            'baseline_category': 'traditional_baseline',  # 标记为传统基线
+                            'feature_set_used': 'selected58',  # 记录使用的特征集
+                            'actual_features_count': len(evaluator.features),  # 记录实际特征数
                         }
                         
                         # 添加预测数据
@@ -595,6 +597,8 @@ class CompleteAnalysisRunner:
                             if baseline_model_results['auc'] is not None:
                                 print(f"   AUC: {baseline_model_results['auc']:.4f}")
                             print(f"   F1: {baseline_model_results['f1']:.4f}")
+                            print(f"   实际特征数: {baseline_model_results['actual_features_count']}")
+                            print(f"   测试样本数: {len(y_target_selected58)}")
                     else:
                         raise ValueError(f"{model_name}模型未返回有效的性能指标")
                         
@@ -605,7 +609,8 @@ class CompleteAnalysisRunner:
                         'error': str(e), 
                         'method_name': model_name,
                         'is_baseline': True,
-                        'test_type': 'target_domain_cv'
+                        'test_type': 'target_domain_cv',
+                        'baseline_category': 'traditional_baseline'
                     }
         
         # 3. 测试机器学习基线模型（使用与TabPFN相同的特征集和预处理）- 只在目标域B上测试
@@ -1025,7 +1030,10 @@ class CompleteAnalysisRunner:
                             tabpfn_baseline[method] = result
                         elif result.get('baseline_category') == 'ml_baseline':
                             ml_baselines[method] = result
+                        elif result.get('baseline_category') == 'traditional_baseline':
+                            traditional_baselines[method] = result
                         else:
+                            # 兼容旧格式，PKUPH、Mayo、Paper_LR等
                             traditional_baselines[method] = result
                     else:
                         uda_methods[method] = result
