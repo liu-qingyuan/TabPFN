@@ -770,6 +770,19 @@ class CompleteAnalysisRunner:
                 
                 if self.verbose:
                     print(f"  {method_name}拟合完成")
+                    
+                    # 显示实际使用的n_components数量（中间结果）
+                    if hasattr(uda_method, 'adapt_model'):
+                        adapt_model = uda_method.adapt_model
+                        if method_name == 'TCA' and hasattr(adapt_model, 'vectors_'):
+                            actual_n_components = adapt_model.vectors_.shape[1]
+                            print(f"  TCA实际n_components: {actual_n_components} (输入时设为None)")
+                        elif method_name == 'SA' and hasattr(adapt_model, 'pca_src_'):
+                            actual_n_components = adapt_model.pca_src_.n_components_
+                            print(f"  SA实际n_components: {actual_n_components} (输入时设为None)")
+                        elif method_name in ['TCA', 'SA'] and hasattr(adapt_model, 'n_components'):
+                            print(f"  {method_name}配置n_components: {adapt_model.n_components}")
+                    
                     print(f"  性能结果: {method_results}")
                 
                 # 验证结果有效性
