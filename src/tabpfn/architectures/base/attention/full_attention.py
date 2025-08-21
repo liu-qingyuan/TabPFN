@@ -1,15 +1,21 @@
 #  Copyright (c) Prior Labs GmbH 2025.
+"""Implements standard quadratic attention."""
 
 from __future__ import annotations
 
 import math
 from functools import partial
+from typing import TYPE_CHECKING
 from typing_extensions import override
 
 import torch
 from torch.utils.checkpoint import checkpoint
 
-from tabpfn.model.memory import support_save_peak_mem_factor
+from tabpfn.architectures.base.attention import Attention
+from tabpfn.architectures.base.memory import support_save_peak_mem_factor
+
+if TYPE_CHECKING:
+    from tabpfn.architectures.base.config import ModelConfig
 
 try:
     from flash_attn.flash_attn_interface import (
@@ -23,7 +29,7 @@ except (ModuleNotFoundError, ImportError):
     HAVE_FLASH_ATTN = False
 
 
-class MultiHeadAttention(torch.nn.Module):
+class MultiHeadAttention(Attention):
     _input_size: int
     _output_size: int
     _nhead: int
@@ -77,7 +83,7 @@ class MultiHeadAttention(torch.nn.Module):
             self._k_cache is not None and self._v_cache is not None
         ) or self._kv_cache is not None
 
-    def empty_kv_cache(self):
+    def empty_kv_cache(self) -> None:
         self._k_cache = None
         self._v_cache = None
         self._kv_cache = None
@@ -93,7 +99,7 @@ class MultiHeadAttention(torch.nn.Module):
         precomputed_k: torch.Tensor | None = None,
         precomputed_v: torch.Tensor | None = None,
         precomputed_kv: torch.Tensor | None = None,
-    ):
+    ) -> None:
         assert (precomputed_k is None) == (precomputed_v is None)
         assert (precomputed_kv is None) or (precomputed_k is None)
         assert (precomputed_kv is None and precomputed_k is None) != (
@@ -107,7 +113,7 @@ class MultiHeadAttention(torch.nn.Module):
         def assert_tensor_shape(
             tensor: torch.Tensor | None,
             expected_shape: list[int | None],
-        ):
+        ) -> None:
             if tensor is None:
                 return
             actual_shape = tensor.size()
@@ -120,15 +126,7 @@ class MultiHeadAttention(torch.nn.Module):
         assert_tensor_shape(precomputed_k, [None, None, self._nhead_kv, self._d_k])
         assert_tensor_shape(precomputed_v, [None, None, self._nhead_kv, self._d_v])
         assert_tensor_shape(precomputed_kv, [None, None, 2, self._nhead_kv, self._d_k])
-        assert_tensor_shape(
-            w_q,
-            [
-                1 + int(bool(self.two_sets_of_queries)),
-                self._nhead,
-                self._d_k,
-                self._input_size,
-            ],
-        )
+        assert_tensor_shape(w_q, [1, self._nhead, self._d_k, self._input_size])
         assert_tensor_shape(w_k, [self._nhead_kv, self._d_k, self._input_size])
         assert_tensor_shape(w_v, [self._nhead_kv, self._d_v, self._input_size])
         assert_tensor_shape(w_kv, [2, self._nhead_kv, self._d_k, self._input_size])
@@ -164,13 +162,11 @@ class MultiHeadAttention(torch.nn.Module):
     def __init__(  # noqa: PLR0913
         self,
         *,
-        input_size: int,
-        output_size: int,
         d_k: int,
         d_v: int,
-        nhead: int,
         device: torch.device | None,
         dtype: torch.dtype | None,
+        config: ModelConfig,
         share_kv_across_n_heads: int = 1,
         dropout_p: float | None = None,
         softmax_scale: float | None = None,
@@ -178,28 +174,25 @@ class MultiHeadAttention(torch.nn.Module):
         precomputed_k: torch.Tensor | None = None,
         precomputed_v: torch.Tensor | None = None,
         precomputed_kv: torch.Tensor | None = None,
-        recompute: bool = False,
-        init_gain: float = 1.0,
-        two_sets_of_queries: bool = False,
     ):
         super().__init__()
-        assert nhead % share_kv_across_n_heads == 0
-        self._input_size = input_size
-        self._output_size = output_size
+        assert config.nhead % share_kv_across_n_heads == 0
+        self._input_size = config.emsize
+        self._output_size = config.emsize
         self._d_k = d_k
         self._d_v = d_v
-        self._nhead = nhead
-        self._nhead_kv = nhead // share_kv_across_n_heads
+        self._nhead = config.nhead
+        self._nhead_kv = config.nhead // share_kv_across_n_heads
         self._device = device
         self._dtype = dtype
         self.dropout_p = dropout_p
         self.softmax_scale = softmax_scale
-        self.recompute = recompute
-        self.init_gain = init_gain
-        self.two_sets_of_queries = two_sets_of_queries
+        self.init_gain = config.attention_init_gain
 
         w_out = torch.nn.Parameter(
-            torch.empty(nhead, d_v, output_size, device=device, dtype=dtype),
+            torch.empty(
+                config.nhead, d_v, self._output_size, device=device, dtype=dtype
+            ),
         )
         if initialize_output_to_zero:
             torch.nn.init.zeros_(w_out)
@@ -213,12 +206,7 @@ class MultiHeadAttention(torch.nn.Module):
         w_v = None
         w_kv = None
         w_qkv = None
-        if (
-            d_k == d_v
-            and self._nhead == self._nhead_kv
-            and not has_precomputed_kv
-            and not two_sets_of_queries
-        ):
+        if d_k == d_v and self._nhead == self._nhead_kv and not has_precomputed_kv:
             w_qkv = self.newly_initialized_input_weight(
                 [3, self._nhead, self._d_k, self._input_size],
                 nhead=self._nhead,
@@ -227,12 +215,7 @@ class MultiHeadAttention(torch.nn.Module):
             )
         else:
             w_q = self.newly_initialized_input_weight(
-                [
-                    1 + int(bool(two_sets_of_queries)),
-                    self._nhead,
-                    self._d_k,
-                    self._input_size,
-                ],
+                [1, self._nhead, self._d_k, self._input_size],
                 nhead=self._nhead,
                 device=device,
                 dtype=dtype,
@@ -269,7 +252,7 @@ class MultiHeadAttention(torch.nn.Module):
             precomputed_v,
             precomputed_kv,
         )
-        if recompute:
+        if config.recompute_attn:
             self.forward = partial(checkpoint, self.forward, use_reentrant=False)  # type: ignore
 
     @override
@@ -289,8 +272,7 @@ class MultiHeadAttention(torch.nn.Module):
         reuse_first_head_kv: bool = False,
         only_cache_first_head_kv: bool = False,
         use_cached_kv: bool = False,
-        use_second_set_of_queries: bool = False,
-    ):
+    ) -> torch.Tensor:
         """X is the current hidden and has a shape of [batch, ..., seq_len, input_size].
         If keys and values are present in the cache and 'freeze_kv' is not set, they
         are obtained from there and 'x_kv' has to be None.
@@ -302,11 +284,7 @@ class MultiHeadAttention(torch.nn.Module):
         assert not (
             cache_kv and use_cached_kv
         ), "Cannot cache and use cached keys and values at the same time."
-        if use_second_set_of_queries:
-            assert self.two_sets_of_queries, (
-                "Two sets of queries are not supported."
-                "Please set 'two_sets_of_queries' to True."
-            )
+
         assert not x.requires_grad or (
             not self.has_cached_kv and not cache_kv
         ), "Saving keys and values is only supported during inference."
@@ -364,7 +342,6 @@ class MultiHeadAttention(torch.nn.Module):
             allow_inplace=allow_inplace,
             save_peak_mem_factor=save_peak_mem_factor,
             reuse_first_head_kv=reuse_first_head_kv,
-            use_second_set_of_queries=use_second_set_of_queries,
         )
         return output.reshape(x_shape_after_transpose[:-1] + output.shape[-1:])
 
@@ -379,7 +356,6 @@ class MultiHeadAttention(torch.nn.Module):
         cache_kv: bool,
         use_cached_kv: bool,
         reuse_first_head_kv: bool,
-        use_second_set_of_queries: bool,
     ) -> tuple[
         torch.Tensor,
         torch.Tensor,
@@ -409,14 +385,8 @@ class MultiHeadAttention(torch.nn.Module):
 
         assert (k is None) == (v is None)
 
-        if use_second_set_of_queries:
-            assert self._w_qkv is None, (
-                "Two sets of queries are not supported with custom q weights,"
-                " set two_sets_of_queries to True."
-            )
-
         if self._w_qkv is None:
-            w_q, w_kv = self._w_q[int(bool(use_second_set_of_queries))], self._w_kv
+            w_q, w_kv = self._w_q[0], self._w_kv
         else:
             w_q, w_kv = self._w_qkv[0], self._w_qkv[1:]
 
@@ -485,7 +455,6 @@ class MultiHeadAttention(torch.nn.Module):
         cache_kv: bool,
         use_cached_kv: bool,
         reuse_first_head_kv: bool,
-        use_second_set_of_queries: bool,
     ) -> torch.Tensor:
         """Attention computation.
         Called by 'forward', potentially on shards, once shapes have been normalized.
@@ -499,7 +468,6 @@ class MultiHeadAttention(torch.nn.Module):
             cache_kv=cache_kv,
             use_cached_kv=use_cached_kv,
             reuse_first_head_kv=reuse_first_head_kv,
-            use_second_set_of_queries=use_second_set_of_queries,
         )
         attention_head_outputs = MultiHeadAttention.compute_attention_heads(
             q,
@@ -566,7 +534,6 @@ class MultiHeadAttention(torch.nn.Module):
         assert q is not None
         assert k is not None
         assert v is not None
-
         batch_size, seqlen_q, nhead, d_k = q.shape
         _, seqlen_kv, nhead_kv, d_v = v.shape
         share_kv_across_n_heads = nhead // nhead_kv
@@ -611,7 +578,8 @@ class MultiHeadAttention(torch.nn.Module):
             # TODO: add logging for something like this
             # if use_flash_attention and USE_TORCH_2_GQA:
             # print("Using FlashAttention might be slower than torch's implementation,
-            # try setting `tabpfn.model.multi_head_attention.HAVE_FLASH_ATTN=False`.")
+            # try setting
+            # `tabpfn.architectures.base.multi_head_attention.HAVE_FLASH_ATTN=False`.")
 
             # print(f"USE_TORCH_2_GQA: {USE_TORCH_2_GQA}, nvidia_compute_capability:
             # {nvidia_compute_capability}, TORCH_2_SUPPORTS_GQ: {TORCH_2_SUPPORTS_GQ}")
