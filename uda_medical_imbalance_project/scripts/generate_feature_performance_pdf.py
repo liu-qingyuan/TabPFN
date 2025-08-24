@@ -304,12 +304,12 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     """
     print(f"🎨 生成综合分析图表 (DPI: {dpi})")
     
-    # 创建更大的图形用于综合分析
-    fig = plt.figure(figsize=(20, 12))
+    # 创建更大的图形用于综合分析 - 调整为更高的图形以适应新布局
+    fig = plt.figure(figsize=(16, 20))
     
-    # 使用GridSpec进行复杂布局
+    # 使用GridSpec进行复杂布局 - 修改为5行2列的布局
     from matplotlib.gridspec import GridSpec
-    gs = GridSpec(3, 4, figure=fig, height_ratios=[1, 1, 1], width_ratios=[1, 1, 1, 1])
+    gs = GridSpec(5, 2, figure=fig, height_ratios=[2, 1, 1, 1, 1], width_ratios=[1, 1])
     
     # 定义Nature期刊标准配色 - 四色方案
     colors = {
@@ -325,8 +325,8 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     # fig.suptitle('Comprehensive Feature Number Analysis for Medical Cross-Domain Classification\n(TabPFN+TCA Framework)', 
     #              fontsize=18, fontweight='bold', y=0.95)
     
-    # 主要性能指标趋势图 (占据前两行的前三列)
-    ax_main = fig.add_subplot(gs[0:2, 0:3])
+    # 主要性能指标趋势图 (占据第一行的整个宽度)
+    ax_main = fig.add_subplot(gs[0, :])
     
     # 绘制多条性能曲线
     metrics = ['mean_accuracy', 'mean_auc', 'mean_f1']
@@ -403,8 +403,8 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     # 更新图例包含重要区间
     ax_main.legend(loc='lower right', fontsize=10)
     
-    # 类别特异性性能 (右上)
-    ax_class = fig.add_subplot(gs[0, 3])
+    # 类别特异性性能 (第二行左侧)
+    ax_class = fig.add_subplot(gs[1, 0])
     ax_class.plot(df['n_features'], df['mean_acc_0'], 'o-', 
                   color=colors['dual_1'], linewidth=2, markersize=5, 
                   label='Class 0 (Benign)', alpha=0.8)
@@ -425,8 +425,8 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     # 更新图例包含重要区间
     ax_class.legend(fontsize=9)
     
-    # 训练时间分析 (右中)
-    ax_time = fig.add_subplot(gs[1, 3])
+    # 训练时间分析 (第二行右侧)
+    ax_time = fig.add_subplot(gs[1, 1])
     ax_time.plot(df['n_features'], df['mean_time'], 'o-', 
                  color='#666666', linewidth=2, markersize=5, alpha=0.8)
     ax_time.fill_between(df['n_features'], 
@@ -440,8 +440,8 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     ax_time.set_ylabel('Time (s)')
     ax_time.grid(True, alpha=0.3)
     
-    # 性能稳定性分析 (第三行左侧)
-    ax_stability = fig.add_subplot(gs[2, 0:2])
+    # 性能稳定性分析 (第三行整行)
+    ax_stability = fig.add_subplot(gs[2, :])
     
     # 计算变异系数 (CV = std/mean)
     cv_accuracy = df['std_accuracy'] / df['mean_accuracy']
@@ -472,8 +472,8 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
     # 更新图例包含重要区间
     ax_stability.legend(fontsize=10)
     
-    # Cost-Effectiveness Index 分析 (第三行右侧)
-    ax_optimal = fig.add_subplot(gs[2, 2:4])
+    # Cost-Effectiveness Index 分析 (第四行整行)
+    ax_optimal = fig.add_subplot(gs[3, :])
     
     # 计算Cost-Effectiveness Index (与标准版本相同的算法)
     # 1. 性能得分 (0-1, 越高越好)
@@ -539,9 +539,9 @@ def create_comprehensive_analysis_plot(df, output_path, dpi=1200):
                     bbox=dict(boxstyle="round,pad=0.3", facecolor='lightgray', 
                              alpha=0.8, edgecolor='gray', linewidth=0.5))
     
-    # 调整布局
+    # 调整布局 - 为新的5行布局增加垂直间距
     plt.tight_layout()
-    plt.subplots_adjust(top=0.92, hspace=0.4, wspace=0.4)
+    plt.subplots_adjust(top=0.96, hspace=0.3, wspace=0.2)
     
     # 保存综合分析图
     comprehensive_path = output_path.parent / f"{output_path.stem}_comprehensive.pdf"

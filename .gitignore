@@ -162,5 +162,9 @@ cython_debug/
 .DS_Store
 ./src/.DS_Store
 
-# Claude AI assistant
+# AI assistant
 CLAUDE.md
+GEMINI.md
+
+# Dissertation LaTeX files
+dissertation/latex/

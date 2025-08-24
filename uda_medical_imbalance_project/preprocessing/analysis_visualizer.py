@@ -23,9 +23,23 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils import resample
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS']
-plt.rcParams['axes.unicode_minus'] = False
+# 设置Nature期刊标准字体
+plt.rcParams.update({
+    'font.family': 'Arial',
+    'font.sans-serif': ['Arial'],
+    'font.size': 11,
+    'axes.titlesize': 12,
+    'axes.labelsize': 11,
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
+    'legend.fontsize': 10,
+    'figure.titlesize': 14,
+    'text.usetex': False,
+    'axes.linewidth': 0.8,
+    'grid.linewidth': 0.5,
+    'lines.linewidth': 1.5,
+    'patch.linewidth': 0.8
+})
 
 
 class AnalysisVisualizer:
@@ -86,11 +100,12 @@ class AnalysisVisualizer:
         
         # 创建对比图
         fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-        fig.suptitle('Source Domain 10-Fold Cross-Validation Comparison', fontsize=16, fontweight='bold')
+        # 移除主标题以符合Nature期刊要求
+        # fig.suptitle('Source Domain 10-Fold Cross-Validation Comparison', fontsize=16, fontweight='bold')
         
-        # 绘制各个指标
+        # 绘制各个指标 - 使用Nature期刊科研配色
         metric_names = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+        colors = ['#C9EFBE', '#9BDCFC', '#CAC8EF', '#F0CFEA', '#2C91E0']  # Nature期刊科研配色
         
         for i, metric in enumerate(metric_names):
             row = i // 3
@@ -98,7 +113,9 @@ class AnalysisVisualizer:
             ax = axes[row, col]
             
             bars = ax.bar(methods, metrics_data[metric], color=colors[i], alpha=0.7)
-            ax.set_title(f'{metric} Comparison', fontweight='bold')
+            # 使用小写字母标识子图
+            subplot_letters = ['a', 'b', 'c', 'd', 'e']
+            ax.set_title(subplot_letters[i], fontweight='bold', fontsize=24, pad=20, loc='left')
             ax.set_ylabel(metric)
             ax.set_ylim(0, 1)
             ax.grid(True, alpha=0.3)
@@ -117,8 +134,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "source_cv_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "source_cv_comparison.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -158,19 +176,19 @@ class AnalysisVisualizer:
                 if method_name == 'TabPFN_NoUDA':
                     display_name = 'Our Model\n(No UDA)'
                     tabpfn_baseline.append((method_name, display_name))
-                    method_colors.append('#e74c3c')  # 红色表示Our Model基线
+                    method_colors.append('#F0CFEA')  # 科研配色4 - Our Model基线
                 elif result.get('baseline_category') == 'ml_baseline':
                     display_name = method_name
                     ml_baselines.append((method_name, display_name))
-                    method_colors.append('#f39c12')  # 橙色表示机器学习基线
+                    method_colors.append('#3ABF99')  # 科研三色配色2 - 机器学习基线
                 else:
                     display_name = method_name
                     traditional_baselines.append((method_name, display_name))
-                    method_colors.append('#9b59b6')  # 紫色表示传统基线
+                    method_colors.append('#F0A73A')  # 科研三色配色3 - 传统基线
             else:
                 display_name = method_name
                 uda_methods.append((method_name, display_name))
-                method_colors.append('#3498db')  # 蓝色表示UDA方法
+                method_colors.append('#2C91E0')  # 科研三色配色1 - UDA方法
             
             method_display_mapping[method_name] = display_name
         
@@ -192,7 +210,8 @@ class AnalysisVisualizer:
         
         # 创建对比图
         fig, axes = plt.subplots(2, 3, figsize=(20, 12))
-        fig.suptitle('UDA Methods vs Baseline Performance Comparison', fontsize=16, fontweight='bold')
+        # 移除主标题以符合Nature期刊要求
+        # fig.suptitle('UDA Methods vs Baseline Performance Comparison', fontsize=16, fontweight='bold')
         
         metric_names = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
         
@@ -202,7 +221,9 @@ class AnalysisVisualizer:
             ax = axes[row, col]
             
             bars = ax.bar(all_methods, metrics_data[metric], color=method_colors, alpha=0.7)
-            ax.set_title(f'{metric} Comparison', fontweight='bold')
+            # 使用小写字母标识子图
+            subplot_letters = ['a', 'b', 'c', 'd', 'e']
+            ax.set_title(subplot_letters[i], fontweight='bold', fontsize=24, pad=20, loc='left')
             ax.set_ylabel(metric)
             ax.set_ylim(0, 1)
             ax.grid(True, alpha=0.3)
@@ -217,10 +238,10 @@ class AnalysisVisualizer:
         # 添加图例
         from matplotlib.patches import Patch
         legend_elements = [
-            Patch(facecolor='#e74c3c', alpha=0.7, label='Our Model Baseline'),
-            Patch(facecolor='#9b59b6', alpha=0.7, label='Traditional Baselines'),
-            Patch(facecolor='#f39c12', alpha=0.7, label='ML Baselines'),
-            Patch(facecolor='#3498db', alpha=0.7, label='UDA Methods')
+            Patch(facecolor='#F0CFEA', alpha=0.7, label='Our Model Baseline'),
+            Patch(facecolor='#F0A73A', alpha=0.7, label='Traditional Baselines'),
+            Patch(facecolor='#3ABF99', alpha=0.7, label='ML Baselines'),
+            Patch(facecolor='#2C91E0', alpha=0.7, label='UDA Methods')
         ]
         fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.98, 0.98))
         
@@ -232,8 +253,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "uda_methods_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "uda_methods_comparison.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -319,7 +341,7 @@ class AnalysisVisualizer:
         
         ax.set_xlabel('Metrics')
         ax.set_ylabel('Score')
-        ax.set_title('Best Source Domain vs Best UDA Method Comparison', fontsize=14, fontweight='bold')
+        ax.set_title('a', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax.set_xticks(x)
         ax.set_xticklabels(metrics)
         ax.legend()
@@ -338,8 +360,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "overall_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "overall_comparison.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -408,8 +431,7 @@ class AnalysisVisualizer:
                 text = ax.text(j, i, f'{data_matrix[i, j]:.3f}',
                              ha="center", va="center", color="black", fontweight='bold')
         
-        ax.set_title("Source Domain 10-Fold CV Performance Heatmap (Sorted by AUC)", 
-                    fontsize=14, fontweight='bold')
+        ax.set_title("a", fontweight='bold', fontsize=24, pad=20, loc='left')
         
         # 添加颜色条
         cbar = plt.colorbar(im, ax=ax)
@@ -420,8 +442,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "source_cv_heatmap.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "source_cv_heatmap.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -493,8 +516,7 @@ class AnalysisVisualizer:
                 text = ax.text(j, i, f'{data_matrix[i, j]:.3f}',
                              ha="center", va="center", color="black", fontweight='bold')
         
-        ax.set_title("UDA Methods Performance Heatmap (Sorted by AUC)", 
-                    fontsize=14, fontweight='bold')
+        ax.set_title("a", fontweight='bold', fontsize=24, pad=20, loc='left')
         
         # 添加颜色条
         cbar = plt.colorbar(im, ax=ax)
@@ -505,8 +527,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "uda_methods_heatmap.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "uda_methods_heatmap.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -802,8 +825,9 @@ class AnalysisVisualizer:
         # 保存图表
         save_path = None
         if self.save_plots and roc_dir:
-            save_path = roc_dir / "roc_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = roc_dir / "roc_comparison.pdf"
+            plt.savefig(save_path, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
@@ -995,8 +1019,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "calibration_curves.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "calibration_curves.pdf"
+            plt.savefig(save_path, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
             print(f"校准曲线已保存: {save_path}")
         
         if self.show_plots:
@@ -1219,8 +1244,9 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "decision_curve_analysis.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / "decision_curve_analysis.pdf"
+            plt.savefig(save_path, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
         
         if self.show_plots:
             plt.show()
