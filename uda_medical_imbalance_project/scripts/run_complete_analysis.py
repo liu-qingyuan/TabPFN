@@ -969,6 +969,33 @@ class CompleteAnalysisRunner:
                 else:
                     print(f"⚠ {viz_name} 生成失败")
         
+        # 生成Nature标准组合图像 (使用原生matplotlib方法)
+        try:
+            if self.verbose:
+                print(f"\n📊 生成Nature标准组合图像...")
+            
+            # 直接调用visualizer的组合图像方法
+            combined_figure_path = visualizer.plot_combined_analysis_figure(
+                cv_results=self.results['source_domain_cv'],
+                uda_results=self.results['uda_methods'],
+                cv_predictions=cv_predictions,
+                uda_predictions=uda_predictions
+            )
+            
+            if combined_figure_path:
+                viz_results['combined_analysis_figure'] = combined_figure_path
+                if self.verbose:
+                    print(f"✅ 组合分析图像生成完成: {combined_figure_path}")
+            else:
+                viz_results['combined_analysis_figure'] = None
+                if self.verbose:
+                    print(f"⚠️ 组合分析图像生成失败")
+                    
+        except Exception as e:
+            if self.verbose:
+                print(f"⚠️ 组合图像生成出错: {e}")
+            viz_results['combined_analysis_figure'] = None
+        
         self.results['visualizations'] = viz_results
         return viz_results
     
