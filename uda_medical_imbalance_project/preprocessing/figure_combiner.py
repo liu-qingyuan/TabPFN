@@ -270,7 +270,7 @@ class FigureCombiner:
     def combine_heatmap_figures(self, input_dir: Path, output_path: Optional[Path] = None) -> Optional[Path]:
         """
         Combine source_cv_heatmap and uda_methods_heatmap into one figure
-        with 2 subplots (1x2) labeled a, b
+        with 2 subplots arranged vertically (2x1) labeled a, b
         """
         # Prioritize PNG files for Linux compatibility
         source_path = None
@@ -307,21 +307,21 @@ class FigureCombiner:
         print(f"   Source CV heatmap size: {source_img.size}")
         print(f"   UDA methods heatmap size: {uda_img.size}")
         
-        # Create figure with 1x2 layout
-        fig = plt.figure(figsize=(16, 8))
+        # Create figure with 2x1 layout (vertical arrangement)
+        fig = plt.figure(figsize=(12, 16))
         
         # Calculate subplot positions
-        left_margin = 0.05
+        left_margin = 0.08
         right_margin = 0.95
-        bottom_margin = 0.1
-        top_margin = 0.9
+        bottom_margin = 0.05
+        top_margin = 0.95
         
-        subplot_width = (right_margin - left_margin - 0.05) / 2
-        subplot_height = top_margin - bottom_margin
+        subplot_width = right_margin - left_margin
+        subplot_height = (top_margin - bottom_margin - 0.05) / 2  # 0.05 for spacing between plots
         
         positions = [
-            [left_margin, bottom_margin, subplot_width, subplot_height],  # left (a)
-            [left_margin + subplot_width + 0.05, bottom_margin, subplot_width, subplot_height]   # right (b)
+            [left_margin, bottom_margin + subplot_height + 0.05, subplot_width, subplot_height],  # top (a)
+            [left_margin, bottom_margin, subplot_width, subplot_height]   # bottom (b)
         ]
         
         images = [source_img, uda_img]
