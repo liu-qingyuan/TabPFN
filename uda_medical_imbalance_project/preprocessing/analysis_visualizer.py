@@ -620,7 +620,8 @@ class AnalysisVisualizer:
                 elif raw_method_name == 'TABPFN':
                     method_name = 'Our model'
                 else:
-                    method_name = raw_method_name.lower().capitalize()
+                    # 保持标准的大写命名格式，而不是使用capitalize()
+                    method_name = raw_method_name
                     
                 summary = result['summary']
                 cv_methods[method_name] = {
@@ -638,10 +639,11 @@ class AnalysisVisualizer:
                 if result.get('is_baseline', False):
                     if method_name == 'TabPFN_NoUDA':
                         display_name = "Our model (no UDA)"
+                    elif method_name in ['SVM', 'RF', 'GBDT', 'XGBoost', 'DT']:
+                        # 保持标准的机器学习方法大写命名
+                        display_name = method_name
                     else:
-                        display_name = method_name.replace('_', ' ').lower()
-                        # Capitalize first letter of each word
-                        display_name = ' '.join(word.capitalize() for word in display_name.split())
+                        display_name = method_name.replace('_', ' ')
                 else:
                     display_name = method_name
                 
