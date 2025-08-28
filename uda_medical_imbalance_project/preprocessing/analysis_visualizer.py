@@ -660,12 +660,12 @@ class AnalysisVisualizer:
         # Nature single column: 8.5cm = 3.35 inches wide
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))  # Adjusted for better readability
         
-        # Colorblind-friendly colormap (blue to yellow instead of red-green)
-        # This avoids red-green discrimination issues
+        # Colorblind-friendly colormap (blue to yellow gradient)
+        # This avoids red-green discrimination issues for colorblind readers
         import matplotlib.colors as mcolors
-        colors = ['#2166ac', '#5aae61', '#fee08b', '#d73027']  # Blue to yellow/red scale
-        n_bins = 100
-        cmap = mcolors.LinearSegmentedColormap.from_list('colorblind_safe', colors, N=n_bins)
+        colors = ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#fee391', '#fec44f', '#fe9929', '#d95f0e']  # Blue to yellow gradient
+        n_bins = 256
+        cmap = mcolors.LinearSegmentedColormap.from_list('blue_yellow', colors, N=n_bins)
         
         metrics = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
         
@@ -692,12 +692,17 @@ class AnalysisVisualizer:
                     ax1.text(j, i, f'{value:.3f}', ha="center", va="center", 
                            color=text_color, fontsize=9, fontweight='normal')
             
-            # Panel label (Nature style: lowercase bold)
-            ax1.text(-0.15, 1.02, 'a', transform=ax1.transAxes, fontsize=12, fontweight='bold')
+            # Panel label (Nature style: lowercase bold, larger size)
+            ax1.text(-0.12, 1.05, 'a', transform=ax1.transAxes, fontsize=16, fontweight='bold')
             
             # Remove top and right spines (Nature style)
             ax1.spines['top'].set_visible(False)
             ax1.spines['right'].set_visible(False)
+            
+            # Add colorbar for subplot a
+            cbar1 = plt.colorbar(im1, ax=ax1, shrink=0.8)
+            cbar1.set_label('Performance score', rotation=270, labelpad=15, fontsize=10)
+            cbar1.ax.tick_params(labelsize=9)
         
         # Plot b: UDA methods comparison
         if uda_methods:
@@ -721,22 +726,20 @@ class AnalysisVisualizer:
                     ax2.text(j, i, f'{value:.3f}', ha="center", va="center", 
                            color=text_color, fontsize=9, fontweight='normal')
             
-            # Panel label
-            ax2.text(-0.15, 1.02, 'b', transform=ax2.transAxes, fontsize=12, fontweight='bold')
+            # Panel label (Nature style: lowercase bold, larger size)
+            ax2.text(-0.12, 1.05, 'b', transform=ax2.transAxes, fontsize=16, fontweight='bold')
             
             # Remove top and right spines
             ax2.spines['top'].set_visible(False)
             ax2.spines['right'].set_visible(False)
-        
-        # Add a single colorbar for the entire figure
-        # Position it to the right of both subplots
-        cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
-        cbar = fig.colorbar(im2 if uda_methods else im1, cax=cbar_ax)
-        cbar.set_label('Performance score', rotation=270, labelpad=20, fontsize=11)
-        cbar.ax.tick_params(labelsize=10)
+            
+            # Add colorbar for subplot b
+            cbar2 = plt.colorbar(im2, ax=ax2, shrink=0.8)
+            cbar2.set_label('Performance score', rotation=270, labelpad=15, fontsize=10)
+            cbar2.ax.tick_params(labelsize=9)
         
         # Adjust layout to prevent overlapping
-        plt.subplots_adjust(left=0.2, right=0.9, top=0.95, bottom=0.05, hspace=0.4)
+        plt.tight_layout()
         
         # Save the figure
         save_path = None
