@@ -52,8 +52,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 # 设置中文字体和样式
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS']
-plt.rcParams['axes.unicode_minus'] = False
+# 设置Nature期刊标准字体
+plt.rcParams.update({
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Helvetica', 'DejaVu Sans', 'Liberation Sans', 'Bitstream Vera Sans', 'sans-serif'],
+    'font.size': 11,
+    'axes.titlesize': 12,
+    'axes.labelsize': 11,
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
+    'legend.fontsize': 10,
+    'figure.titlesize': 14,
+    'text.usetex': False,
+    'mathtext.default': 'regular',  # Use same font for math text
+    'axes.linewidth': 0.8,
+    'grid.linewidth': 0.5,
+    'lines.linewidth': 1.5,
+    'patch.linewidth': 0.8
+})
 sns.set_style("whitegrid")
 sns.set_palette("husl")
 
@@ -94,13 +110,13 @@ class UDAVisualizer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # 颜色配置
+        # Nature期刊科研配色方案
         self.colors = {
-            'source': '#2E86AB',      # 蓝色 - 源域
-            'target': '#A23B72',      # 紫色 - 目标域
-            'adapted': '#F18F01',     # 橙色 - 适应后
-            'class_0': '#E63946',     # 红色 - 类别0
-            'class_1': '#2A9D8F'      # 绿色 - 类别1
+            'source': '#2C91E0',      # 科研三色配色1 - 源域
+            'target': '#3ABF99',      # 科研三色配色2 - 目标域
+            'adapted': '#F0A73A',     # 科研三色配色3 - 适应后
+            'class_0': '#9BDCFC',     # 科研双色配色1 - 类别0
+            'class_1': '#F0CFEA'      # 科研双色配色2 - 类别1
         }
         
         logger.info(f"UDA可视化器初始化完成，输出目录: {self.output_dir}")
@@ -181,7 +197,8 @@ class UDAVisualizer:
         
         # 创建图形
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-        fig.suptitle(f'{method_name} - Domain Adaptation Visualization', fontsize=16, fontweight='bold')
+        # 移除主标题以符合Nature期刊要求
+        # fig.suptitle(f'{method_name} - Domain Adaptation Visualization', fontsize=16, fontweight='bold')
         
         results = {}
         
@@ -202,8 +219,9 @@ class UDAVisualizer:
         plt.tight_layout()
         
         if self.save_plots:
-            save_path = self.output_dir / f"{method_name}_dimensionality_reduction.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / f"{method_name}_dimensionality_reduction.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
             print(f"  降维可视化已保存: {save_path}")
         
         plt.show()
@@ -234,7 +252,7 @@ class UDAVisualizer:
                    c=self.colors['source'], alpha=0.6, label='Source Domain', s=50)
         ax1.scatter(X_pca_before[n_source:, 0], X_pca_before[n_source:, 1], 
                    c=self.colors['target'], alpha=0.6, label='Target Domain', s=50)
-        ax1.set_title('Before Domain Adaptation (PCA)', fontweight='bold')
+        ax1.set_title('a', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax1.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} variance)')
         ax1.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} variance)')
         ax1.legend()
@@ -246,7 +264,7 @@ class UDAVisualizer:
                    c=self.colors['source'], alpha=0.6, label='Source Domain', s=50)
         ax2.scatter(X_pca_after[n_source:, 0], X_pca_after[n_source:, 1], 
                    c=self.colors['adapted'], alpha=0.6, label='Target Domain (Adapted)', s=50)
-        ax2.set_title(f'After {method_name} (PCA)', fontweight='bold')
+        ax2.set_title('b', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax2.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} variance)')
         ax2.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} variance)')
         ax2.legend()
@@ -291,7 +309,7 @@ class UDAVisualizer:
                    c=self.colors['source'], alpha=0.6, label='Source Domain', s=50)
         ax1.scatter(X_tsne_before[n_source:, 0], X_tsne_before[n_source:, 1], 
                    c=self.colors['target'], alpha=0.6, label='Target Domain', s=50)
-        ax1.set_title('Before Domain Adaptation (t-SNE)', fontweight='bold')
+        ax1.set_title('c', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax1.set_xlabel('t-SNE 1')
         ax1.set_ylabel('t-SNE 2')
         ax1.legend()
@@ -303,7 +321,7 @@ class UDAVisualizer:
                    c=self.colors['source'], alpha=0.6, label='Source Domain', s=50)
         ax2.scatter(X_tsne_after[n_source:, 0], X_tsne_after[n_source:, 1], 
                    c=self.colors['adapted'], alpha=0.6, label='Target Domain (Adapted)', s=50)
-        ax2.set_title(f'After {method_name} (t-SNE)', fontweight='bold')
+        ax2.set_title('d', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax2.set_xlabel('t-SNE 1')
         ax2.set_ylabel('t-SNE 2')
         ax2.legend()
@@ -957,8 +975,9 @@ class UDAVisualizer:
         plt.tight_layout()
         
         if self.save_plots:
-            save_path = self.output_dir / f"{method_name}_distance_metrics.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / f"{method_name}_distance_metrics.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
             print(f"  距离度量图已保存: {save_path}")
         
         plt.show()
@@ -1047,8 +1066,9 @@ class UDAVisualizer:
         plt.tight_layout()
         
         if self.save_plots:
-            save_path = self.output_dir / f"{method_name}_performance_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            save_path = self.output_dir / f"{method_name}_performance_comparison.pdf"
+            plt.savefig(save_path, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
             print(f"  性能对比图已保存: {save_path}")
         
         plt.show()

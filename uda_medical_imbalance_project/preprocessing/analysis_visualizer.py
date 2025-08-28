@@ -23,9 +23,24 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils import resample
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS']
-plt.rcParams['axes.unicode_minus'] = False
+# 设置Nature期刊标准字体
+plt.rcParams.update({
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Helvetica', 'DejaVu Sans', 'Liberation Sans', 'Bitstream Vera Sans', 'sans-serif'],
+    'font.size': 11,
+    'axes.titlesize': 12,
+    'axes.labelsize': 11,
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
+    'legend.fontsize': 10,
+    'figure.titlesize': 14,
+    'text.usetex': False,
+    'mathtext.default': 'regular',  # Use same font for math text
+    'axes.linewidth': 0.8,
+    'grid.linewidth': 0.5,
+    'lines.linewidth': 1.5,
+    'patch.linewidth': 0.8
+})
 
 
 class AnalysisVisualizer:
@@ -86,11 +101,12 @@ class AnalysisVisualizer:
         
         # 创建对比图
         fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-        fig.suptitle('Source Domain 10-Fold Cross-Validation Comparison', fontsize=16, fontweight='bold')
+        # 移除主标题以符合Nature期刊要求
+        # fig.suptitle('Source Domain 10-Fold Cross-Validation Comparison', fontsize=16, fontweight='bold')
         
-        # 绘制各个指标
+        # 绘制各个指标 - 使用Nature期刊科研配色
         metric_names = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+        colors = ['#C9EFBE', '#9BDCFC', '#CAC8EF', '#F0CFEA', '#2C91E0']  # Nature期刊科研配色
         
         for i, metric in enumerate(metric_names):
             row = i // 3
@@ -98,7 +114,9 @@ class AnalysisVisualizer:
             ax = axes[row, col]
             
             bars = ax.bar(methods, metrics_data[metric], color=colors[i], alpha=0.7)
-            ax.set_title(f'{metric} Comparison', fontweight='bold')
+            # 使用小写字母标识子图
+            subplot_letters = ['a', 'b', 'c', 'd', 'e']
+            ax.set_title(subplot_letters[i], fontweight='bold', fontsize=24, pad=20, loc='left')
             ax.set_ylabel(metric)
             ax.set_ylim(0, 1)
             ax.grid(True, alpha=0.3)
@@ -117,8 +135,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "source_cv_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "source_cv_comparison.pdf"
+            save_path_png = self.output_dir / "source_cv_comparison.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -158,19 +184,19 @@ class AnalysisVisualizer:
                 if method_name == 'TabPFN_NoUDA':
                     display_name = 'Our Model\n(No UDA)'
                     tabpfn_baseline.append((method_name, display_name))
-                    method_colors.append('#e74c3c')  # 红色表示Our Model基线
+                    method_colors.append('#F0CFEA')  # 科研配色4 - Our Model基线
                 elif result.get('baseline_category') == 'ml_baseline':
                     display_name = method_name
                     ml_baselines.append((method_name, display_name))
-                    method_colors.append('#f39c12')  # 橙色表示机器学习基线
+                    method_colors.append('#3ABF99')  # 科研三色配色2 - 机器学习基线
                 else:
                     display_name = method_name
                     traditional_baselines.append((method_name, display_name))
-                    method_colors.append('#9b59b6')  # 紫色表示传统基线
+                    method_colors.append('#F0A73A')  # 科研三色配色3 - 传统基线
             else:
                 display_name = method_name
                 uda_methods.append((method_name, display_name))
-                method_colors.append('#3498db')  # 蓝色表示UDA方法
+                method_colors.append('#2C91E0')  # 科研三色配色1 - UDA方法
             
             method_display_mapping[method_name] = display_name
         
@@ -192,7 +218,8 @@ class AnalysisVisualizer:
         
         # 创建对比图
         fig, axes = plt.subplots(2, 3, figsize=(20, 12))
-        fig.suptitle('UDA Methods vs Baseline Performance Comparison', fontsize=16, fontweight='bold')
+        # 移除主标题以符合Nature期刊要求
+        # fig.suptitle('UDA Methods vs Baseline Performance Comparison', fontsize=16, fontweight='bold')
         
         metric_names = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
         
@@ -202,7 +229,9 @@ class AnalysisVisualizer:
             ax = axes[row, col]
             
             bars = ax.bar(all_methods, metrics_data[metric], color=method_colors, alpha=0.7)
-            ax.set_title(f'{metric} Comparison', fontweight='bold')
+            # 使用小写字母标识子图
+            subplot_letters = ['a', 'b', 'c', 'd', 'e']
+            ax.set_title(subplot_letters[i], fontweight='bold', fontsize=24, pad=20, loc='left')
             ax.set_ylabel(metric)
             ax.set_ylim(0, 1)
             ax.grid(True, alpha=0.3)
@@ -217,10 +246,10 @@ class AnalysisVisualizer:
         # 添加图例
         from matplotlib.patches import Patch
         legend_elements = [
-            Patch(facecolor='#e74c3c', alpha=0.7, label='Our Model Baseline'),
-            Patch(facecolor='#9b59b6', alpha=0.7, label='Traditional Baselines'),
-            Patch(facecolor='#f39c12', alpha=0.7, label='ML Baselines'),
-            Patch(facecolor='#3498db', alpha=0.7, label='UDA Methods')
+            Patch(facecolor='#F0CFEA', alpha=0.7, label='Our Model Baseline'),
+            Patch(facecolor='#F0A73A', alpha=0.7, label='Traditional Baselines'),
+            Patch(facecolor='#3ABF99', alpha=0.7, label='ML Baselines'),
+            Patch(facecolor='#2C91E0', alpha=0.7, label='UDA Methods')
         ]
         fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.98, 0.98))
         
@@ -232,8 +261,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "uda_methods_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "uda_methods_comparison.pdf"
+            save_path_png = self.output_dir / "uda_methods_comparison.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -319,7 +356,7 @@ class AnalysisVisualizer:
         
         ax.set_xlabel('Metrics')
         ax.set_ylabel('Score')
-        ax.set_title('Best Source Domain vs Best UDA Method Comparison', fontsize=14, fontweight='bold')
+        ax.set_title('a', fontweight='bold', fontsize=24, pad=20, loc='left')
         ax.set_xticks(x)
         ax.set_xticklabels(metrics)
         ax.legend()
@@ -338,8 +375,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "overall_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "overall_comparison.pdf"
+            save_path_png = self.output_dir / "overall_comparison.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -408,8 +453,7 @@ class AnalysisVisualizer:
                 text = ax.text(j, i, f'{data_matrix[i, j]:.3f}',
                              ha="center", va="center", color="black", fontweight='bold')
         
-        ax.set_title("Source Domain 10-Fold CV Performance Heatmap (Sorted by AUC)", 
-                    fontsize=14, fontweight='bold')
+        ax.set_title("a", fontweight='bold', fontsize=24, pad=20, loc='left')
         
         # 添加颜色条
         cbar = plt.colorbar(im, ax=ax)
@@ -420,8 +464,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "source_cv_heatmap.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "source_cv_heatmap.pdf"
+            save_path_png = self.output_dir / "source_cv_heatmap.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -493,8 +545,7 @@ class AnalysisVisualizer:
                 text = ax.text(j, i, f'{data_matrix[i, j]:.3f}',
                              ha="center", va="center", color="black", fontweight='bold')
         
-        ax.set_title("UDA Methods Performance Heatmap (Sorted by AUC)", 
-                    fontsize=14, fontweight='bold')
+        ax.set_title("a", fontweight='bold', fontsize=24, pad=20, loc='left')
         
         # 添加颜色条
         cbar = plt.colorbar(im, ax=ax)
@@ -505,8 +556,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "uda_methods_heatmap.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "uda_methods_heatmap.pdf"
+            save_path_png = self.output_dir / "uda_methods_heatmap.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=1200, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -636,8 +695,9 @@ class AnalysisVisualizer:
         # 创建双子图
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
         
-        # 颜色映射
-        colors = plt.cm.Set3(np.linspace(0, 1, 12))
+        # Use provided color scheme
+        custom_colors = ['#40B0A6', '#6D8EF7', '#6E579A', '#A38E89', '#A5C8DD', '#CD5582', '#E1BE6A', '#EC6B2D', '#ED8AED']
+        colors = custom_colors * 2  # Repeat if needed for more models
         color_idx = 0
         
         # 左图：源域10折交叉验证ROC曲线
@@ -692,7 +752,11 @@ class AnalysisVisualizer:
         
         ax1.set_xlabel('1 - Specificity (False Positive Rate)')
         ax1.set_ylabel('Sensitivity (True Positive Rate)')
-        ax1.set_title('Source Domain 10-Fold CV ROC Curves', fontweight='bold')
+        # Move title to upper left corner as requested
+        ax1.text(0.02, 0.98, 'Source Domain 10-Fold CV ROC Curves', 
+                transform=ax1.transAxes, fontsize=12, fontweight='bold',
+                ha='left', va='top', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         ax1.legend(loc='lower right', fontsize=9)
         ax1.grid(True, alpha=0.3)
         
@@ -793,7 +857,11 @@ class AnalysisVisualizer:
         
         ax2.set_xlabel('1 - Specificity (False Positive Rate)')
         ax2.set_ylabel('Sensitivity (True Positive Rate)')
-        ax2.set_title('Target Domain UDA Methods ROC Curves', fontweight='bold')
+        # Move title to upper left corner as requested
+        ax2.text(0.02, 0.98, 'Target Domain UDA Methods ROC Curves', 
+                transform=ax2.transAxes, fontsize=12, fontweight='bold',
+                ha='left', va='top', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         ax2.legend(loc='lower right', fontsize=9)
         ax2.grid(True, alpha=0.3)
         
@@ -802,8 +870,16 @@ class AnalysisVisualizer:
         # 保存图表
         save_path = None
         if self.save_plots and roc_dir:
-            save_path = roc_dir / "roc_comparison.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = roc_dir / "roc_comparison.pdf"
+            save_path_png = roc_dir / "roc_comparison.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -830,10 +906,11 @@ class AnalysisVisualizer:
         from sklearn.calibration import calibration_curve
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-        fig.suptitle('Model Calibration Curves', fontsize=16, fontweight='bold')
+        # Remove main title as requested
         
-        # 颜色映射
-        colors = plt.cm.Set3(np.linspace(0, 1, 12))
+        # Use provided color scheme
+        custom_colors = ['#40B0A6', '#6D8EF7', '#6E579A', '#A38E89', '#A5C8DD', '#CD5582', '#E1BE6A', '#EC6B2D', '#ED8AED']
+        colors = custom_colors * 2  # Repeat if needed for more models
         
         # 左图：源域交叉验证校准曲线
         ax1.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Perfectly Calibrated', linewidth=2)
@@ -902,7 +979,11 @@ class AnalysisVisualizer:
         
         ax1.set_xlabel('Mean Predicted Probability')
         ax1.set_ylabel('Fraction of Positives')
-        ax1.set_title('Source Domain CV Calibration', fontweight='bold')
+        # Move title to right bottom corner as requested
+        ax1.text(0.98, 0.02, 'Source Domain CV Calibration', 
+                transform=ax1.transAxes, fontsize=12, fontweight='bold',
+                ha='right', va='bottom', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         ax1.legend(loc='upper left', fontsize=8)  # 改为左上角，字体更小
         ax1.grid(True, alpha=0.3)
         ax1.set_xlim([0, 1])
@@ -984,7 +1065,11 @@ class AnalysisVisualizer:
         
         ax2.set_xlabel('Mean Predicted Probability')
         ax2.set_ylabel('Fraction of Positives')
-        ax2.set_title('Target Domain UDA Methods Calibration', fontweight='bold')
+        # Move title to right bottom corner as requested
+        ax2.text(0.98, 0.02, 'Target Domain UDA Methods Calibration', 
+                transform=ax2.transAxes, fontsize=12, fontweight='bold',
+                ha='right', va='bottom', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         ax2.legend(loc='upper left', fontsize=8)  # 改为左上角，字体更小
         ax2.grid(True, alpha=0.3)
         ax2.set_xlim([0, 1])
@@ -995,9 +1080,17 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "calibration_curves.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            print(f"校准曲线已保存: {save_path}")
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "calibration_curves.pdf"
+            save_path_png = self.output_dir / "calibration_curves.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
+            print(f"校准曲线已保存: {save_path} (PNG: {save_path_png})")
         
         if self.show_plots:
             plt.show()
@@ -1065,16 +1158,21 @@ class AnalysisVisualizer:
             return net_benefit
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-        fig.suptitle('Decision Curve Analysis (DCA)', fontsize=16, fontweight='bold')
+        # Remove main title as requested
         
         # 阈值范围：从1%到99%
         thresholds = np.arange(0.01, 0.99, 0.01)
         
-        # 颜色映射
-        colors = plt.cm.Set3(np.linspace(0, 1, 12))
+        # Use provided color scheme
+        custom_colors = ['#40B0A6', '#6D8EF7', '#6E579A', '#A38E89', '#A5C8DD', '#CD5582', '#E1BE6A', '#EC6B2D', '#ED8AED']
+        colors = custom_colors * 2  # Repeat if needed for more models
         
         # 左图：源域交叉验证DCA
-        ax1.set_title('Source Domain CV Decision Curves', fontweight='bold')
+        # Move title to left bottom corner as requested
+        ax1.text(0.02, 0.02, 'Source Domain CV Decision Curves', 
+                transform=ax1.transAxes, fontsize=12, fontweight='bold',
+                ha='left', va='bottom', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         
         # 用于计算参考线的数据（使用第一个有效的预测数据）
         reference_y_true = None
@@ -1140,7 +1238,11 @@ class AnalysisVisualizer:
         ax1.set_ylim([-0.2, 0.7])  # 设置Y轴范围为[-0.2, 0.7]
         
         # 右图：目标域UDA方法DCA
-        ax2.set_title('Target Domain UDA Methods Decision Curves', fontweight='bold')
+        # Move title to left bottom corner as requested
+        ax2.text(0.02, 0.02, 'Target Domain UDA Methods Decision Curves', 
+                transform=ax2.transAxes, fontsize=12, fontweight='bold',
+                ha='left', va='bottom', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
         
         # 用于计算参考线的数据
         reference_y_true_uda = None
@@ -1219,8 +1321,16 @@ class AnalysisVisualizer:
         # 保存和显示图表
         save_path = None
         if self.save_plots and self.output_dir:
-            save_path = self.output_dir / "decision_curve_analysis.png"
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            # 同时保存PDF和PNG格式，PNG用于组合图像
+            save_path_pdf = self.output_dir / "decision_curve_analysis.pdf"
+            save_path_png = self.output_dir / "decision_curve_analysis.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=900, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
         
         if self.show_plots:
             plt.show()
@@ -1229,6 +1339,444 @@ class AnalysisVisualizer:
         
         return str(save_path) if save_path else None
     
+    def plot_combined_analysis_figure(self, cv_results: Dict, uda_results: Dict,
+                                     cv_predictions: Optional[Dict] = None,
+                                     uda_predictions: Optional[Dict] = None) -> Optional[str]:
+        """
+        生成Nature标准的六面板组合图像 (3x2布局)
+        布局顺序：
+        a, b: ROC曲线 (Source Domain 10-Fold CV, Target Domain UDA Methods)
+        c, d: 校准曲线 (Source Domain CV Calibration, Target Domain UDA Methods Calibration)  
+        e, f: 决策曲线分析 (Source Domain CV Decision Curves, Target Domain UDA Methods Decision Curves)
+        """
+        from sklearn.calibration import calibration_curve
+        
+        # Apply Nature journal style
+        plt.rcParams.update({
+            'font.family': 'sans-serif',
+            'font.sans-serif': ['Helvetica', 'DejaVu Sans', 'Liberation Sans', 'Bitstream Vera Sans', 'sans-serif'],
+            'font.size': 11,
+            'axes.titlesize': 12,
+            'axes.labelsize': 11,
+            'xtick.labelsize': 10,
+            'ytick.labelsize': 10,
+            'legend.fontsize': 10,
+            'figure.titlesize': 14,
+            'text.usetex': False,
+            'mathtext.default': 'regular',
+            'axes.linewidth': 0.8,
+            'grid.linewidth': 0.5,
+            'lines.linewidth': 1.5,
+            'patch.linewidth': 0.8,
+        })
+        
+        # 创建3x2子图布局
+        fig, axes = plt.subplots(3, 2, figsize=(16, 18))
+        fig.suptitle('')  # 不要主标题
+        
+        # 使用提供的配色方案
+        custom_colors = ['#40B0A6', '#6D8EF7', '#6E579A', '#A38E89', '#A5C8DD', '#CD5582', '#E1BE6A', '#EC6B2D', '#ED8AED']
+        
+        # 子图标签
+        panel_labels = ['a', 'b', 'c', 'd', 'e', 'f']
+        
+        # ==================== ROC曲线 (第一行) ====================
+        
+        # a) Source Domain 10-Fold CV ROC Curves
+        ax_roc_source = axes[0, 0]
+        ax_roc_source.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Random Classifier (AUC = 0.50)')
+        
+        color_idx = 0
+        if cv_predictions:
+            for method_name, pred_data in cv_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = np.array(pred_data['y_pred_proba'])
+                    
+                    if len(y_proba.shape) > 1 and y_proba.shape[1] > 1:
+                        y_scores = y_proba[:, 1]
+                    else:
+                        y_scores = y_proba
+                    
+                    try:
+                        from sklearn.metrics import roc_curve, auc
+                        fpr, tpr, _ = roc_curve(y_true, y_scores)
+                        roc_auc = auc(fpr, tpr)
+                        
+                        raw_name = method_name.split('_')[0].upper()
+                        display_name = "Our Model" if raw_name == "TABPFN" else raw_name
+                        ax_roc_source.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
+                                        label=f'{display_name} (AUC = {roc_auc:.3f})',
+                                        linewidth=2)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot ROC for {method_name}: {e}")
+        
+        ax_roc_source.set_xlabel('1 - Specificity (False Positive Rate)')
+        ax_roc_source.set_ylabel('Sensitivity (True Positive Rate)')
+        ax_roc_source.text(0.02, 0.98, 'Source Domain 10-Fold CV ROC Curves', 
+                          transform=ax_roc_source.transAxes, fontsize=12, fontweight='bold',
+                          ha='left', va='top', 
+                          bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax_roc_source.legend(loc='lower right', fontsize=9)
+        ax_roc_source.grid(True, alpha=0.3)
+        
+        # b) Target Domain UDA Methods ROC Curves
+        ax_roc_target = axes[0, 1]
+        ax_roc_target.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Random Classifier (AUC = 0.50)')
+        
+        color_idx = 0
+        if uda_predictions:
+            for method_name, pred_data in uda_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = np.array(pred_data['y_pred_proba'])
+                    
+                    if len(y_proba.shape) > 1 and y_proba.shape[1] > 1:
+                        y_scores = y_proba[:, 1]
+                    else:
+                        y_scores = y_proba
+                    
+                    try:
+                        from sklearn.metrics import roc_curve, auc
+                        fpr, tpr, _ = roc_curve(y_true, y_scores)
+                        roc_auc = auc(fpr, tpr)
+                        
+                        # 确定显示名称和样式
+                        if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
+                            if pred_data.get('baseline_category') == 'ml_baseline':
+                                display_name = f"{method_name} (ML Baseline)"
+                                linestyle = ':'
+                            elif method_name == 'TabPFN_NoUDA':
+                                display_name = f"Our Model_NoUDA (Our Model Baseline)"
+                                linestyle = '-.'
+                            else:
+                                display_name = f"{method_name} (Traditional Baseline)"
+                                linestyle = '--'
+                        else:
+                            display_name = f"Our Model+{method_name} (UDA)"
+                            linestyle = '-'
+                        
+                        ax_roc_target.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
+                                        label=f'{display_name} (AUC = {roc_auc:.3f})',
+                                        linewidth=2, linestyle=linestyle)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot ROC for {method_name}: {e}")
+        
+        ax_roc_target.set_xlabel('1 - Specificity (False Positive Rate)')
+        ax_roc_target.set_ylabel('Sensitivity (True Positive Rate)')
+        ax_roc_target.text(0.02, 0.98, 'Target Domain UDA Methods ROC Curves', 
+                          transform=ax_roc_target.transAxes, fontsize=12, fontweight='bold',
+                          ha='left', va='top', 
+                          bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax_roc_target.legend(loc='lower right', fontsize=9)
+        ax_roc_target.grid(True, alpha=0.3)
+        
+        # ==================== 校准曲线 (第二行) ====================
+        
+        # c) Source Domain CV Calibration
+        ax_calib_source = axes[1, 0]
+        ax_calib_source.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Perfectly Calibrated', linewidth=2)
+        
+        color_idx = 0
+        if cv_predictions:
+            for method_name, pred_data in cv_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = pred_data['y_pred_proba']
+                    
+                    if isinstance(y_proba, list):
+                        y_scores = np.array(y_proba)
+                    else:
+                        y_scores = np.array(y_proba)
+                    
+                    if len(y_scores.shape) > 1 and y_scores.shape[1] > 1:
+                        y_scores = y_scores[:, 1]
+                    else:
+                        y_scores = y_scores.flatten()
+                    
+                    if len(y_true) == 0 or len(y_scores) == 0 or len(y_true) != len(y_scores):
+                        continue
+                    
+                    if np.any(y_scores < 0) or np.any(y_scores > 1):
+                        y_scores = np.clip(y_scores, 0, 1)
+                    
+                    try:
+                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                            y_true, y_scores, n_bins=10
+                        )
+                        
+                        raw_method_name = method_name.split('_')[0].upper()
+                        display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                        if raw_method_name == 'PAPER':
+                            display_name = 'Paper_LR'
+                        
+                        ax_calib_source.plot(mean_predicted_value, fraction_of_positives, 'o-',
+                                           color=custom_colors[color_idx % len(custom_colors)], 
+                                           label=f'{display_name}',
+                                           linewidth=2, markersize=6)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot calibration curve for {method_name}: {e}")
+        
+        ax_calib_source.set_xlabel('Mean Predicted Probability')
+        ax_calib_source.set_ylabel('Fraction of Positives')
+        ax_calib_source.text(0.98, 0.02, 'Source Domain CV Calibration', 
+                            transform=ax_calib_source.transAxes, fontsize=12, fontweight='bold',
+                            ha='right', va='bottom', 
+                            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax_calib_source.legend(loc='upper left', fontsize=8)
+        ax_calib_source.grid(True, alpha=0.3)
+        ax_calib_source.set_xlim([0, 1])
+        ax_calib_source.set_ylim([0, 1])
+        
+        # d) Target Domain UDA Methods Calibration  
+        ax_calib_target = axes[1, 1]
+        ax_calib_target.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Perfectly Calibrated', linewidth=2)
+        
+        color_idx = 0
+        if uda_predictions:
+            for method_name, pred_data in uda_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = pred_data['y_pred_proba']
+                    
+                    if isinstance(y_proba, list):
+                        y_scores = np.array(y_proba)
+                    else:
+                        y_scores = np.array(y_proba)
+                    
+                    if len(y_scores.shape) > 1 and y_scores.shape[1] > 1:
+                        y_scores = y_scores[:, 1]
+                    else:
+                        y_scores = y_scores.flatten()
+                    
+                    if len(y_true) == 0 or len(y_scores) == 0 or len(y_true) != len(y_scores):
+                        continue
+                    
+                    if np.any(y_scores < 0) or np.any(y_scores > 1):
+                        y_scores = np.clip(y_scores, 0, 1)
+                    
+                    try:
+                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                            y_true, y_scores, n_bins=10
+                        )
+                        
+                        # 确定显示名称和样式
+                        if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
+                            if pred_data.get('baseline_category') == 'ml_baseline':
+                                display_name = f"{method_name}"
+                                linestyle = ':'
+                            elif method_name == 'TabPFN_NoUDA':
+                                display_name = f"Our Model (No UDA)"
+                                linestyle = '-.'
+                            else:
+                                display_name = f"{method_name}"
+                                linestyle = '--'
+                        else:
+                            display_name = f"Our Model+{method_name}"
+                            linestyle = '-'
+                        
+                        ax_calib_target.plot(mean_predicted_value, fraction_of_positives, 'o',
+                                           color=custom_colors[color_idx % len(custom_colors)], 
+                                           label=f'{display_name}',
+                                           linewidth=2, markersize=6, linestyle=linestyle)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot calibration curve for {method_name}: {e}")
+        
+        ax_calib_target.set_xlabel('Mean Predicted Probability')
+        ax_calib_target.set_ylabel('Fraction of Positives')
+        ax_calib_target.text(0.98, 0.02, 'Target Domain UDA Methods Calibration', 
+                            transform=ax_calib_target.transAxes, fontsize=12, fontweight='bold',
+                            ha='right', va='bottom', 
+                            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax_calib_target.legend(loc='upper left', fontsize=8)
+        ax_calib_target.grid(True, alpha=0.3)
+        ax_calib_target.set_xlim([0, 1])
+        ax_calib_target.set_ylim([0, 1])
+        
+        # ==================== 决策曲线分析 (第三行) ====================
+        
+        def calculate_net_benefit(y_true, y_proba, threshold):
+            """计算净收益"""
+            y_pred = (y_proba >= threshold).astype(int)
+            tp = np.sum((y_true == 1) & (y_pred == 1))
+            fp = np.sum((y_true == 0) & (y_pred == 1))
+            n_total = len(y_true)
+            
+            if threshold >= 1.0:
+                return 0.0
+            
+            harm_to_benefit_ratio = threshold / (1 - threshold)
+            net_benefit = (tp / n_total) - (fp / n_total) * harm_to_benefit_ratio
+            return net_benefit
+        
+        def calculate_treat_all_net_benefit(y_true, threshold):
+            """计算Treat All策略的净收益"""
+            prevalence = np.mean(y_true)
+            if threshold >= 1.0:
+                return 0.0
+            harm_to_benefit_ratio = threshold / (1 - threshold)
+            net_benefit = prevalence - (1 - prevalence) * harm_to_benefit_ratio
+            return net_benefit
+        
+        # 阈值范围
+        thresholds = np.arange(0.01, 0.99, 0.01)
+        
+        # e) Source Domain CV Decision Curves
+        ax_dca_source = axes[2, 0]
+        ax_dca_source.text(0.02, 0.02, 'Source Domain CV Decision Curves', 
+                          transform=ax_dca_source.transAxes, fontsize=12, fontweight='bold',
+                          ha='left', va='bottom', 
+                          bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        
+        reference_y_true = None
+        color_idx = 0
+        if cv_predictions:
+            for method_name, pred_data in cv_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = np.array(pred_data['y_pred_proba'])
+                    
+                    if len(y_proba.shape) > 1 and y_proba.shape[1] > 1:
+                        y_scores = y_proba[:, 1]
+                    else:
+                        y_scores = y_proba.flatten()
+                    
+                    if reference_y_true is None:
+                        reference_y_true = y_true
+                    
+                    try:
+                        net_benefits = []
+                        for threshold in thresholds:
+                            nb = calculate_net_benefit(y_true, y_scores, threshold)
+                            net_benefits.append(nb)
+                        
+                        raw_method_name = method_name.split('_')[0].upper()
+                        display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                        if raw_method_name == 'PAPER':
+                            display_name = 'Paper_LR'
+                        
+                        ax_dca_source.plot(thresholds, net_benefits, 
+                                         color=custom_colors[color_idx % len(custom_colors)], 
+                                         label=f'{display_name}',
+                                         linewidth=2)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot DCA for {method_name}: {e}")
+        
+        # 绘制参考线
+        if reference_y_true is not None:
+            treat_all_nb = [calculate_treat_all_net_benefit(reference_y_true, t) for t in thresholds]
+            ax_dca_source.plot(thresholds, treat_all_nb, 'k--', alpha=0.7, 
+                             label='Treat All', linewidth=2)
+            ax_dca_source.axhline(y=0, color='k', linestyle=':', alpha=0.7, 
+                                 label='Treat None', linewidth=2)
+        
+        ax_dca_source.set_xlabel('Threshold Probability')
+        ax_dca_source.set_ylabel('Net Benefit')
+        ax_dca_source.legend(loc='upper right', fontsize=9)
+        ax_dca_source.grid(True, alpha=0.3)
+        ax_dca_source.set_xlim([0, 1])
+        ax_dca_source.set_ylim([-0.2, 0.7])
+        
+        # f) Target Domain UDA Methods Decision Curves
+        ax_dca_target = axes[2, 1]
+        ax_dca_target.text(0.02, 0.02, 'Target Domain UDA Methods Decision Curves', 
+                          transform=ax_dca_target.transAxes, fontsize=12, fontweight='bold',
+                          ha='left', va='bottom', 
+                          bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        
+        reference_y_true_uda = None
+        color_idx = 0
+        if uda_predictions:
+            for method_name, pred_data in uda_predictions.items():
+                if 'y_true' in pred_data and 'y_pred_proba' in pred_data:
+                    y_true = np.array(pred_data['y_true'])
+                    y_proba = np.array(pred_data['y_pred_proba'])
+                    
+                    if len(y_proba.shape) > 1 and y_proba.shape[1] > 1:
+                        y_scores = y_proba[:, 1]
+                    else:
+                        y_scores = y_proba.flatten()
+                    
+                    if reference_y_true_uda is None:
+                        reference_y_true_uda = y_true
+                    
+                    try:
+                        net_benefits = []
+                        for threshold in thresholds:
+                            nb = calculate_net_benefit(y_true, y_scores, threshold)
+                            net_benefits.append(nb)
+                        
+                        # 确定显示名称和样式
+                        if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
+                            if pred_data.get('baseline_category') == 'ml_baseline':
+                                display_name = f"{method_name} (ML Baseline)"
+                                linestyle = ':'
+                            elif method_name == 'TabPFN_NoUDA':
+                                display_name = f"Our Model (No UDA)"
+                                linestyle = '-.'
+                            else:
+                                display_name = f"{method_name} (Traditional Baseline)"
+                                linestyle = '--'
+                        else:
+                            display_name = f"Our Model+{method_name} (UDA)"
+                            linestyle = '-'
+                        
+                        ax_dca_target.plot(thresholds, net_benefits, 
+                                         color=custom_colors[color_idx % len(custom_colors)], 
+                                         label=f'{display_name}',
+                                         linewidth=2, linestyle=linestyle)
+                        color_idx += 1
+                    except Exception as e:
+                        print(f"Warning: Failed to plot DCA for {method_name}: {e}")
+        
+        # 绘制参考线
+        if reference_y_true_uda is not None:
+            treat_all_nb = [calculate_treat_all_net_benefit(reference_y_true_uda, t) for t in thresholds]
+            ax_dca_target.plot(thresholds, treat_all_nb, 'k--', alpha=0.7, 
+                             label='Treat All', linewidth=2)
+            ax_dca_target.axhline(y=0, color='k', linestyle=':', alpha=0.7, 
+                                 label='Treat None', linewidth=2)
+        
+        ax_dca_target.set_xlabel('Threshold Probability')
+        ax_dca_target.set_ylabel('Net Benefit')
+        ax_dca_target.legend(loc='upper right', fontsize=9)
+        ax_dca_target.grid(True, alpha=0.3)
+        ax_dca_target.set_xlim([0, 1])
+        ax_dca_target.set_ylim([-0.2, 0.7])
+        
+        # ==================== 添加面板标签（使用子图标题方式） ====================
+        # 使用matplotlib的子图标题功能，将标签放在每个子图的外部左上角
+        for i, (ax, label) in enumerate(zip(axes.flat, panel_labels)):
+            ax.set_title(label, fontweight='bold', fontsize=20, pad=15, loc='left')
+        
+        plt.tight_layout()
+        
+        # 保存图表
+        save_path = None
+        if self.save_plots and self.output_dir:
+            save_path_pdf = self.output_dir / "combined_analysis_figure.pdf"
+            save_path_png = self.output_dir / "combined_analysis_figure.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
+            print(f"✅ Nature标准组合图像已保存: {save_path}")
+        
+        if self.show_plots:
+            plt.show()
+        else:
+            plt.close()
+        
+        return str(save_path) if save_path else None
+
     def generate_all_visualizations(self, cv_results: Dict, uda_results: Dict, 
                                    cv_predictions: Optional[Dict] = None,
                                    uda_predictions: Optional[Dict] = None) -> Dict[str, Optional[str]]:
@@ -1282,6 +1830,12 @@ class AnalysisVisualizer:
             # 8. 决策曲线分析
             if cv_results and uda_results:
                 viz_results['decision_curve_analysis'] = self.plot_decision_curve_analysis(
+                    cv_results, uda_results, cv_predictions, uda_predictions
+                )
+            
+            # 9. Nature标准组合图像 (原生matplotlib，解决文字选择和重叠问题)
+            if cv_results and uda_results and cv_predictions and uda_predictions:
+                viz_results['combined_analysis_figure'] = self.plot_combined_analysis_figure(
                     cv_results, uda_results, cv_predictions, uda_predictions
                 )
             
