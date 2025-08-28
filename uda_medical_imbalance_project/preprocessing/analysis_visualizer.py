@@ -574,6 +574,190 @@ class AnalysisVisualizer:
         
         return str(save_path) if save_path else None
     
+    def plot_combined_heatmaps_nature(self, cv_results: Dict, uda_results: Dict) -> Optional[str]:
+        """
+        创建符合Nature Communication标准的组合热力图
+        
+        Args:
+            cv_results: 源域交叉验证结果字典
+            uda_results: UDA方法结果字典
+            
+        Returns:
+            保存的图片路径（如果保存）
+        """
+        # Nature Communication style settings
+        plt.rcParams.update({
+            'font.family': 'sans-serif',
+            'font.sans-serif': ['Helvetica', 'Arial', 'DejaVu Sans', 'Liberation Sans', 'Bitstream Vera Sans', 'sans-serif'],
+            'font.size': 11,
+            'axes.titlesize': 11,
+            'axes.labelsize': 11,
+            'xtick.labelsize': 10,
+            'ytick.labelsize': 10,
+            'legend.fontsize': 10,
+            'figure.titlesize': 11,
+            'text.usetex': False,
+            'mathtext.default': 'regular',
+            'axes.linewidth': 1.0,  # minimum 1 point wide
+            'grid.linewidth': 0.5,
+            'lines.linewidth': 1.0,  # minimum 1 point wide
+            'patch.linewidth': 1.0,
+            'figure.dpi': 300,
+            'savefig.dpi': 300,
+            'savefig.format': 'pdf',
+            'savefig.bbox': 'tight',
+            'savefig.facecolor': 'white',
+            'savefig.edgecolor': 'none'
+        })
+        
+        # 收集源域CV结果
+        cv_methods = {}
+        for exp_name, result in cv_results.items():
+            if 'summary' in result and result['summary']:
+                raw_method_name = exp_name.split('_')[0].upper()
+                if raw_method_name == 'PAPER':
+                    method_name = 'Paper method'
+                elif raw_method_name == 'TABPFN':
+                    method_name = 'Our model'
+                else:
+                    method_name = raw_method_name.lower().capitalize()
+                    
+                summary = result['summary']
+                cv_methods[method_name] = {
+                    'AUC': summary.get('auc_mean', 0),
+                    'Accuracy': summary.get('accuracy_mean', 0),
+                    'F1': summary.get('f1_mean', 0),
+                    'Precision': summary.get('precision_mean', 0),
+                    'Recall': summary.get('recall_mean', 0)
+                }
+        
+        # 收集UDA结果
+        uda_methods = {}
+        for method_name, result in uda_results.items():
+            if 'error' not in result:
+                if result.get('is_baseline', False):
+                    if method_name == 'TabPFN_NoUDA':
+                        display_name = "Our model (no UDA)"
+                    else:
+                        display_name = method_name.replace('_', ' ').lower()
+                        # Capitalize first letter of each word
+                        display_name = ' '.join(word.capitalize() for word in display_name.split())
+                else:
+                    display_name = method_name
+                
+                uda_methods[display_name] = {
+                    'AUC': result.get('auc', 0) if result.get('auc') is not None else 0,
+                    'Accuracy': result.get('accuracy', 0),
+                    'F1': result.get('f1', 0),
+                    'Precision': result.get('precision', 0),
+                    'Recall': result.get('recall', 0)
+                }
+        
+        if not cv_methods and not uda_methods:
+            return None
+        
+        # Create figure with 2x1 layout (vertical arrangement)
+        # Nature single column: 8.5cm = 3.35 inches wide
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))  # Adjusted for better readability
+        
+        # Colorblind-friendly colormap (blue to yellow instead of red-green)
+        # This avoids red-green discrimination issues
+        import matplotlib.colors as mcolors
+        colors = ['#2166ac', '#5aae61', '#fee08b', '#d73027']  # Blue to yellow/red scale
+        n_bins = 100
+        cmap = mcolors.LinearSegmentedColormap.from_list('colorblind_safe', colors, N=n_bins)
+        
+        metrics = ['AUC', 'Accuracy', 'F1', 'Precision', 'Recall']
+        
+        # Plot a: Source domain cross-validation
+        if cv_methods:
+            sorted_cv_methods = sorted(cv_methods.items(), key=lambda x: x[1]['AUC'], reverse=True)
+            cv_method_names = [item[0] for item in sorted_cv_methods]
+            cv_data_matrix = np.array([[cv_methods[method][metric] for metric in metrics] for method in cv_method_names])
+            
+            im1 = ax1.imshow(cv_data_matrix, cmap=cmap, aspect='auto', vmin=0, vmax=1)
+            
+            # Set labels with proper capitalization (Nature style: first letter capitalized)
+            ax1.set_xticks(np.arange(len(metrics)))
+            ax1.set_yticks(np.arange(len(cv_method_names)))
+            ax1.set_xticklabels(metrics, fontsize=10)
+            ax1.set_yticklabels(cv_method_names, fontsize=10)
+            
+            # Add value labels
+            for i in range(len(cv_method_names)):
+                for j in range(len(metrics)):
+                    value = cv_data_matrix[i, j]
+                    # Use white text for dark backgrounds, black for light
+                    text_color = 'white' if value < 0.5 else 'black'
+                    ax1.text(j, i, f'{value:.3f}', ha="center", va="center", 
+                           color=text_color, fontsize=9, fontweight='normal')
+            
+            # Panel label (Nature style: lowercase bold)
+            ax1.text(-0.15, 1.02, 'a', transform=ax1.transAxes, fontsize=12, fontweight='bold')
+            
+            # Remove top and right spines (Nature style)
+            ax1.spines['top'].set_visible(False)
+            ax1.spines['right'].set_visible(False)
+        
+        # Plot b: UDA methods comparison
+        if uda_methods:
+            sorted_uda_methods = sorted(uda_methods.items(), key=lambda x: x[1]['AUC'], reverse=True)
+            uda_method_names = [item[0] for item in sorted_uda_methods]
+            uda_data_matrix = np.array([[uda_methods[method][metric] for metric in metrics] for method in uda_method_names])
+            
+            im2 = ax2.imshow(uda_data_matrix, cmap=cmap, aspect='auto', vmin=0, vmax=1)
+            
+            # Set labels
+            ax2.set_xticks(np.arange(len(metrics)))
+            ax2.set_yticks(np.arange(len(uda_method_names)))
+            ax2.set_xticklabels(metrics, fontsize=10)
+            ax2.set_yticklabels(uda_method_names, fontsize=10)
+            
+            # Add value labels
+            for i in range(len(uda_method_names)):
+                for j in range(len(metrics)):
+                    value = uda_data_matrix[i, j]
+                    text_color = 'white' if value < 0.5 else 'black'
+                    ax2.text(j, i, f'{value:.3f}', ha="center", va="center", 
+                           color=text_color, fontsize=9, fontweight='normal')
+            
+            # Panel label
+            ax2.text(-0.15, 1.02, 'b', transform=ax2.transAxes, fontsize=12, fontweight='bold')
+            
+            # Remove top and right spines
+            ax2.spines['top'].set_visible(False)
+            ax2.spines['right'].set_visible(False)
+        
+        # Add a single colorbar for the entire figure
+        # Position it to the right of both subplots
+        cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
+        cbar = fig.colorbar(im2 if uda_methods else im1, cax=cbar_ax)
+        cbar.set_label('Performance score', rotation=270, labelpad=20, fontsize=11)
+        cbar.ax.tick_params(labelsize=10)
+        
+        # Adjust layout to prevent overlapping
+        plt.subplots_adjust(left=0.2, right=0.9, top=0.95, bottom=0.05, hspace=0.4)
+        
+        # Save the figure
+        save_path = None
+        if self.save_plots and self.output_dir:
+            save_path_pdf = self.output_dir / "combined_heatmaps_nature.pdf"
+            save_path_png = self.output_dir / "combined_heatmaps_nature.png"
+            
+            plt.savefig(save_path_pdf, format='pdf', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            plt.savefig(save_path_png, format='png', dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            
+            save_path = save_path_pdf
+        
+        if self.show_plots:
+            plt.show()
+        else:
+            plt.close()
+        
+        return str(save_path) if save_path else None
+    
     def _bootstrap_roc(self, y_true: np.ndarray, y_scores: np.ndarray, n_bootstrap: int = 1000) -> Tuple[np.ndarray, np.ndarray, float, Tuple[float, float]]:
         """
         使用Bootstrap方法计算ROC曲线的置信区间
@@ -1837,6 +2021,12 @@ class AnalysisVisualizer:
             if cv_results and uda_results and cv_predictions and uda_predictions:
                 viz_results['combined_analysis_figure'] = self.plot_combined_analysis_figure(
                     cv_results, uda_results, cv_predictions, uda_predictions
+                )
+            
+            # 10. Nature标准组合热力图 (符合Nature Communication要求)
+            if cv_results and uda_results:
+                viz_results['combined_heatmaps_nature'] = self.plot_combined_heatmaps_nature(
+                    cv_results, uda_results
                 )
             
             print(f"✅ 所有可视化图表已生成完成")

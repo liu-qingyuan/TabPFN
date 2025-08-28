@@ -996,6 +996,9 @@ class CompleteAnalysisRunner:
                 print(f"⚠️ 组合图像生成出错: {e}")
             viz_results['combined_analysis_figure'] = None
         
+        # Nature标准组合热力图已经在generate_all_visualizations中生成
+        # 不需要额外的处理步骤
+        
         self.results['visualizations'] = viz_results
         return viz_results
     
