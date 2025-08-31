@@ -323,9 +323,9 @@ class AnalysisVisualizer:
                 best_uda_auc = auc
                 # UDA方法名称处理
                 if 'TCA' in method or 'SA' in method or 'CORAL' in method or 'KMM' in method:
-                    best_uda_method = f"PANDA+{method}"
+                    best_uda_method = f"PANDA"
                 else:
-                    best_uda_method = f"PANDA+{method}"
+                    best_uda_method = f"PANDA"
                 best_uda_metrics = {
                     'AUC': auc,
                     'Accuracy': result.get('accuracy', 0),
@@ -984,15 +984,15 @@ class AnalysisVisualizer:
                         else:
                             # UDA方法名称处理
                             if 'TCA' in method_name:
-                                display_name = f"PANDA+{method_name} (UDA)"
+                                display_name = f"PANDA (UDA)"
                             elif 'SA' in method_name:
-                                display_name = f"PANDA+{method_name} (UDA)"
+                                display_name = f"PANDA (UDA)"
                             elif 'CORAL' in method_name:
-                                display_name = f"PANDA+{method_name} (UDA)"
+                                display_name = f"PANDA (UDA)"
                             elif 'KMM' in method_name:
-                                display_name = f"PANDA+{method_name} (UDA)"
+                                display_name = f"PANDA (UDA)"
                             else:
-                                display_name = f"PANDA+{method_name} (UDA)"
+                                display_name = f"PANDA (UDA)"
                             linestyle = '-'
                         
                         # 绘制ROC曲线
@@ -1024,15 +1024,15 @@ class AnalysisVisualizer:
                     else:
                         # UDA方法名称处理
                         if 'TCA' in method_name:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                         elif 'SA' in method_name:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                         elif 'CORAL' in method_name:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                         elif 'KMM' in method_name:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                         else:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                         linestyle = '-'
                     
                     # 绘制简化的ROC曲线
@@ -1238,7 +1238,7 @@ class AnalysisVisualizer:
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
-                            display_name = f"PANDA+{method_name}"
+                            display_name = f"PANDA"
                             linestyle = '-'
                         
                         # 绘制校准曲线
@@ -1473,7 +1473,7 @@ class AnalysisVisualizer:
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                             linestyle = '-'
                         
                         # 绘制DCA曲线
@@ -1643,7 +1643,7 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                             linestyle = '-'
                         
                         ax_roc_target.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
@@ -1764,7 +1764,7 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name}"
                                 linestyle = '--'
                         else:
-                            display_name = f"PANDA+{method_name}"
+                            display_name = f"PANDA"
                             linestyle = '-'
                         
                         ax_calib_target.plot(mean_predicted_value, fraction_of_positives, 'o',
@@ -1912,7 +1912,7 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
-                            display_name = f"PANDA+{method_name} (UDA)"
+                            display_name = f"PANDA (UDA)"
                             linestyle = '-'
                         
                         ax_dca_target.plot(thresholds, net_benefits, 
