@@ -83,7 +83,7 @@ class AnalysisVisualizer:
                 if raw_method_name == 'PAPER':
                     method_name = 'Paper_LR'
                 elif raw_method_name == 'TABPFN':
-                    method_name = 'Our Model'
+                    method_name = 'PANDA'
                 else:
                     method_name = raw_method_name
                     
@@ -182,9 +182,9 @@ class AnalysisVisualizer:
         for method_name, result in successful_methods.items():
             if result.get('is_baseline', False):
                 if method_name == 'TabPFN_NoUDA':
-                    display_name = 'Our Model\n(No UDA)'
+                    display_name = 'PANDA\n(No UDA)'
                     tabpfn_baseline.append((method_name, display_name))
-                    method_colors.append('#F0CFEA')  # 科研配色4 - Our Model基线
+                    method_colors.append('#F0CFEA')  # 科研配色4 - PANDA基线
                 elif result.get('baseline_category') == 'ml_baseline':
                     display_name = method_name
                     ml_baselines.append((method_name, display_name))
@@ -246,7 +246,7 @@ class AnalysisVisualizer:
         # 添加图例
         from matplotlib.patches import Patch
         legend_elements = [
-            Patch(facecolor='#F0CFEA', alpha=0.7, label='Our Model Baseline'),
+            Patch(facecolor='#F0CFEA', alpha=0.7, label='PANDA Baseline'),
             Patch(facecolor='#F0A73A', alpha=0.7, label='Traditional Baselines'),
             Patch(facecolor='#3ABF99', alpha=0.7, label='ML Baselines'),
             Patch(facecolor='#2C91E0', alpha=0.7, label='UDA Methods')
@@ -301,7 +301,7 @@ class AnalysisVisualizer:
                 if auc > best_source_auc:
                     best_source_auc = auc
                     raw_method_name = exp_name.split('_')[0].upper()
-                    best_source_method = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                    best_source_method = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                     best_source_metrics = {
                         'AUC': result['summary'].get('auc_mean', 0),
                         'Accuracy': result['summary'].get('accuracy_mean', 0),
@@ -323,9 +323,9 @@ class AnalysisVisualizer:
                 best_uda_auc = auc
                 # UDA方法名称处理
                 if 'TCA' in method or 'SA' in method or 'CORAL' in method or 'KMM' in method:
-                    best_uda_method = f"Our Model+{method}"
+                    best_uda_method = f"PANDA+{method}"
                 else:
-                    best_uda_method = f"Our Model+{method}"
+                    best_uda_method = f"PANDA+{method}"
                 best_uda_metrics = {
                     'AUC': auc,
                     'Accuracy': result.get('accuracy', 0),
@@ -412,7 +412,7 @@ class AnalysisVisualizer:
                 if raw_method_name == 'PAPER':
                     method_name = 'Paper_LR'
                 elif raw_method_name == 'TABPFN':
-                    method_name = 'Our Model'
+                    method_name = 'PANDA'
                 else:
                     method_name = raw_method_name
                     
@@ -500,7 +500,7 @@ class AnalysisVisualizer:
                 # 统一显示名称逻辑，与对比图保持一致
                 if result.get('is_baseline', False):
                     if method_name == 'TabPFN_NoUDA':
-                        display_name = f"Our Model\n(No UDA)"
+                        display_name = f"PANDA\n(No UDA)"
                     elif result.get('baseline_category') == 'ml_baseline':
                         display_name = f"{method_name}"
                     else:
@@ -618,7 +618,7 @@ class AnalysisVisualizer:
                 if raw_method_name == 'PAPER':
                     method_name = 'Paper method'
                 elif raw_method_name == 'TABPFN':
-                    method_name = 'Our model'
+                    method_name = 'PANDA'
                 else:
                     # 保持标准的大写命名格式，而不是使用capitalize()
                     method_name = raw_method_name
@@ -638,7 +638,7 @@ class AnalysisVisualizer:
             if 'error' not in result:
                 if result.get('is_baseline', False):
                     if method_name == 'TabPFN_NoUDA':
-                        display_name = "Our model (no UDA)"
+                        display_name = "PANDA (no UDA)"
                     elif method_name in ['SVM', 'RF', 'GBDT', 'XGBoost', 'DT']:
                         # 保持标准的机器学习方法大写命名
                         display_name = method_name
@@ -911,7 +911,7 @@ class AnalysisVisualizer:
                         
                         # 绘制ROC曲线
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "Our Model" if raw_name == "TABPFN" else raw_name
+                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
                         ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                                 label=f'{display_name} (AUC = {roc_auc:.3f})',
                                 linewidth=2)
@@ -933,7 +933,7 @@ class AnalysisVisualizer:
                     # 简单估计：假设ROC曲线形状
                     tpr = np.sqrt(fpr) * auc_mean + fpr * (1 - auc_mean)
                     
-                    display_name = "Our Model" if method_name == "TABPFN" else method_name
+                    display_name = "PANDA" if method_name == "TABPFN" else method_name
                     ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                             label=f'{display_name} (AUC = {auc_mean:.3f} ± {auc_std:.3f})',
                             linewidth=2, linestyle='--', alpha=0.7)
@@ -976,7 +976,7 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model_NoUDA (Our Model Baseline)"
+                                display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name} (Traditional Baseline)"
@@ -984,15 +984,15 @@ class AnalysisVisualizer:
                         else:
                             # UDA方法名称处理
                             if 'TCA' in method_name:
-                                display_name = f"Our Model+{method_name} (UDA)"
+                                display_name = f"PANDA+{method_name} (UDA)"
                             elif 'SA' in method_name:
-                                display_name = f"Our Model+{method_name} (UDA)"
+                                display_name = f"PANDA+{method_name} (UDA)"
                             elif 'CORAL' in method_name:
-                                display_name = f"Our Model+{method_name} (UDA)"
+                                display_name = f"PANDA+{method_name} (UDA)"
                             elif 'KMM' in method_name:
-                                display_name = f"Our Model+{method_name} (UDA)"
+                                display_name = f"PANDA+{method_name} (UDA)"
                             else:
-                                display_name = f"Our Model+{method_name} (UDA)"
+                                display_name = f"PANDA+{method_name} (UDA)"
                             linestyle = '-'
                         
                         # 绘制ROC曲线
@@ -1016,7 +1016,7 @@ class AnalysisVisualizer:
                             display_name = f"{method_name} (ML Baseline)"
                             linestyle = ':'
                         elif method_name == 'TabPFN_NoUDA':
-                            display_name = f"Our Model_NoUDA (Our Model Baseline)"
+                            display_name = f"PANDA_NoUDA (PANDA Baseline)"
                             linestyle = '-.'
                         else:
                             display_name = f"{method_name} (Traditional Baseline)"
@@ -1024,15 +1024,15 @@ class AnalysisVisualizer:
                     else:
                         # UDA方法名称处理
                         if 'TCA' in method_name:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                         elif 'SA' in method_name:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                         elif 'CORAL' in method_name:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                         elif 'KMM' in method_name:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                         else:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                         linestyle = '-'
                     
                     # 绘制简化的ROC曲线
@@ -1153,7 +1153,7 @@ class AnalysisVisualizer:
                         if raw_method_name == 'PAPER':
                             display_name = 'Paper_LR'
                         else:
-                            display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                            display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
                         # 绘制校准曲线
                         ax1.plot(mean_predicted_value, fraction_of_positives, 'o-',
@@ -1231,14 +1231,14 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name}"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model (No UDA)"
+                                display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name}"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
-                            display_name = f"Our Model+{method_name}"
+                            display_name = f"PANDA+{method_name}"
                             linestyle = '-'
                         
                         # 绘制校准曲线
@@ -1395,7 +1395,7 @@ class AnalysisVisualizer:
                         if raw_method_name == 'PAPER':
                             display_name = 'Paper_LR'
                         else:
-                            display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                            display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
                         # 绘制DCA曲线
                         ax1.plot(thresholds, net_benefits, 
@@ -1466,14 +1466,14 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model (No UDA)"
+                                display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                             linestyle = '-'
                         
                         # 绘制DCA曲线
@@ -1593,7 +1593,7 @@ class AnalysisVisualizer:
                         roc_auc = auc(fpr, tpr)
                         
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "Our Model" if raw_name == "TABPFN" else raw_name
+                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
                         ax_roc_source.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
                                         label=f'{display_name} (AUC = {roc_auc:.3f})',
                                         linewidth=2)
@@ -1637,13 +1637,13 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model_NoUDA (Our Model Baseline)"
+                                display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                             linestyle = '-'
                         
                         ax_roc_target.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
@@ -1697,7 +1697,7 @@ class AnalysisVisualizer:
                         )
                         
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
                             display_name = 'Paper_LR'
                         
@@ -1758,13 +1758,13 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name}"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model (No UDA)"
+                                display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name}"
                                 linestyle = '--'
                         else:
-                            display_name = f"Our Model+{method_name}"
+                            display_name = f"PANDA+{method_name}"
                             linestyle = '-'
                         
                         ax_calib_target.plot(mean_predicted_value, fraction_of_positives, 'o',
@@ -1844,7 +1844,7 @@ class AnalysisVisualizer:
                             net_benefits.append(nb)
                         
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "Our Model" if raw_method_name == "TABPFN" else raw_method_name
+                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
                             display_name = 'Paper_LR'
                         
@@ -1906,13 +1906,13 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
-                                display_name = f"Our Model (No UDA)"
+                                display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
                                 display_name = f"{method_name} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
-                            display_name = f"Our Model+{method_name} (UDA)"
+                            display_name = f"PANDA+{method_name} (UDA)"
                             linestyle = '-'
                         
                         ax_dca_target.plot(thresholds, net_benefits, 
