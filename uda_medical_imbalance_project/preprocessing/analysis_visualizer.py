@@ -645,7 +645,8 @@ class AnalysisVisualizer:
                     else:
                         display_name = method_name.replace('_', ' ')
                 else:
-                    display_name = method_name
+                    # UDA方法统一命名为PANDA (UDA)
+                    display_name = "PANDA (UDA)"
                 
                 uda_methods[display_name] = {
                     'AUC': result.get('auc', 0) if result.get('auc') is not None else 0,
