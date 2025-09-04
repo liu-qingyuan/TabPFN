@@ -2223,4 +2223,150 @@ config = {
 }
 ```
 
-这份基于实际源码的Methods文档准确反映了TabPFN+UDA项目的真实实现，包括预训练模型的使用方式、ADAPT库的集成、数据集的实际结构等关键技术细节。
+## 4.9 TabPFN集成配置架构
+
+### 4.9.1 四种基础配置设计
+
+基于源码 `src/tabpfn/preprocessing.py:174-219`，TabPFN使用4种基础预处理配置，通过**数值变换**和**类别编码**的2×2组合实现集成多样性：
+
+| 配置ID | 数值变换 | 保留原始 | SVD降维 | 类别编码方式 | 最终维度 | 复杂度 |
+|--------|----------|----------|---------|--------------|----------|--------|
+| 配置1  | quantile_uni_coarse | ✓ | ✓ | ordinal_very_common_categories_shuffled | 20维 | 高 |
+| 配置2  | none | ✗ | ✗ | ordinal_very_common_categories_shuffled | 8维 | 低 |
+| 配置3  | quantile_uni_coarse | ✓ | ✓ | numeric | 20维 | 高 |
+| 配置4  | none | ✗ | ✗ | numeric | 8维 | 低 |
+
+### 4.9.2 配置技术实现
+
+**源码位置**：`default_classifier_preprocessor_configs()`
+
+```python
+def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
+    """返回4种基础配置，扩展为32个集成成员"""
+    return [
+        # 配置1：高复杂度 + 序数编码 (8原始+8分位数+4SVD=20维)
+        PreprocessorConfig(
+            "quantile_uni_coarse",
+            append_original=True,
+            categorical_name="ordinal_very_common_categories_shuffled",
+            global_transformer_name="svd",
+            subsample_features=-1,
+        ),
+        # 配置2：低复杂度 + 序数编码 (8维)
+        PreprocessorConfig(
+            "none",
+            categorical_name="ordinal_very_common_categories_shuffled", 
+            subsample_features=-1,
+        ),
+        # 配置3：高复杂度 + 数值编码 (8原始+8分位数+4SVD=20维)
+        PreprocessorConfig(
+            "quantile_uni_coarse",
+            append_original=True,
+            categorical_name="numeric",
+            global_transformer_name="svd", 
+            subsample_features=-1,
+        ),
+        # 配置4：低复杂度 + 数值编码 (8维)
+        PreprocessorConfig(
+            "none",
+            categorical_name="numeric",
+            subsample_features=-1,
+        ),
+    ]
+```
+
+### 4.9.3 32个集成成员分布
+
+**分布策略**（基于源码 `EnsembleConfig.generate_for_classification()`）：
+
+```python
+n = 32  # 总集成成员数
+balance_count = n // len(preprocessor_configs)  # 32 // 4 = 8
+# 每种基础配置分配8个集成成员
+```
+
+**具体分布**：
+
+| 基础配置 | 集成成员编号 | ShuffleIndex范围 | 特征重排方式 |
+|----------|-------------|------------------|--------------|
+| 配置1    | 成员1-8     | 0-7             | rotate偏移0-7 |
+| 配置2    | 成员9-16    | 0-7             | rotate偏移0-7 |
+| 配置3    | 成员17-24   | 0-7             | rotate偏移0-7 |
+| 配置4    | 成员25-32   | 0-7             | rotate偏移0-7 |
+
+### 4.9.4 特征重排机制详解
+
+**ShuffleFeaturesStep实现**（基于源码 `src/tabpfn/model/preprocessing.py:543-563`）：
+
+```python
+def _fit(self, X: np.ndarray, categorical_features: list[int]) -> list[int]:
+    if self.shuffle_method == "rotate":
+        # 环形移位：每个集成成员使用不同的偏移量
+        index_permutation = np.roll(
+            np.arange(X.shape[1]), 
+            self.shuffle_index  # 0-7循环使用
+        ).tolist()
+    
+    # 示例：8个特征的重排
+    # shuffle_index=0: [F0, F1, F2, F3, F4, F5, F6, F7]
+    # shuffle_index=1: [F7, F0, F1, F2, F3, F4, F5, F6] 
+    # shuffle_index=2: [F6, F7, F0, F1, F2, F3, F4, F5]
+    # ...
+```
+
+**重排目的**：
+- 补偿Transformer的位置敏感性
+- 增加集成成员间的特征表示多样性
+- 每种基础配置内部产生8种不同的特征序列
+
+### 4.9.5 维度变化分析
+
+**高复杂度配置（配置1&3）维度计算**：
+
+```python
+# Step 3: ReshapeFeatureDistributionsStep
+original_features = 8      # 保留原始特征
+quantile_features = 8      # 分位数变换特征
+subtotal = 16             # 组合后特征数
+
+# Step 3: SVD全局变换
+svd_components = max(1, min(num_examples // 10 + 1, num_features // 2))
+# 对于典型医疗数据：svd_components ≈ 4
+
+# 最终特征维度
+total_features = 16 + 4 = 20  # 原始+分位数+SVD
+```
+
+**低复杂度配置（配置2&4）维度计算**：
+
+```python
+# 仅保留原始特征，无变换
+total_features = 8  # 仅原始特征
+```
+
+### 4.9.6 集成多样性优势
+
+**四个维度的多样性**：
+
+1. **数值变换多样性**：
+   - `quantile_uni_coarse`：分位数均匀化变换
+   - `none`：保持原始数值分布
+
+2. **类别编码多样性**：
+   - `ordinal_very_common_categories_shuffled`：序数编码+随机打乱
+   - `numeric`：直接当作数值特征处理
+
+3. **维度多样性**：
+   - 高复杂度：20维特征空间
+   - 低复杂度：8维特征空间
+
+4. **特征序列多样性**：
+   - 每种配置8个不同的特征重排序列
+   - 总计32种不同的特征表示方式
+
+**8:8:8:8分布的技术优势**：
+- 确保每种配置类型有充分的代表性
+- 平衡模型复杂度与泛化能力
+- 最大化集成预测的多样性和稳定性
+
+这份基于实际源码的Methods文档准确反映了TabPFN+UDA项目的真实实现，包括预训练模型的使用方式、ADAPT库的集成、数据集的实际结构，以及完整的32种集成配置架构等关键技术细节。

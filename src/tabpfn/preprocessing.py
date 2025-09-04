@@ -172,8 +172,20 @@ class PreprocessorConfig:
 
 
 def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
-    """Default preprocessor configurations for classification."""
+    """Default preprocessor configurations for classification.
+    
+    Returns 4 base configurations that will be expanded to 32 ensemble members:
+    - Config 1: High complexity + ordinal encoding (8 shuffle variants)
+    - Config 2: Low complexity + ordinal encoding (8 shuffle variants)  
+    - Config 3: High complexity + numeric encoding (8 shuffle variants)
+    - Config 4: Low complexity + numeric encoding (8 shuffle variants)
+    
+    Each config uses different feature transformations and categorical encodings
+    to maximize ensemble diversity while maintaining balanced representation.
+    """
     return [
+        # Config 1: High complexity + ordinal encoding
+        # Features: 8 original + 8 quantile + 4 SVD = 20 dimensions
         PreprocessorConfig(
             "quantile_uni_coarse",
             append_original=True,
@@ -181,6 +193,24 @@ def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
             global_transformer_name="svd",
             subsample_features=-1,
         ),
+        # Config 2: Low complexity + ordinal encoding  
+        # Features: 8 original (no transformation) = 8 dimensions
+        PreprocessorConfig(
+            "none",
+            categorical_name="ordinal_very_common_categories_shuffled",
+            subsample_features=-1,
+        ),
+        # Config 3: High complexity + numeric encoding
+        # Features: 8 original + 8 quantile + 4 SVD = 20 dimensions
+        PreprocessorConfig(
+            "quantile_uni_coarse",
+            append_original=True,
+            categorical_name="numeric",
+            global_transformer_name="svd",
+            subsample_features=-1,
+        ),
+        # Config 4: Low complexity + numeric encoding
+        # Features: 8 original (no transformation) = 8 dimensions  
         PreprocessorConfig(
             "none",
             categorical_name="numeric",
