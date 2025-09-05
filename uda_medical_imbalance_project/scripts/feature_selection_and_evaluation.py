@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Unified RFE Feature Selection and Performance Evaluation Script
+统一RFE特征选择和性能评估脚本
 
-This script combines the functionality of:
-1. predict_healthcare_RFE.py - RFE feature selection using TabPFN
-2. evaluate_feature_numbers.py - Performance evaluation across different feature counts
+这个脚本结合了以下功能：
+1. predict_healthcare_RFE.py - 使用TabPFN进行RFE特征选择
+2. evaluate_feature_numbers.py - 跨不同特征数量的性能评估
+
+运行示例: python scripts/feature_selection_and_evaluation.py
 
 Author: Generated for UDA Medical Imbalance Project
 Date: 2024
