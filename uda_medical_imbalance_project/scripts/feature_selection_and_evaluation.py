@@ -12,16 +12,25 @@ Author: Generated for UDA Medical Imbalance Project
 Date: 2024
 """
 
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
+import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 import os
+import warnings
+from datetime import datetime
+from typing import Dict, List, Tuple, Optional
+
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+# 添加项目根目录到路径
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, confusion_matrix
@@ -162,21 +171,24 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
     Using the complete RFE ranking from most to least important features
     """
     print("\n" + "="*60)
-    print("PHASE 2: Performance Evaluation Across Feature Counts")
+    print("🔄 第二阶段：跨特征数量性能评估")
     print("="*60)
     
     # Get ranked features (sorted by RFE rank: 1=most important, 63=least important)
     ranked_features = feature_ranking.sort_values('Rank')['Feature'].tolist()
     
-    print(f"Using RFE ranking order: {ranked_features[:5]}...{ranked_features[-5:]}")
-    print(f"Total features available: {len(ranked_features)}")
+    print(f"📋 使用RFE排序: {ranked_features[:3]}...{ranked_features[-3:]}")
+    print(f"📊 可用特征总数: {len(ranked_features)}")
     
     # Set random seed for reproducibility
     np.random.seed(42)
     
     # Define feature numbers to test (3 to 63)
     feature_numbers = list(range(3, len(ranked_features) + 1))
-    print(f"Will evaluate feature counts: {feature_numbers[0]} to {feature_numbers[-1]} ({len(feature_numbers)} evaluations)")
+    print(f"🎯 将评估特征数: {feature_numbers[0]} 到 {feature_numbers[-1]} (共{len(feature_numbers)}次评估)")
+    print(f"⏰ 预计总用时: {len(feature_numbers) * 2:.1f}-{len(feature_numbers) * 5:.1f}分钟")
+    print("📝 使用10折交叉验证评估每个特征组合...")
+    
     
     # Store all results
     all_results = []
@@ -187,10 +199,10 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
         selected_features = ranked_features[:n_features]
         X_selected = X[selected_features]
         
-        # Only print details for first few and key milestones to reduce output
+        # 只在关键里程碑打印详细信息以减少输出冗余
         if n_features <= 10 or n_features % 10 == 0:
-            print(f"\n--- Evaluating {n_features} features ---")
-            print(f"Top {min(5, len(selected_features))} features: {selected_features[:5]}")
+            print(f"\n🔍 评估 {n_features} 个特征...")
+            print(f"前{min(5, len(selected_features))}个特征: {selected_features[:5]}")
         
         # 10-fold cross validation
         kf = KFold(n_splits=10, shuffle=True, random_state=42)
@@ -258,22 +270,24 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
         }
         all_results.append(result)
         
-        # Print current result (simplified output)
+        # 打印当前结果 (简化输出)
         if n_features <= 10 or n_features % 10 == 0:
-            print(f"Results for {n_features} features:")
-            print(f"AUC: {mean_scores['mean_auc']:.4f}±{std_scores['std_auc']:.4f}, "
-                  f"ACC: {mean_scores['mean_accuracy']:.4f}±{std_scores['std_accuracy']:.4f}, "
-                  f"F1: {mean_scores['mean_f1']:.4f}±{std_scores['std_f1']:.4f}")
+            print(f"✅ {n_features}个特征结果:")
+            print(f"   AUC: {mean_scores['mean_auc']:.4f}±{std_scores['std_auc']:.4f}")
+            print(f"   准确率: {mean_scores['mean_accuracy']:.4f}±{std_scores['std_accuracy']:.4f}")
+            print(f"   F1: {mean_scores['mean_f1']:.4f}±{std_scores['std_f1']:.4f}")
         else:
-            # Quick summary for intermediate results
-            print(f"N={n_features}: AUC={mean_scores['mean_auc']:.3f}")
+            # 中间结果的快速摘要
+            print(f"⚡ N={n_features}: AUC={mean_scores['mean_auc']:.3f}")
     
-    # Save results to CSV
+    # 保存结果到CSV
     results_df = pd.DataFrame(all_results)
-    csv_path = os.path.join(results_dir, "feature_number_comparison.csv")
+    csv_path = results_dir / "feature_number_comparison.csv"
     results_df.to_csv(csv_path, index=False)
     
-    # Create visualization
+    print(f"\n📊 性能评估结果已保存: {csv_path}")
+    
+    # 创建可视化
     create_performance_visualization(all_results, feature_numbers, results_dir)
     
     return results_df
@@ -306,92 +320,120 @@ def create_performance_visualization(all_results, feature_numbers, results_dir):
     plt.legend()
     plt.grid(True)
     
-    # Save plot
-    plot_path = os.path.join(results_dir, "performance_comparison.png")
+    # 保存图表
+    plot_path = results_dir / "performance_comparison.png"
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"\nVisualization saved to: {plot_path}")
+    print(f"📈 可视化图表已保存: {plot_path}")
 
 
 def main():
-    """
-    Main execution function
-    """
-    print("="*60)
-    print("UNIFIED RFE FEATURE SELECTION AND PERFORMANCE EVALUATION")
-    print("="*60)
+    """主函数"""
+    print("🧬 统一RFE特征选择和性能评估")
+    print("=" * 60)
     
-    # Create results directory
-    results_dir = os.path.join("..", "results", "feature_selection_evaluation")
-    os.makedirs(results_dir, exist_ok=True)
+    # 创建时间戳输出目录
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_dir = project_root / "results" / f"feature_selection_evaluation_{timestamp}"
+    results_dir.mkdir(parents=True, exist_ok=True)
     
-    # Load data
-    print("\nLoading data...")
-    data_path = os.path.join("..", "..", "data", "AI4healthcare.xlsx")
-    df = pd.read_excel(data_path)
-    features = [c for c in df.columns if c.startswith("Feature")]
-    X = df[features].copy()
-    y = df["Label"].copy()
+    # 数据路径配置 (基于loader.py的路径设置)
+    data_path = "/home/24052432g/TabPFN/data/AI4healthcare.xlsx"
     
-    print(f"Loaded data with {X.shape[0]} samples and {X.shape[1]} features")
-    print(f"All feature columns: {len(features)} features from {features[0]} to {features[-1]}")
+    # 加载数据
+    print(f"\n📂 加载数据...")
+    print(f"数据路径: {data_path}")
     
-    print(f"Data Shape: {X.shape}")
-    print(f"Label Distribution:\n{y.value_counts()}")
+    try:
+        df = pd.read_excel(data_path)
+        features = [c for c in df.columns if c.startswith("Feature")]
+        X = df[features].copy()
+        y = df["Label"].copy()
+        
+        print(f"✅ 数据加载成功")
+        print(f"   样本数: {X.shape[0]}")
+        print(f"   特征数: {X.shape[1]} ({features[0]} 到 {features[-1]})")
+        print(f"   标签分布: {y.value_counts().to_dict()}")
+        
+    except FileNotFoundError:
+        print(f"❌ 数据文件未找到: {data_path}")
+        print("请确保数据文件路径正确")
+        return None, None
+    except Exception as e:
+        print(f"❌ 数据加载失败: {e}")
+        return None, None
     
-    # Phase 1: RFE Feature Selection
+    # Phase 1: RFE特征选择
     print("\n" + "="*60)
-    print("PHASE 1: RFE Feature Selection with TabPFN")
+    print("🔬 第一阶段：基于TabPFN的RFE特征选择")
     print("="*60)
     
-    print("Performing RFE with TabPFN to rank ALL features from most to least important...")
-    print("This will generate a complete ranking of all 63 features.")
+    print("🧠 使用TabPFN执行递归特征消除(RFE)...")
+    print("📋 这将生成完整的63个特征重要性排序")
+    print("⏰ 预计用时：5-10分钟 (取决于GPU性能)")
     
-    # Modified: Use RFE to select 3 features but get complete ranking of all 63 features
-    selected_features, feature_ranking = select_features_rfe(X, y, n_features=3)
+    try:
+        # 执行RFE特征选择，选择3个最优特征但获得完整排序
+        selected_features, feature_ranking = select_features_rfe(X, y, n_features=3)
+        
+        # 保存特征排序结果
+        ranking_path = results_dir / "RFE_feature_ranking.csv"
+        feature_ranking.to_csv(ranking_path, index=False)
+        
+        print(f"✅ RFE特征选择完成")
+        
+    except Exception as e:
+        print(f"❌ RFE特征选择失败: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None
     
-    # Save feature ranking (this contains all 63 features ranked by importance)
-    ranking_path = os.path.join("..", "results", "RFE_feature_ranking.csv")
-    feature_ranking.to_csv(ranking_path, index=False)
+    print(f"📁 完整特征排序已保存: {ranking_path}")
+    print(f"📊 RFE处理: 从{X.shape[1]}个特征开始，逐步消除到3个特征")
+    print(f"📋 排序说明: Rank 1 = 最重要 (最后保留), Rank {X.shape[1]} = 最不重要 (最先消除)")
     
-    print(f"\nComplete feature ranking (all 63 features) saved to: {ranking_path}")
-    print(f"RFE process: Started with {X.shape[1]} features, eliminated down to 3 features")
-    print(f"Ranking explanation: Rank 1 = most important (selected first), Rank {X.shape[1]} = least important (eliminated first)")
-    
-    print("\nTop 10 most important features (Rank 1-10, selected first by RFE):")
+    print("\n🏆 Top 10 最重要特征 (Rank 1-10):")
     print(feature_ranking.head(10).to_string(index=False))
-    print("\nBottom 10 least important features (eliminated first by RFE):")
+    print("\n🗑️ Bottom 10 最不重要特征:")
     print(feature_ranking.tail(10).to_string(index=False))
     
-    # Verify RFE logic: the 3 selected features should have ranks 1, 2, 3
-    print(f"\nVerification - The 3 selected features and their ranks:")
+    # 验证RFE逻辑: 选中的3个特征应该rank为1,2,3
+    print(f"\n✅ 验证 - 选中的3个特征及其排序:")
     selected_feature_ranks = feature_ranking[feature_ranking['Feature'].isin(selected_features)].sort_values('Rank')
     print(selected_feature_ranks.to_string(index=False))
     
-    # Phase 2: Performance Evaluation
-    print(f"\nNow evaluating performance using features 3-63 in order of RFE ranking...")
-    results_df = evaluate_feature_performance(X, y, feature_ranking, results_dir)
+    # Phase 2: 性能评估
+    print(f"\n🔄 第二阶段：使用RFE排序进行3-63特征性能评估...")
+    try:
+        results_df = evaluate_feature_performance(X, y, feature_ranking, results_dir)
+    except Exception as e:
+        print(f"❌ 性能评估失败: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None
     
-    # Summary
+    # 总结
     print("\n" + "="*60)
-    print("EXECUTION COMPLETE")
+    print("🎉 执行完成")
     print("="*60)
     
-    print("\nGenerated Files:")
-    print(f"1. Feature Rankings: {ranking_path}")
-    print(f"2. Performance Results: {os.path.join(results_dir, 'feature_number_comparison.csv')}")
-    print(f"3. Performance Plot: {os.path.join(results_dir, 'performance_comparison.png')}")
+    print("\n📁 生成的文件:")
+    print(f"1. 特征排序: {ranking_path}")
+    print(f"2. 性能结果: {results_dir / 'feature_number_comparison.csv'}")
+    print(f"3. 性能图表: {results_dir / 'performance_comparison.png'}")
     
-    # Find best performing feature count
+    # 找到最佳性能的特征数量
     best_auc_idx = results_df['mean_auc'].idxmax()
     best_result = results_df.iloc[best_auc_idx]
     
-    print(f"\nBest Performance Summary:")
-    print(f"Best Feature Count: {best_result['n_features']}")
-    print(f"Best AUC: {best_result['mean_auc']:.4f} ± {best_result['std_auc']:.4f}")
-    print(f"Best Accuracy: {best_result['mean_accuracy']:.4f} ± {best_result['std_accuracy']:.4f}")
-    print(f"Best F1: {best_result['mean_f1']:.4f} ± {best_result['std_f1']:.4f}")
+    print(f"\n🏆 最佳性能摘要:")
+    print(f"最佳特征数量: {best_result['n_features']}")
+    print(f"最佳AUC: {best_result['mean_auc']:.4f} ± {best_result['std_auc']:.4f}")
+    print(f"最佳准确率: {best_result['mean_accuracy']:.4f} ± {best_result['std_accuracy']:.4f}")
+    print(f"最佳F1分数: {best_result['mean_f1']:.4f} ± {best_result['std_f1']:.4f}")
+    
+    print(f"\n📂 结果目录: {results_dir}")
     
     return results_df, feature_ranking
 
