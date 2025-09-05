@@ -32,7 +32,10 @@ cd uda_medical_imbalance_project
 # python tests/debug_feature_selection.py
 # python tests/test_uda_visualization.py
 # python examples/real_data_visualization.py
-python scripts/run_complete_analysis.py
+
+# python scripts/run_complete_analysis.py
+python scripts/feature_selection_and_evaluation.py
+
 # python scripts/generate_baseline_characteristics_table.py
 
 # python debug_calibration.py
