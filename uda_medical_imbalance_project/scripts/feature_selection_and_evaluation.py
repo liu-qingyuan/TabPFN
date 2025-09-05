@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """
-统一RFE特征选择和性能评估脚本
+统一RFE特征选择和性能评估脚本 (使用AB交集58个特征)
 
 这个脚本结合了以下功能：
 1. predict_healthcare_RFE.py - 使用TabPFN进行RFE特征选择
 2. evaluate_feature_numbers.py - 跨不同特征数量的性能评估
+
+特征集说明：
+- 使用A数据集（AI4healthcare.xlsx）
+- 仅使用AB交集的58个特征（移除Feature12, Feature33, Feature34, Feature36, Feature40）
+- 评估范围：3-58个特征（生成56行结果数据）
 
 运行示例: python scripts/feature_selection_and_evaluation.py
 
@@ -30,6 +35,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # 添加项目根目录到路径
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+# 导入项目配置
+from config.settings import get_features_by_type, SELECTED_58_FEATURES
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.model_selection import KFold
@@ -183,11 +191,12 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
     # Set random seed for reproducibility
     np.random.seed(42)
     
-    # Define feature numbers to test (3 to 63)
+    # Define feature numbers to test (3 to 58, AB交集特征)
     feature_numbers = list(range(3, len(ranked_features) + 1))
     print(f"🎯 将评估特征数: {feature_numbers[0]} 到 {feature_numbers[-1]} (共{len(feature_numbers)}次评估)")
-    print(f"⏰ 预计总用时: {len(feature_numbers) * 2:.1f}-{len(feature_numbers) * 5:.1f}分钟")
+    print(f"⏰ 预计总用时: {len(feature_numbers) * 2:.1f}-{len(feature_numbers) * 4:.1f}分钟 (相比63特征约节省15%时间)")
     print("📝 使用10折交叉验证评估每个特征组合...")
+    print("📊 生成结果：3-58特征性能对比数据")
     
     
     # Store all results
@@ -333,9 +342,9 @@ def main():
     print("🧬 统一RFE特征选择和性能评估")
     print("=" * 60)
     
-    # 创建时间戳输出目录
+    # 创建时间戳输出目录 (标注使用58个特征)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = project_root / "results" / f"feature_selection_evaluation_{timestamp}"
+    results_dir = project_root / "results" / f"feature_selection_evaluation_58features_{timestamp}"
     results_dir.mkdir(parents=True, exist_ok=True)
     
     # 数据路径配置 (基于loader.py的路径设置)
@@ -347,14 +356,29 @@ def main():
     
     try:
         df = pd.read_excel(data_path)
-        features = [c for c in df.columns if c.startswith("Feature")]
-        X = df[features].copy()
+        
+        # 使用AB交集的58个特征 (移除Feature12, Feature33, Feature34, Feature36, Feature40)
+        required_features = get_features_by_type('selected58')
+        
+        # 验证A数据集是否包含所需的58个特征
+        available_features = [f for f in required_features if f in df.columns]
+        missing_features = [f for f in required_features if f not in df.columns]
+        
+        if missing_features:
+            print(f"⚠️ 警告：A数据集中缺失以下特征: {missing_features}")
+            print(f"将使用可用的{len(available_features)}个特征进行分析")
+        else:
+            print(f"✅ A数据集包含所有58个AB交集特征")
+            
+        X = df[available_features].copy()
         y = df["Label"].copy()
         
         print(f"✅ 数据加载成功")
         print(f"   样本数: {X.shape[0]}")
-        print(f"   特征数: {X.shape[1]} ({features[0]} 到 {features[-1]})")
+        print(f"   特征数: {X.shape[1]} (AB交集特征)")
+        print(f"   特征范围: {available_features[0]} 到 {available_features[-1]}")
         print(f"   标签分布: {y.value_counts().to_dict()}")
+        print(f"   移除的特征: Feature12, Feature33, Feature34, Feature36, Feature40")
         
     except FileNotFoundError:
         print(f"❌ 数据文件未找到: {data_path}")
@@ -370,15 +394,15 @@ def main():
     print("="*60)
     
     print("🧠 使用TabPFN执行递归特征消除(RFE)...")
-    print("📋 这将生成完整的63个特征重要性排序")
-    print("⏰ 预计用时：5-10分钟 (取决于GPU性能)")
+    print("📋 这将生成AB交集58个特征的完整重要性排序")
+    print("⏰ 预计用时：4-8分钟 (取决于GPU性能，相比63特征略快)")
     
     try:
         # 执行RFE特征选择，选择3个最优特征但获得完整排序
         selected_features, feature_ranking = select_features_rfe(X, y, n_features=3)
         
-        # 保存特征排序结果
-        ranking_path = results_dir / "RFE_feature_ranking.csv"
+        # 保存特征排序结果 (58个特征)
+        ranking_path = results_dir / "RFE_feature_ranking_58features.csv"
         feature_ranking.to_csv(ranking_path, index=False)
         
         print(f"✅ RFE特征选择完成")
@@ -390,8 +414,9 @@ def main():
         return None, None
     
     print(f"📁 完整特征排序已保存: {ranking_path}")
-    print(f"📊 RFE处理: 从{X.shape[1]}个特征开始，逐步消除到3个特征")
+    print(f"📊 RFE处理: 从AB交集{X.shape[1]}个特征开始，逐步消除到3个特征")
     print(f"📋 排序说明: Rank 1 = 最重要 (最后保留), Rank {X.shape[1]} = 最不重要 (最先消除)")
+    print(f"🗑️ 已排除的特征: Feature12, Feature33, Feature34, Feature36, Feature40")
     
     print("\n🏆 Top 10 最重要特征 (Rank 1-10):")
     print(feature_ranking.head(10).to_string(index=False))
@@ -404,7 +429,7 @@ def main():
     print(selected_feature_ranks.to_string(index=False))
     
     # Phase 2: 性能评估
-    print(f"\n🔄 第二阶段：使用RFE排序进行3-63特征性能评估...")
+    print(f"\n🔄 第二阶段：使用RFE排序进行3-58特征性能评估...")
     try:
         results_df = evaluate_feature_performance(X, y, feature_ranking, results_dir)
     except Exception as e:
@@ -419,9 +444,10 @@ def main():
     print("="*60)
     
     print("\n📁 生成的文件:")
-    print(f"1. 特征排序: {ranking_path}")
-    print(f"2. 性能结果: {results_dir / 'feature_number_comparison.csv'}")
+    print(f"1. 特征排序(58特征): {ranking_path}")
+    print(f"2. 性能结果(3-58特征): {results_dir / 'feature_number_comparison.csv'}")
     print(f"3. 性能图表: {results_dir / 'performance_comparison.png'}")
+    print(f"4. 结果数据行数: {len(results_df)} 行 (从3个特征到58个特征)")
     
     # 找到最佳性能的特征数量
     best_auc_idx = results_df['mean_auc'].idxmax()
