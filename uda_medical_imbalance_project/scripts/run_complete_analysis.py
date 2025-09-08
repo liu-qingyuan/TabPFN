@@ -62,6 +62,17 @@ class CompleteAnalysisRunner:
         self.random_state = random_state
         self.verbose = verbose
         
+        # 添加参数确认输出
+        if self.verbose:
+            print(f"🔧 CompleteAnalysisRunner 初始化确认:")
+            print(f"   实际接收的 feature_type: '{self.feature_type}'")
+            print(f"   实际接收的 scaler_type: '{self.scaler_type}'")
+            print(f"   实际接收的 imbalance_method: '{self.imbalance_method}'")
+            print(f"   实际接收的 cv_folds: {self.cv_folds}")
+            print(f"   实际接收的 random_state: {self.random_state}")
+            print(f"   输出目录: {output_dir}")
+            print()
+        
         # 创建输出目录
         if output_dir is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -140,8 +151,16 @@ class CompleteAnalysisRunner:
             # 备选方案：如果selected58不可用，尝试使用best8
             try:
                 fallback_feature_type = 'best8'
+                print(f"🚨 警告: selected58特征集加载失败!")
+                print(f"🔄 自动切换到备选特征集: '{fallback_feature_type}'")
+                print(f"💡 这会影响最终结果的准确性!")
                 if self.verbose:
                     print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
+                
+                # 更新配置记录，标记使用了fallback
+                self.results['config']['original_feature_type'] = 'selected58' 
+                self.results['config']['feature_type'] = fallback_feature_type
+                self.results['config']['fallback_used'] = True
                 
                 data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
                 data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
@@ -186,6 +205,8 @@ class CompleteAnalysisRunner:
             if self.verbose:
                 print(f"   加载特征集: {self.feature_type}")
             
+            if self.verbose:
+                print(f"🔍 load_uda_data: 使用 feature_type='{self.feature_type}' 加载数据...")
             data_A = loader.load_dataset('A', feature_type=self.feature_type)
             data_B = loader.load_dataset('B', feature_type=self.feature_type)
             
@@ -238,8 +259,16 @@ class CompleteAnalysisRunner:
             # 备选方案：如果指定特征集不可用，尝试使用best8
             try:
                 fallback_feature_type = 'best8' if self.feature_type != 'best8' else 'best7'
+                print(f"🚨 警告: 原始特征集 '{self.feature_type}' 加载失败!")
+                print(f"🔄 自动切换到备选特征集: '{fallback_feature_type}'")
+                print(f"💡 这会影响最终结果的准确性!")
                 if self.verbose:
                     print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
+                
+                # 更新配置记录，标记使用了fallback
+                self.results['config']['original_feature_type'] = self.feature_type
+                self.results['config']['feature_type'] = fallback_feature_type
+                self.results['config']['fallback_used'] = True
                 
                 data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
                 data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
@@ -1257,17 +1286,42 @@ class CompleteAnalysisRunner:
 
 def main():
     """主函数"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='完整医疗数据UDA分析流程')
+    parser.add_argument('--feature_type', type=str, default='best8',
+                        help='特征类型 (default: best8)')
+    parser.add_argument('--scaler_type', type=str, default='none',
+                        help='标准化方法 (default: none)')
+    parser.add_argument('--imbalance_method', type=str, default='none',
+                        help='不平衡处理方法 (default: none)')
+    parser.add_argument('--cv_folds', type=int, default=10,
+                        help='交叉验证折数 (default: 10)')
+    parser.add_argument('--random_state', type=int, default=42,
+                        help='随机种子 (default: 42)')
+    parser.add_argument('--verbose', action='store_true', default=True,
+                        help='显示详细信息 (default: True)')
+    
+    args = parser.parse_args()
+    
     print("🏥 完整医疗数据UDA分析流程")
+    print("=" * 60)
+    print(f"📋 分析配置:")
+    print(f"   特征类型: {args.feature_type}")
+    print(f"   标准化方法: {args.scaler_type}")
+    print(f"   不平衡处理: {args.imbalance_method}")
+    print(f"   交叉验证折数: {args.cv_folds}")
+    print(f"   随机种子: {args.random_state}")
     print("=" * 60)
     
     # 创建分析运行器
     runner = CompleteAnalysisRunner(
-        feature_type='best8',
-        scaler_type='none',  # 不使用标准化
-        imbalance_method='none',  # 不使用不平衡处理
-        cv_folds=10,
-        random_state=42,
-        verbose=True
+        feature_type=args.feature_type,
+        scaler_type=args.scaler_type,
+        imbalance_method=args.imbalance_method,
+        cv_folds=args.cv_folds,
+        random_state=args.random_state,
+        verbose=args.verbose
     )
     
     # 运行完整分析
