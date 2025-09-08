@@ -7,8 +7,8 @@
 import sys
 from pathlib import Path
 
-# 添加src目录到路径
-src_path = Path(__file__).parent / "src"
+# 添加TabPFN src目录到路径  
+src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 from tabpfn.preprocessing import (

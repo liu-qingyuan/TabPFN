@@ -9,7 +9,7 @@ from pathlib import Path
 def generate_clean_feature_configs():
     """Generate clean feature configurations"""
     
-    csv_path = Path("uda_medical_imbalance_project/results/feature_selection_evaluation_58features_20250906_003222/feature_number_comparison.csv")
+    csv_path = Path("../results/feature_selection_evaluation_58features_20250906_003222/feature_number_comparison.csv")
     df = pd.read_csv(csv_path)
     
     print("# Complete feature configurations based on 58-feature RFE results")

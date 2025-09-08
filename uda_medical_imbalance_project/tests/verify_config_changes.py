@@ -13,7 +13,7 @@ def analyze_preprocessor_configs():
     print("=== TabPFN 4种基础配置验证 ===\n")
     
     # 读取修改后的配置文件
-    config_file = Path("src/tabpfn/preprocessing.py")
+    config_file = Path("../../src/tabpfn/preprocessing.py")
     with open(config_file, 'r', encoding='utf-8') as f:
         content = f.read()
     

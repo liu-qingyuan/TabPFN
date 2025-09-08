@@ -10,7 +10,7 @@ from pathlib import Path
 def extract_complete_feature_mappings():
     """Extract complete feature mappings from the 58-feature CSV file"""
     
-    csv_path = Path("uda_medical_imbalance_project/results/feature_selection_evaluation_58features_20250906_003222/feature_number_comparison.csv")
+    csv_path = Path("../results/feature_selection_evaluation_58features_20250906_003222/feature_number_comparison.csv")
     
     if not csv_path.exists():
         print(f"CSV file not found: {csv_path}")
