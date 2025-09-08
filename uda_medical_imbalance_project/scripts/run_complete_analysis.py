@@ -35,7 +35,7 @@ class CompleteAnalysisRunner:
     
     def __init__(
         self,
-        feature_set: str = 'best8',
+        feature_type: str = 'best8',
         scaler_type: str = 'none',  # 不使用标准化
         imbalance_method: str = 'none',  # 不使用不平衡处理
         cv_folds: int = 10,
@@ -47,7 +47,7 @@ class CompleteAnalysisRunner:
         初始化分析运行器
         
         Args:
-            feature_set: 特征集选择 ('best7', 'best8', 'best9', 'best10', 'all')
+            feature_type: 特征集类型 ('all63', 'selected58', 'best3', 'best4', ..., 'best58')
             scaler_type: 标准化方法 ('standard', 'robust', 'none')
             imbalance_method: 不平衡处理方法
             cv_folds: 交叉验证折数
@@ -55,7 +55,7 @@ class CompleteAnalysisRunner:
             output_dir: 输出目录
             verbose: 是否输出详细信息
         """
-        self.feature_set = feature_set
+        self.feature_type = feature_type
         self.scaler_type = scaler_type
         self.imbalance_method = imbalance_method
         self.cv_folds = cv_folds
@@ -73,7 +73,7 @@ class CompleteAnalysisRunner:
         # 存储结果
         self.results = {
             'config': {
-                'feature_set': feature_set,
+                'feature_type': feature_type,
                 'scaler_type': scaler_type,
                 'imbalance_method': imbalance_method,
                 'cv_folds': cv_folds,
@@ -86,7 +86,7 @@ class CompleteAnalysisRunner:
         
         if self.verbose:
             print(f"🔧 完整分析流程初始化")
-            print(f"   特征集: {feature_set}")
+            print(f"   特征集: {feature_type}")
             print(f"   标准化: {scaler_type}")
             print(f"   不平衡处理: {imbalance_method}")
             print(f"   交叉验证: {cv_folds}折")
@@ -126,7 +126,7 @@ class CompleteAnalysisRunner:
                 print(f"   源域A: {X_A.shape}, 类别分布: {dict(y_A.value_counts().sort_index())}")
                 print(f"   目标域B: {X_B.shape}, 类别分布: {dict(y_B.value_counts().sort_index())}")
                 print(f"   加载特征集: selected58 (支持所有模型)")
-                print(f"   TabPFN将从中选择: {self.feature_set} 特征")
+                print(f"   TabPFN将从中选择: {self.feature_type} 特征")
                 print(f"   基线模型将使用: selected58 特征")
                 print(f"   特征总数: {len(common_features)}")
             
@@ -139,12 +139,12 @@ class CompleteAnalysisRunner:
             
             # 备选方案：如果selected58不可用，尝试使用best8
             try:
-                fallback_feature_set = 'best8'
+                fallback_feature_type = 'best8'
                 if self.verbose:
-                    print(f"   尝试使用{fallback_feature_set}特征集作为备选...")
+                    print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
                 
-                data_A = loader.load_dataset('A', feature_type=fallback_feature_set)
-                data_B = loader.load_dataset('B', feature_type=fallback_feature_set)
+                data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
+                data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
                 
                 # 提取特征和标签
                 X_A = pd.DataFrame(data_A['X'], columns=data_A['feature_names'])
@@ -159,7 +159,7 @@ class CompleteAnalysisRunner:
                 common_features = data_A['feature_names']
                 
                 if self.verbose:
-                    print(f"✅ 使用{fallback_feature_set}特征集加载完成:")
+                    print(f"✅ 使用{fallback_feature_type}特征集加载完成:")
                     print(f"   源域A: {X_A.shape}, 类别分布: {dict(y_A.value_counts().sort_index())}")
                     print(f"   目标域B: {X_B.shape}, 类别分布: {dict(y_B.value_counts().sort_index())}")
                     print(f"   特征数量: {len(common_features)}")
@@ -167,7 +167,7 @@ class CompleteAnalysisRunner:
                 return X_A.values, y_A.values.astype(int), X_B.values, y_B.values.astype(int), common_features
                 
             except Exception as e2:
-                raise RuntimeError(f"数据加载失败，尝试了selected58和{fallback_feature_set}特征集都失败:\n原始错误: {e}\n备选错误: {e2}")
+                raise RuntimeError(f"数据加载失败，尝试了selected58和{fallback_feature_type}特征集都失败:\n原始错误: {e}\n备选错误: {e2}")
     
     def load_data_for_uda(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[str]]:
         """
@@ -184,10 +184,10 @@ class CompleteAnalysisRunner:
         try:
             # 加载指定特征集的数据
             if self.verbose:
-                print(f"   加载特征集: {self.feature_set}")
+                print(f"   加载特征集: {self.feature_type}")
             
-            data_A = loader.load_dataset('A', feature_type=self.feature_set)
-            data_B = loader.load_dataset('B', feature_type=self.feature_set)
+            data_A = loader.load_dataset('A', feature_type=self.feature_type)
+            data_B = loader.load_dataset('B', feature_type=self.feature_type)
             
             # 提取特征和标签
             X_A = pd.DataFrame(data_A['X'], columns=data_A['feature_names'])
@@ -237,12 +237,12 @@ class CompleteAnalysisRunner:
         except Exception as e:
             # 备选方案：如果指定特征集不可用，尝试使用best8
             try:
-                fallback_feature_set = 'best8' if self.feature_set != 'best8' else 'best7'
+                fallback_feature_type = 'best8' if self.feature_type != 'best8' else 'best7'
                 if self.verbose:
-                    print(f"   尝试使用{fallback_feature_set}特征集作为备选...")
+                    print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
                 
-                data_A = loader.load_dataset('A', feature_type=fallback_feature_set)
-                data_B = loader.load_dataset('B', feature_type=fallback_feature_set)
+                data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
+                data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
                 
                 # 提取特征和标签
                 X_A = pd.DataFrame(data_A['X'], columns=data_A['feature_names'])
@@ -257,7 +257,7 @@ class CompleteAnalysisRunner:
                 common_features = data_A['feature_names']
                 
                 if self.verbose:
-                    print(f"✅ 使用{fallback_feature_set}特征集加载完成:")
+                    print(f"✅ 使用{fallback_feature_type}特征集加载完成:")
                     print(f"   源域A: {X_A.shape}, 类别分布: {dict(y_A.value_counts().sort_index())}")
                     print(f"   目标域B: {X_B.shape}, 类别分布: {dict(y_B.value_counts().sort_index())}")
                     print(f"   特征数量: {len(common_features)}")
@@ -276,7 +276,7 @@ class CompleteAnalysisRunner:
                 return X_source_processed, y_source_processed, X_target_processed, y_target.astype(int), common_features
                 
             except Exception as e2:
-                raise RuntimeError(f"UDA数据加载失败，尝试了{self.feature_set}和{fallback_feature_set}特征集都失败:\n原始错误: {e}\n备选错误: {e2}")
+                raise RuntimeError(f"UDA数据加载失败，尝试了{self.feature_type}和{fallback_feature_type}特征集都失败:\n原始错误: {e}\n备选错误: {e2}")
     
     def _preprocess_uda_data(self, X_source: np.ndarray, y_source: np.ndarray, X_target: np.ndarray, 
                            feature_names: List[str]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -292,7 +292,7 @@ class CompleteAnalysisRunner:
         from config.settings import get_categorical_features
         
         # 获取类别特征索引
-        categorical_features = get_categorical_features(self.feature_set)
+        categorical_features = get_categorical_features(self.feature_type)
         categorical_indices = [i for i, name in enumerate(feature_names) if name in categorical_features]
         
         # 1. 标准化处理 - UDA数据不使用标准化
@@ -372,7 +372,7 @@ class CompleteAnalysisRunner:
         # TabPFN使用指定特征集，基线模型使用selected58特征集
         
         if self.verbose:
-            print(f"   TabPFN将使用: {self.feature_set} 特征集 + {self.scaler_type} 标准化 + {self.imbalance_method} 不平衡处理")
+            print(f"   TabPFN将使用: {self.feature_type} 特征集 + {self.scaler_type} 标准化 + {self.imbalance_method} 不平衡处理")
             print(f"   基线模型将使用: selected58 特征集 + 无预处理")
         
         # 导入并使用run_model_comparison_cv函数
@@ -381,7 +381,7 @@ class CompleteAnalysisRunner:
             
             cv_results = run_model_comparison_cv(
                 X_df, y_series,
-                feature_set=self.feature_set,  # TabPFN使用指定特征集，基线模型在内部使用selected58
+                feature_set=self.feature_type,  # TabPFN使用指定特征集，基线模型在内部使用selected58
                 scaler_type=self.scaler_type,  # TabPFN使用指定标准化方法
                 imbalance_method=self.imbalance_method,  # TabPFN使用指定不平衡处理方法
                 cv_folds=self.cv_folds,
@@ -625,7 +625,7 @@ class CompleteAnalysisRunner:
             if self.verbose:
                 print(f"\n--- 测试机器学习基线模型（仅在目标域B上测试）---")
                 print(f"   目标域B数据: {X_target_df.shape}")
-                print(f"   特征集: {self.feature_set} ({len(feature_names)}个特征)")
+                print(f"   特征集: {self.feature_type} ({len(feature_names)}个特征)")
                 print(f"   预处理: {self.scaler_type} 标准化 + {self.imbalance_method} 不平衡处理")
             
             for model_name in ml_baseline_models:
@@ -650,7 +650,7 @@ class CompleteAnalysisRunner:
                     # 创建机器学习基线模型评估器（使用与TabPFN相同的配置）
                     evaluator = CrossValidationEvaluator(
                         model_type=model_name.lower(),
-                        feature_set=self.feature_set,      # 使用与TabPFN相同的特征集
+                        feature_set=self.feature_type,      # 使用与TabPFN相同的特征集
                         scaler_type=self.scaler_type,      # 使用与TabPFN相同的标准化
                         imbalance_method=self.imbalance_method,  # 使用与TabPFN相同的不平衡处理
                         cv_folds=10,
@@ -660,7 +660,7 @@ class CompleteAnalysisRunner:
                     
                     if self.verbose:
                         print(f"   模型配置: {model_name}")
-                        print(f"   特征集: {self.feature_set}")
+                        print(f"   特征集: {self.feature_type}")
                         print(f"   特征数量: {len(evaluator.features)}")
                         print(f"   预处理: {self.scaler_type} + {self.imbalance_method}")
                     
@@ -1017,7 +1017,7 @@ class CompleteAnalysisRunner:
         # 配置信息
         report_content.append("## 分析配置\n")
         config = self.results['config']
-        report_content.append(f"- 特征集: {config['feature_set']}")
+        report_content.append(f"- 特征集: {config['feature_type']}")
         report_content.append(f"- 标准化方法: {config['scaler_type']}")
         report_content.append(f"- 不平衡处理: {config['imbalance_method']}")
         report_content.append(f"- 交叉验证折数: {config['cv_folds']}")
@@ -1262,7 +1262,7 @@ def main():
     
     # 创建分析运行器
     runner = CompleteAnalysisRunner(
-        feature_set='best8',
+        feature_type='best8',
         scaler_type='none',  # 不使用标准化
         imbalance_method='none',  # 不使用不平衡处理
         cv_folds=10,

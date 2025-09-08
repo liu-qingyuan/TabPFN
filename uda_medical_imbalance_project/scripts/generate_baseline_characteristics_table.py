@@ -37,7 +37,7 @@ class BaselineCharacteristicsGenerator:
     
     def __init__(
         self,
-        feature_set: str = 'best8',
+        feature_type: str = 'best8',
         output_dir: Optional[str] = None,
         verbose: bool = True
     ):
@@ -45,11 +45,11 @@ class BaselineCharacteristicsGenerator:
         初始化基线特征表格生成器
         
         Args:
-            feature_set: 特征集选择 ('best7', 'best8', 'best9', 'best10', 'all')
+            feature_type: 特征集类型 ('all63', 'selected58', 'best3', 'best4', ..., 'best58')
             output_dir: 输出目录
             verbose: 是否输出详细信息
         """
-        self.feature_set = feature_set
+        self.feature_type = feature_type
         self.verbose = verbose
         
         # 创建输出目录
@@ -65,7 +65,7 @@ class BaselineCharacteristicsGenerator:
         
         if self.verbose:
             print(f"🏥 基线特征表格生成器初始化")
-            print(f"   特征集: {feature_set}")
+            print(f"   特征集: {feature_type}")
             print(f"   输出目录: {output_dir}")
     
     def _load_feature_mapping(self) -> Dict[str, str]:
@@ -182,10 +182,10 @@ class BaselineCharacteristicsGenerator:
         loader = MedicalDataLoader()
         
         # 加载数据集A（源域，Train cohort）
-        data_A = loader.load_dataset('A', feature_type=self.feature_set)
+        data_A = loader.load_dataset('A', feature_type=self.feature_type)
         
         # 加载数据集B（目标域，Test cohort）
-        data_B = loader.load_dataset('B', feature_type=self.feature_set)
+        data_B = loader.load_dataset('B', feature_type=self.feature_type)
         
         if self.verbose:
             print(f"✅ 数据集加载完成:")
@@ -344,12 +344,12 @@ class BaselineCharacteristicsGenerator:
         # 保存为不同格式
         for format_type in formats:
             if format_type == 'csv':
-                file_path = self.output_dir / f"baseline_characteristics_{self.feature_set}.csv"
+                file_path = self.output_dir / f"baseline_characteristics_{self.feature_type}.csv"
                 display_df.to_csv(file_path, index=False, encoding='utf-8')
                 saved_files['csv'] = str(file_path)
             
             elif format_type == 'xlsx':
-                file_path = self.output_dir / f"baseline_characteristics_{self.feature_set}.xlsx"
+                file_path = self.output_dir / f"baseline_characteristics_{self.feature_type}.xlsx"
                 
                 # 使用ExcelWriter进行格式化
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
@@ -532,7 +532,7 @@ class BaselineCharacteristicsGenerator:
         plt.tight_layout()
         
         # 添加总标题
-        fig.suptitle(f'Baseline Characteristics Distribution ({self.feature_set.upper()} Features)\n'
+        fig.suptitle(f'Baseline Characteristics Distribution ({self.feature_type.upper()} Features)\n'
                     f'Continuous Features: {len(continuous_features)}, Categorical Features: {len(categorical_features)}', 
                     fontsize=14, fontweight='bold', y=0.96)
         
@@ -540,7 +540,7 @@ class BaselineCharacteristicsGenerator:
         plt.subplots_adjust(top=0.88)  # 为总标题留出更多空间
         
         # 保存图表
-        viz_file = self.output_dir / f"baseline_characteristics_all_features_{self.feature_set}.png"
+        viz_file = self.output_dir / f"baseline_characteristics_all_features_{self.feature_type}.png"
         plt.savefig(viz_file, dpi=300, bbox_inches='tight')
         plt.close()
         
@@ -567,7 +567,7 @@ class BaselineCharacteristicsGenerator:
         
         # 配置信息
         report_content.append("## 配置信息\n")
-        report_content.append(f"- 特征集: {self.feature_set}")
+        report_content.append(f"- 特征集: {self.feature_type}")
         report_content.append(f"- 输出目录: {self.output_dir}")
         report_content.append("")
         
@@ -608,7 +608,7 @@ class BaselineCharacteristicsGenerator:
         report_content.append("此表格适用于临床研究论文，格式参考《Lancet》《JAMA》《NEJM》等期刊的基线特征表格标准。")
         
         # 保存报告
-        report_file = self.output_dir / f"baseline_characteristics_report_{self.feature_set}.md"
+        report_file = self.output_dir / f"baseline_characteristics_report_{self.feature_type}.md"
         with open(report_file, 'w', encoding='utf-8') as f:
             f.write('\n'.join(report_content))
         
@@ -670,7 +670,7 @@ def main():
     
     # 创建生成器
     generator = BaselineCharacteristicsGenerator(
-        feature_set='best8',
+        feature_type='best8',
         verbose=True
     )
     

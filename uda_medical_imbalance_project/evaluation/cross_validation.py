@@ -44,7 +44,7 @@ class CrossValidationEvaluator:
     def __init__(
         self,
         model_type: str = 'tabpfn',
-        feature_set: str = 'best7',
+        feature_type: str = 'best7',
         scaler_type: str = 'standard',
         imbalance_method: str = 'smote',
         model_params: Optional[Dict] = None,
@@ -57,7 +57,7 @@ class CrossValidationEvaluator:
         
         Args:
             model_type: 模型类型 ('tabpfn', 'pkuph', 'mayo', 'paper_lr')
-            feature_set: 特征集选择 ('best7', 'best8', 'best9', 'best10', 'all')
+            feature_type: 特征集类型 ('all63', 'selected58', 'best3', 'best4', ..., 'best58')
             scaler_type: 标准化类型 ('standard', 'robust', 'none')
             imbalance_method: 不平衡处理方法
             model_params: 模型参数
@@ -66,7 +66,7 @@ class CrossValidationEvaluator:
             verbose: 是否输出详细信息
         """
         self.model_type = model_type
-        self.feature_set = feature_set
+        self.feature_type = feature_type
         self.scaler_type = scaler_type
         self.imbalance_method = imbalance_method
         self.cv_folds = cv_folds
@@ -75,7 +75,7 @@ class CrossValidationEvaluator:
         
         # 获取特征列表
         self.features = self._get_feature_list()
-        self.categorical_features = get_categorical_features(feature_set)
+        self.categorical_features = get_categorical_features(feature_type)
         
         # 模型参数
         self.model_params = model_params or {}
@@ -102,15 +102,7 @@ class CrossValidationEvaluator:
                    'Feature52', 'Feature56', 'Feature57', 'Feature61', 'Feature42', 'Feature43']
         else:
             # TabPFN等其他模型使用通用特征集
-            feature_sets = {
-                'best7': BEST_7_FEATURES,
-                'best8': BEST_8_FEATURES,
-                'best9': BEST_9_FEATURES,
-                'best10': BEST_10_FEATURES,
-                'all63': get_features_by_type('all63'),
-                'selected58': SELECTED_FEATURES
-            }
-            return feature_sets.get(self.feature_set, BEST_7_FEATURES)
+            return get_features_by_type(self.feature_type)
     
     def _should_apply_preprocessing(self) -> bool:
         """判断是否需要应用预处理（标准化和不平衡处理）"""
@@ -263,7 +255,7 @@ class CrossValidationEvaluator:
         if self.verbose:
             print(f"开始10折交叉验证...")
             print(f"模型类型: {self.model_type}")
-            print(f"特征集: {self.feature_set} ({len(self.features)}个特征)")
+            print(f"特征集: {self.feature_type} ({len(self.features)}个特征)")
             print(f"指定特征列表: {self.features}")
             if self._should_apply_preprocessing():
                 print(f"标准化: {self.scaler_type}")
@@ -467,7 +459,7 @@ class CrossValidationEvaluator:
         summary = self.summary_results
         
         print(f"模型类型: {self.model_type}")
-        print(f"特征集: {self.feature_set} ({len(self.features)}个特征)")
+        print(f"特征集: {self.feature_type} ({len(self.features)}个特征)")
         if self._should_apply_preprocessing():
             print(f"标准化: {self.scaler_type}")
             print(f"不平衡处理: {self.imbalance_method}")
@@ -573,7 +565,7 @@ def run_cv_experiment(
     X: pd.DataFrame, 
     y: pd.Series,
     model_types: Optional[List[str]] = None,
-    feature_sets: Optional[List[str]] = None,
+    feature_types: Optional[List[str]] = None,
     scaler_types: Optional[List[str]] = None,
     imbalance_methods: Optional[List[str]] = None,
     cv_folds: int = 10,
@@ -587,7 +579,7 @@ def run_cv_experiment(
         X: 特征数据
         y: 标签数据
         model_types: 模型类型列表
-        feature_sets: 特征集列表
+        feature_types: 特征集列表
         scaler_types: 标准化类型列表
         imbalance_methods: 不平衡处理方法列表
         cv_folds: 交叉验证折数
@@ -601,8 +593,8 @@ def run_cv_experiment(
     if model_types is None:
         model_types = ['tabpfn', 'pkuph', 'mayo', 'paper_lr']
     
-    if feature_sets is None:
-        feature_sets = ['best7', 'best8', 'best9', 'best10']
+    if feature_types is None:
+        feature_types = ['best7', 'best8', 'best9', 'best10']
     
     if scaler_types is None:
         scaler_types = ['standard', 'robust', 'none']
@@ -617,7 +609,7 @@ def run_cv_experiment(
     results = {}
     
     for model_type in model_types:
-        for feature_set in feature_sets:
+        for feature_type in feature_types:
             # 基线模型和论文方法只测试无预处理的情况
             if model_type in ['pkuph', 'mayo', 'paper_lr']:
                 test_scaler_types = ['none']
@@ -628,7 +620,7 @@ def run_cv_experiment(
             
             for scaler_type in test_scaler_types:
                 for imbalance_method in test_imbalance_methods:
-                    experiment_name = f"{model_type}_{feature_set}_{scaler_type}_{imbalance_method}"
+                    experiment_name = f"{model_type}_{feature_type}_{scaler_type}_{imbalance_method}"
                     
                     if verbose:
                         print(f"\n{'='*80}")
@@ -637,7 +629,7 @@ def run_cv_experiment(
                     
                     evaluator = CrossValidationEvaluator(
                         model_type=model_type,
-                        feature_set=feature_set,
+                        feature_type=feature_type,
                         scaler_type=scaler_type,
                         imbalance_method=imbalance_method,
                         cv_folds=cv_folds,
@@ -654,7 +646,7 @@ def run_cv_experiment(
 def run_model_comparison_cv(
     X: pd.DataFrame,
     y: pd.Series,
-    feature_set: str = 'best7',
+    feature_type: str = 'best7',
     scaler_type: str = 'standard',
     imbalance_method: str = 'smote',
     cv_folds: int = 10,
@@ -667,7 +659,7 @@ def run_model_comparison_cv(
     Args:
         X: 特征数据
         y: 标签数据
-        feature_set: 特征集选择（对TabPFN和机器学习模型有效，传统基线模型使用各自的特征）
+        feature_type: 特征集选择（对TabPFN和机器学习模型有效，传统基线模型使用各自的特征）
         scaler_type: 标准化类型（对TabPFN和机器学习模型有效）
         imbalance_method: 不平衡处理方法（对TabPFN和机器学习模型有效）
         cv_folds: 交叉验证折数
@@ -679,29 +671,29 @@ def run_model_comparison_cv(
     """
     model_configs = [
         # TabPFN模型（使用指定的特征集和预处理）
-        {'model_type': 'tabpfn', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'tabpfn', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
         
         # 机器学习基线模型（使用相同的特征集和预处理）
-        {'model_type': 'svm', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
-        {'model_type': 'dt', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
-        {'model_type': 'rf', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
-        {'model_type': 'gbdt', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
-        {'model_type': 'xgboost', 'feature_set': feature_set, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'svm', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'dt', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'rf', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'gbdt', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
+        {'model_type': 'xgboost', 'feature_type': feature_type, 'scaler_type': scaler_type, 'imbalance_method': imbalance_method},
         
         # 传统医疗基线模型（使用各自的特征集，无预处理）
-        {'model_type': 'pkuph', 'feature_set': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'},
-        {'model_type': 'mayo', 'feature_set': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'},
-        {'model_type': 'paper_lr', 'feature_set': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'}
+        {'model_type': 'pkuph', 'feature_type': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'},
+        {'model_type': 'mayo', 'feature_type': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'},
+        {'model_type': 'paper_lr', 'feature_type': 'selected58', 'scaler_type': 'none', 'imbalance_method': 'none'}
     ]
     
     results = {}
     
     for config in model_configs:
         model_type = config['model_type']
-        model_feature_set = config['feature_set']
+        model_feature_type = config['feature_type']
         model_scaler_type = config['scaler_type']
         imbalance_method = config['imbalance_method']
-        experiment_name = f"{model_type}_{model_feature_set}"
+        experiment_name = f"{model_type}_{model_feature_type}"
         
         if verbose:
             print(f"\n{'='*80}")
@@ -710,7 +702,7 @@ def run_model_comparison_cv(
         
         evaluator = CrossValidationEvaluator(
             model_type=model_type,
-            feature_set=model_feature_set,
+            feature_type=model_feature_type,
             scaler_type=model_scaler_type,
             imbalance_method=imbalance_method,
             cv_folds=cv_folds,
@@ -733,8 +725,8 @@ def run_model_comparison_cv(
             # 从实验名称中提取模型名称（去掉特征集后缀）
             if '_all' in experiment_name:
                 model_name = experiment_name.replace('_all', '')
-            elif f'_{feature_set}' in experiment_name:
-                model_name = experiment_name.replace(f'_{feature_set}', '')
+            elif f'_{feature_type}' in experiment_name:
+                model_name = experiment_name.replace(f'_{feature_type}', '')
             else:
                 model_name = experiment_name
                 
