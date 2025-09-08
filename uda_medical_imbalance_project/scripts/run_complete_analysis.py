@@ -676,10 +676,25 @@ class CompleteAnalysisRunner:
                     # 使用交叉验证评估器
                     from evaluation.cross_validation import CrossValidationEvaluator
                     
-                    # 创建机器学习基线模型评估器（使用与TabPFN相同的配置）
+                    # 为机器学习基线模型使用实际可用的特征
+                    # 由于特征对齐，需要确保evaluator期望的特征与传入数据匹配
+                    if self.verbose:
+                        print(f"   实际可用特征: {len(feature_names)}个")
+                        print(f"   特征列表: {feature_names[:5]}..." if len(feature_names) > 5 else f"   特征列表: {feature_names}")
+                        
+                        # 检查原始特征类型是否匹配
+                        from config.settings import get_features_by_type
+                        expected_features = get_features_by_type(self.feature_type)
+                        missing_features = [f for f in expected_features if f not in feature_names]
+                        if missing_features:
+                            print(f"   ⚠ 缺失特征: {missing_features}")
+                            print(f"   💡 将使用实际可用的特征进行测试")
+                    
+                    # 使用'selected58'作为通用的特征类型，但实际特征由数据决定
+                    # 这样避免特征定义不匹配的问题
                     evaluator = CrossValidationEvaluator(
                         model_type=model_name.lower(),
-                        feature_type=self.feature_type,      # 使用与TabPFN相同的特征类型
+                        feature_type='selected58',      # 使用通用特征类型
                         scaler_type=self.scaler_type,      # 使用与TabPFN相同的标准化
                         imbalance_method=self.imbalance_method,  # 使用与TabPFN相同的不平衡处理
                         cv_folds=10,
@@ -689,12 +704,38 @@ class CompleteAnalysisRunner:
                     
                     if self.verbose:
                         print(f"   模型配置: {model_name}")
-                        print(f"   特征集: {self.feature_type}")
-                        print(f"   特征数量: {len(evaluator.features)}")
+                        print(f"   evaluator特征类型: selected58")
+                        print(f"   evaluator预期特征数: {len(evaluator.features)}")
+                        print(f"   实际传入特征数: {len(feature_names)}")
                         print(f"   预处理: {self.scaler_type} + {self.imbalance_method}")
                     
-                    # 运行10折交叉验证（在目标域B上）
-                    cv_result = evaluator.run_cross_validation(X_target_df, y_target_series)
+                    # 确保传递的数据只包含evaluator期望的特征
+                    # 这样避免特征不匹配的问题
+                    evaluator_features = evaluator.features
+                    available_features = [f for f in evaluator_features if f in X_target_df.columns]
+                    missing_features = [f for f in evaluator_features if f not in X_target_df.columns]
+                    
+                    if missing_features:
+                        if self.verbose:
+                            print(f"   ⚠ 跳过缺失特征: {missing_features}")
+                            print(f"   ✅ 使用可用特征: {len(available_features)}/{len(evaluator_features)}")
+                        
+                        # 使用可用特征的子集
+                        X_target_subset = X_target_df[available_features].copy()
+                        
+                        # 创建一个新的evaluator，仅使用可用特征
+                        # 通过动态创建特征配置来实现
+                        temp_feature_type = f"temp_{len(available_features)}"
+                        
+                        # 临时修改evaluator的特征列表
+                        evaluator.features = available_features
+                        evaluator.categorical_features = [f for f in evaluator.categorical_features if f in available_features]
+                        evaluator.categorical_indices = [i for i, f in enumerate(available_features) if f in evaluator.categorical_features]
+                        
+                        cv_result = evaluator.run_cross_validation(X_target_subset, y_target_series)
+                    else:
+                        # 运行10折交叉验证（在目标域B上）
+                        cv_result = evaluator.run_cross_validation(X_target_df, y_target_series)
                     
                     if cv_result['summary'] and 'auc_mean' in cv_result['summary']:
                         summary = cv_result['summary']
