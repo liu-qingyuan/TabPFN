@@ -568,8 +568,20 @@ BEST_57_FEATURES = [
     'Feature50'
 ]
 
-# 选定58特征 (包含所有A、B数据集共同特征)
-BEST_58_FEATURES = SELECTED_58_FEATURES
+# 最佳58特征配置 (AUC: 0.7261) - 基于RFE排序的最优58特征
+BEST_58_FEATURES = [
+    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
+    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
+    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
+    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
+    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
+    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37', 'Feature41', 'Feature15',
+    'Feature50', 'Feature11'
+]
+
+# 选定58特征 (包含所有A、B数据集共同特征) - 保持向后兼容
+SELECTED_58_FEATURES_FULL = SELECTED_58_FEATURES
 
 # 类别特征名称 (20个类别特征)
 CAT_FEATURE_NAMES = [
