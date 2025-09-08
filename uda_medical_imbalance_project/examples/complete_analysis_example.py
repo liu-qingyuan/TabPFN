@@ -29,7 +29,7 @@ def example_basic_analysis():
     
     # 创建分析运行器
     runner = CompleteAnalysisRunner(
-        feature_set='best8',        # 使用best8特征集
+        feature_type='best8',        # 使用best8特征类型
         scaler_type='standard',     # 标准化
         imbalance_method='smote',   # SMOTE处理不平衡
         cv_folds=10,               # 10折交叉验证
@@ -58,7 +58,7 @@ def example_custom_parameters():
     
     # 创建自定义配置的分析运行器
     runner = CompleteAnalysisRunner(
-        feature_set='best7',              # 使用best7特征集
+        feature_type='best7',              # 使用best7特征类型
         scaler_type='robust',             # 鲁棒标准化
         imbalance_method='borderline_smote',  # BorderlineSMOTE
         cv_folds=5,                       # 5折交叉验证（更快）
@@ -118,7 +118,7 @@ def example_step_by_step_analysis():
         
         # 创建分析运行器
         runner = CompleteAnalysisRunner(
-            feature_set='best8',
+            feature_type='best8',
             scaler_type='standard',
             imbalance_method='smote',
             cv_folds=3,  # 减少折数以加快演示
@@ -195,7 +195,7 @@ def example_comparison_analysis():
         
         try:
             runner = CompleteAnalysisRunner(
-                feature_set=config['feature_set'],
+                feature_type=config['feature_set'],
                 scaler_type=config['scaler_type'],
                 imbalance_method=config['imbalance_method'],
                 cv_folds=3,  # 减少折数以加快对比

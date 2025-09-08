@@ -381,7 +381,7 @@ class CompleteAnalysisRunner:
             
             cv_results = run_model_comparison_cv(
                 X_df, y_series,
-                feature_set=self.feature_type,  # TabPFN使用指定特征集，基线模型在内部使用selected58
+                feature_type=self.feature_type,  # TabPFN使用指定特征类型，基线模型在内部使用selected58
                 scaler_type=self.scaler_type,  # TabPFN使用指定标准化方法
                 imbalance_method=self.imbalance_method,  # TabPFN使用指定不平衡处理方法
                 cv_folds=self.cv_folds,
@@ -540,7 +540,7 @@ class CompleteAnalysisRunner:
                     # 创建基线模型评估器
                     evaluator = CrossValidationEvaluator(
                         model_type=model_name.lower(),
-                        feature_set='selected58',  # 强制使用selected58特征集
+                        feature_type='selected58',  # 强制使用selected58特征类型
                         scaler_type='none',        # 基线模型不使用标准化
                         imbalance_method='none',   # 基线模型不使用不平衡处理
                         cv_folds=10,
@@ -650,7 +650,7 @@ class CompleteAnalysisRunner:
                     # 创建机器学习基线模型评估器（使用与TabPFN相同的配置）
                     evaluator = CrossValidationEvaluator(
                         model_type=model_name.lower(),
-                        feature_set=self.feature_type,      # 使用与TabPFN相同的特征集
+                        feature_type=self.feature_type,      # 使用与TabPFN相同的特征类型
                         scaler_type=self.scaler_type,      # 使用与TabPFN相同的标准化
                         imbalance_method=self.imbalance_method,  # 使用与TabPFN相同的不平衡处理
                         cv_folds=10,

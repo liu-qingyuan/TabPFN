@@ -45,7 +45,7 @@ def debug_feature_selection():
     # 创建TabPFN评估器，使用best7特征
     cv_evaluator = CrossValidationEvaluator(
         model_type='tabpfn',
-        feature_set='best7',
+        feature_type='best7',
         scaler_type='standard',
         imbalance_method='smote',
         cv_folds=2,  # 只用2折快速测试
@@ -55,7 +55,7 @@ def debug_feature_selection():
     
     print(f"评估器配置:")
     print(f"  模型类型: {cv_evaluator.model_type}")
-    print(f"  特征集: {cv_evaluator.feature_set}")
+    print(f"  特征类型: {cv_evaluator.feature_type}")
     print(f"  选择的特征: {cv_evaluator.features}")
     print(f"  特征数量: {len(cv_evaluator.features)}")
     print()
@@ -100,7 +100,7 @@ def debug_feature_selection():
     for model_type, feature_set in model_configs:
         evaluator = CrossValidationEvaluator(
             model_type=model_type,
-            feature_set=feature_set,
+            feature_type=feature_set,
             verbose=False
         )
         print(f"  {model_type} + {feature_set}: {len(evaluator.features)}个特征")

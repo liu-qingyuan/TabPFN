@@ -162,7 +162,7 @@ class TestCrossValidation:
         # 创建交叉验证评估器
         evaluator = CrossValidationEvaluator(
             model_type='tabpfn',
-            feature_set='best10',
+            feature_type='best10',
             scaler_type='standard',
             imbalance_method='smote',
             cv_folds=10,  # 使用10折交叉验证
@@ -413,7 +413,7 @@ class TestCrossValidation:
         model_results = run_model_comparison_cv(
             X=X,
             y=y,
-            feature_set='best10',  # TabPFN使用的特征集
+            feature_type='best10',  # TabPFN使用的特征类型
             scaler_type='standard',  # TabPFN使用的标准化
             cv_folds=10,  # 使用10折交叉验证
             random_state=42,
@@ -503,7 +503,7 @@ class TestCrossValidation:
             
             evaluator = CrossValidationEvaluator(
                 model_type='tabpfn',
-                feature_set=feature_set,
+                feature_type=feature_set,
                 scaler_type='standard',
                 imbalance_method='smote',
                 cv_folds=10,  # 使用10折交叉验证
@@ -602,7 +602,7 @@ class TestCrossValidation:
             try:
                 evaluator = CrossValidationEvaluator(
                     model_type=model_type,
-                    feature_set=feature_set,
+                    feature_type=feature_set,
                     scaler_type='standard' if needs_preprocessing else 'none',
                     imbalance_method='smote' if needs_preprocessing else 'none',
                     cv_folds=10,  # 使用10折交叉验证
