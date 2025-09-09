@@ -32,12 +32,19 @@ class MedicalDataLoader:
         'C': 'GuangzhouMedicalHospital'
     }
     
-    # 数据文件路径 (基于settings.py)
-    DATA_PATHS = {
-        'A': "/home/24052432g/TabPFN/data/AI4healthcare.xlsx",
-        'B': "/home/24052432g/TabPFN/data/HenanCancerHospital_features63_58.xlsx",
-        'C': "/home/24052432g/TabPFN/data/GuangzhouMedicalHospital_features23_no_nan_new_fixed.xlsx"
-    }
+    # 数据文件路径 - 使用相对路径，自动适配项目位置
+    @property
+    def DATA_PATHS(self):
+        # 获取项目根目录
+        current_dir = Path(__file__).parent
+        project_root = current_dir.parent.parent  # 从 uda_medical_imbalance_project/data/ 回到项目根目录
+        data_dir = project_root / "data"
+        
+        return {
+            'A': str(data_dir / "AI4healthcare.xlsx"),
+            'B': str(data_dir / "HenanCancerHospital_features63_58.xlsx"),
+            'C': str(data_dir / "GuangzhouMedicalHospital_features23_no_nan_new_fixed.xlsx")
+        }
     
     # 全部63个特征
     ALL_63_FEATURES = [
@@ -216,6 +223,27 @@ class MedicalDataLoader:
     
     def _get_features_by_type(self, feature_type: str) -> List[str]:
         """根据类型获取特征列表（使用RFE预筛选的特征集）"""
+        # 导入统一的特征配置 - 直接导入避免yaml依赖
+        try:
+            from pathlib import Path
+            
+            # 直接加载settings.py文件避免__init__.py的yaml依赖
+            project_root = Path(__file__).parent.parent
+            settings_path = project_root / "config" / "settings.py"
+            
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("settings", settings_path)
+            settings = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(settings)
+            
+            features = settings.get_features_by_type(feature_type)
+            if features:
+                return features.copy()
+        except Exception:
+            # 如果导入失败，使用本地定义
+            pass
+        
+        # 本地备份定义（保持向后兼容）
         if feature_type == 'all63':
             return self.ALL_63_FEATURES.copy()
         elif feature_type == 'selected58':
@@ -229,7 +257,9 @@ class MedicalDataLoader:
         elif feature_type == 'best10':
             return self.BEST_10_FEATURES.copy()
         else:
-            raise ValueError(f"不支持的特征类型: {feature_type}. 支持的类型: ['all63', 'selected58', 'best7', 'best8', 'best9', 'best10']")
+            # 完整支持的特征类型 (best3-best58)
+            supported_types = ['all63', 'selected58'] + [f'best{i}' for i in range(3, 59)]
+            raise ValueError(f"不支持的特征类型: {feature_type}. 支持的类型包括: all63, selected58, best3-best58")
     
     def _extract_features_and_labels(self, data: pd.DataFrame, 
                                    selected_features: List[str]) -> Tuple[np.ndarray, np.ndarray]:

@@ -157,10 +157,11 @@ class CompleteAnalysisRunner:
                 if self.verbose:
                     print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
                 
-                # 更新配置记录，标记使用了fallback
-                self.results['config']['original_feature_type'] = 'selected58' 
-                self.results['config']['feature_type'] = fallback_feature_type
-                self.results['config']['fallback_used'] = True
+                # 更新配置记录，标记使用了fallback - 但保持原始feature_type不变
+                self.results['config']['cv_original_requested'] = 'selected58' 
+                self.results['config']['cv_actual_used'] = fallback_feature_type
+                self.results['config']['cv_fallback_used'] = True
+                # 保持原始feature_type不变，用于UDA分析
                 
                 data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
                 data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
@@ -265,10 +266,11 @@ class CompleteAnalysisRunner:
                 if self.verbose:
                     print(f"   尝试使用{fallback_feature_type}特征集作为备选...")
                 
-                # 更新配置记录，标记使用了fallback
-                self.results['config']['original_feature_type'] = self.feature_type
-                self.results['config']['feature_type'] = fallback_feature_type
-                self.results['config']['fallback_used'] = True
+                # 更新配置记录，标记使用了fallback - 但保持原始feature_type不变
+                self.results['config']['uda_original_requested'] = self.feature_type
+                self.results['config']['uda_actual_used'] = fallback_feature_type
+                self.results['config']['uda_fallback_used'] = True
+                # 保持原始feature_type不变，用于正确的配置记录
                 
                 data_A = loader.load_dataset('A', feature_type=fallback_feature_type)
                 data_B = loader.load_dataset('B', feature_type=fallback_feature_type)
@@ -318,7 +320,20 @@ class CompleteAnalysisRunner:
             print(f"   标准化方法: {self.scaler_type}")
             print(f"   不平衡处理: {self.imbalance_method}")
         
-        from config.settings import get_categorical_features
+        # 直接导入避免yaml依赖
+        try:
+            from config.settings import get_categorical_features
+        except ImportError:
+            # 备选方案：直接加载settings.py
+            import importlib.util
+            from pathlib import Path
+            project_root = Path(__file__).parent.parent
+            settings_path = project_root / "config" / "settings.py"
+            
+            spec = importlib.util.spec_from_file_location("settings", settings_path)
+            settings = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(settings)
+            get_categorical_features = settings.get_categorical_features
         
         # 获取类别特征索引
         categorical_features = get_categorical_features(self.feature_type)

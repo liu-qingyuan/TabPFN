@@ -47,26 +47,27 @@ def load_settings_direct():
     return settings
 
 def get_features_by_type(feature_type: str):
-    """Get features by type without complex imports"""
+    """Get features by type without complex imports - support all best3-best58"""
     settings = load_settings_direct()
-    feature_map = {
-        'best3': settings.BEST_3_FEATURES,
-        'best4': settings.BEST_4_FEATURES,
-        'best5': settings.BEST_5_FEATURES,
-        'best6': settings.BEST_6_FEATURES,
-        'best7': settings.BEST_7_FEATURES,
-        'best8': settings.BEST_8_FEATURES,
-        'best9': settings.BEST_9_FEATURES,
-        'best10': settings.BEST_10_FEATURES,
-        'best11': settings.BEST_11_FEATURES,
-        'best12': settings.BEST_12_FEATURES,
-        'best15': settings.BEST_15_FEATURES,
-        'best20': settings.BEST_20_FEATURES,
-        'best32': settings.BEST_32_FEATURES,
-        'selected58': settings.SELECTED_58_FEATURES,
-        'all63': settings.ALL_63_FEATURES,
-    }
-    return feature_map.get(feature_type, [])
+    
+    # 直接使用settings模块的get_features_by_type函数
+    try:
+        return settings.get_features_by_type(feature_type)
+    except Exception:
+        # 备选方案：如果settings.py的get_features_by_type函数失败，尝试直接访问属性
+        try:
+            # 动态获取特征集属性
+            if feature_type == 'all63':
+                return getattr(settings, 'ALL_63_FEATURES', [])
+            elif feature_type == 'selected58':
+                return getattr(settings, 'SELECTED_58_FEATURES', [])
+            else:
+                # 对于bestN特征集，尝试获取对应的属性
+                attr_name = f"{feature_type.upper()}_FEATURES"
+                return getattr(settings, attr_name, [])
+        except Exception:
+            # 如果所有方法都失败，返回空列表
+            return []
 
 
 class FeatureSweepAnalyzer:
