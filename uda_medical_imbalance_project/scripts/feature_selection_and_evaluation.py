@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-统一RFE特征选择和性能评估脚本 (使用AB交集58个特征)
+统一RFE特征选择和性能评估脚本 (16:16:16:16集成配置)
 
 这个脚本结合了以下功能：
 1. predict_healthcare_RFE.py - 使用TabPFN进行RFE特征选择
 2. evaluate_feature_numbers.py - 跨不同特征数量的性能评估
 
-特征集说明：
-- 使用A数据集（AI4healthcare.xlsx）
+配置说明：
+- 集成配置：64个estimators（16:16:16:16分布，4种基础配置各16个）
+- 使用A数据集（AI4healthcare.xlsx，相对路径）
 - 仅使用AB交集的58个特征（移除Feature12, Feature33, Feature34, Feature36, Feature40）
 - 评估范围：3-58个特征（生成56行结果数据）
 
@@ -66,7 +67,7 @@ class TabPFNWrapper(BaseEstimator, ClassifierMixin):
             target_tags=SimpleNamespace(required=True)
         )
 
-    def __init__(self, device='cuda', n_estimators=32, softmax_temperature=0.9,
+    def __init__(self, device='cuda', n_estimators=64, softmax_temperature=0.9,
                  balance_probabilities=False, average_before_softmax=False,
                  ignore_pretraining_limits=True, random_state=42,
                  n_repeats=5):
@@ -139,7 +140,7 @@ def select_features_rfe(X, y, n_features=3):
     # Initialize TabPFN wrapper
     base_model = TabPFNWrapper(
         device='cuda',
-        n_estimators=32,
+        n_estimators=64,
         softmax_temperature=0.9,
         balance_probabilities=False,
         average_before_softmax=False,
@@ -225,7 +226,7 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
             start_time = time.time()
             clf = TabPFNClassifier(
                 device='cuda',
-                n_estimators=32,
+                n_estimators=64,
                 softmax_temperature=0.9,
                 balance_probabilities=False,
                 average_before_softmax=False,
@@ -342,20 +343,21 @@ def main():
     print("🧬 统一RFE特征选择和性能评估")
     print("=" * 60)
     
-    # 创建时间戳输出目录 (标注使用58个特征)
+    # 创建时间戳输出目录 (标注使用58个特征，64个estimators配置)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = project_root / "results" / f"feature_selection_evaluation_58features_{timestamp}"
+    results_dir = project_root / "results" / f"feature_selection_evaluation_64estimators_{timestamp}"
     results_dir.mkdir(parents=True, exist_ok=True)
     
-    # 数据路径配置 (基于loader.py的路径设置)
-    data_path = "/home/24052432g/TabPFN/data/AI4healthcare.xlsx"
+    # 数据路径配置 (使用相对路径，参考loader.py的设计)
+    data_dir = project_root.parent / "data"  # 从项目根目录到TabPFN/data
+    data_path = data_dir / "AI4healthcare.xlsx"
     
     # 加载数据
     print(f"\n📂 加载数据...")
     print(f"数据路径: {data_path}")
     
     try:
-        df = pd.read_excel(data_path)
+        df = pd.read_excel(str(data_path))
         
         # 使用AB交集的58个特征 (移除Feature12, Feature33, Feature34, Feature36, Feature40)
         required_features = get_features_by_type('selected58')
