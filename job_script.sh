@@ -34,8 +34,8 @@ cd uda_medical_imbalance_project
 # python examples/real_data_visualization.py
 
 # python scripts/run_complete_analysis.py
-# python scripts/run_feature_sweep_analysis.py
-python scripts/run_complete_analysis.py --feature_type best10
+python scripts/run_feature_sweep_analysis.py
+# python scripts/run_complete_analysis.py --feature_type best10
 # python scripts/feature_selection_and_evaluation.py
 
 # python scripts/generate_baseline_characteristics_table.py
