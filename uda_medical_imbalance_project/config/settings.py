@@ -32,552 +32,456 @@ SELECTED_58_FEATURES = [
 # 为了向后兼容，保留原名称
 SELECTED_FEATURES = SELECTED_58_FEATURES
 
-# 基于58个共同特征的RFE结果 (来源: feature_selection_evaluation_58features_20250906_003222)
+# 基于16:16:16:16配置的RFE结果 (来源: feature_selection_evaluation_58features_16_16_16_16_20250911_030814)
 
-# 最佳3特征配置 (AUC: 0.7795)
-BEST_3_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46'
-]
+# 最佳3特征配置 (AUC: 0.7817)
+BEST_3_FEATURES = ['Feature63', 'Feature2', 'Feature46']
 
-# 最佳4特征配置 (AUC: 0.7818)
-BEST_4_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57'
-]
+# 最佳4特征配置 (AUC: 0.7757)
+BEST_4_FEATURES = ['Feature63', 'Feature2', 'Feature46', 'Feature56']
 
-# 最佳5特征配置 (AUC: 0.8023)
-BEST_5_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61'
-]
+# 最佳5特征配置 (AUC: 0.7932)
+BEST_5_FEATURES = ['Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61']
 
-# 最佳6特征配置 (AUC: 0.8127)
-BEST_6_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42'
-]
+# 最佳6特征配置 (AUC: 0.8122)
+BEST_6_FEATURES = ['Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42']
 
-# 最佳7特征配置 (AUC: 0.8270)
-BEST_7_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43'
-]
+# 最佳7特征配置 (AUC: 0.8194)
+BEST_7_FEATURES = ['Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43']
 
-# 最佳8特征配置 (AUC: 0.8328)
-BEST_8_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5'
-]
+# 最佳8特征配置 (AUC: 0.8257)
+BEST_8_FEATURES = ['Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5']
 
-# 最佳9特征配置 (AUC: 0.8393)
+# 最佳9特征配置 (AUC: 0.8245)
 BEST_9_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48'
 ]
 
-# 最佳10特征配置 (AUC: 0.8414)
+# 最佳10特征配置 (AUC: 0.8363)
 BEST_10_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49'
 ]
 
-# 最佳11特征配置 (AUC: 0.8397)
+# 最佳11特征配置 (AUC: 0.8365)
 BEST_11_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48', 'Feature22'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22'
 ]
 
-# 最佳12特征配置 (AUC: 0.8339)
+# 最佳12特征配置 (AUC: 0.8420)
 BEST_12_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48', 'Feature22', 'Feature56'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27'
 ]
 
-# 最佳15特征配置 (AUC: 0.8299) - 高性能选择
-BEST_15_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44'
-]
-
-# 最佳20特征配置 (AUC: 0.8278) - 平衡选择
-BEST_20_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27', 'Feature52', 'Feature55', 'Feature47', 'Feature29'
-]
-
-# 最佳32特征配置 (AUC: 0.8207) - 扩展选择
-BEST_32_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5', 'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27', 'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62', 'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19'
-]
-
-# 最佳13特征配置 (AUC: 0.8343)
+# 最佳13特征配置 (AUC: 0.8487)
 BEST_13_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59'
 ]
 
-# 最佳14特征配置 (AUC: 0.8317)
+# 最佳14特征配置 (AUC: 0.8384)
 BEST_14_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32'
 ]
 
-# 最佳16特征配置 (AUC: 0.8336)
+# 最佳15特征配置 (AUC: 0.8360)
+BEST_15_FEATURES = [
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57'
+]
+
+# 最佳16特征配置 (AUC: 0.8343)
 BEST_16_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52'
 ]
 
-# 最佳17特征配置 (AUC: 0.8317)
+# 最佳17特征配置 (AUC: 0.8362)
 BEST_17_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55'
 ]
 
-# 最佳18特征配置 (AUC: 0.8274)
+# 最佳18特征配置 (AUC: 0.8333)
 BEST_18_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58'
 ]
 
-# 最佳19特征配置 (AUC: 0.8320)
+# 最佳19特征配置 (AUC: 0.8263)
 BEST_19_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44'
 ]
 
-# 最佳21特征配置 (AUC: 0.8141)
+# 最佳20特征配置 (AUC: 0.8275)
+BEST_20_FEATURES = [
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23'
+]
+
+# 最佳21特征配置 (AUC: 0.8283)
 BEST_21_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47'
 ]
 
-# 最佳22特征配置 (AUC: 0.8184)
+# 最佳22特征配置 (AUC: 0.8237)
 BEST_22_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17'
 ]
 
-# 最佳23特征配置 (AUC: 0.8156)
+# 最佳23特征配置 (AUC: 0.8278)
 BEST_23_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29'
 ]
 
-# 最佳24特征配置 (AUC: 0.8159)
+# 最佳24特征配置 (AUC: 0.8279)
 BEST_24_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1'
 ]
 
-# 最佳25特征配置 (AUC: 0.8132)
+# 最佳25特征配置 (AUC: 0.8256)
 BEST_25_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14'
 ]
 
-# 最佳26特征配置 (AUC: 0.8164)
+# 最佳26特征配置 (AUC: 0.8283)
 BEST_26_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25'
 ]
 
-# 最佳27特征配置 (AUC: 0.8179)
+# 最佳27特征配置 (AUC: 0.8240)
 BEST_27_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7'
 ]
 
-# 最佳28特征配置 (AUC: 0.8200)
+# 最佳28特征配置 (AUC: 0.8212)
 BEST_28_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60'
 ]
 
-# 最佳29特征配置 (AUC: 0.8200)
+# 最佳29特征配置 (AUC: 0.8171)
 BEST_29_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62'
 ]
 
-# 最佳30特征配置 (AUC: 0.8197)
+# 最佳30特征配置 (AUC: 0.8154)
 BEST_30_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8'
 ]
 
-# 最佳31特征配置 (AUC: 0.8195)
+# 最佳31特征配置 (AUC: 0.8160)
 BEST_31_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39'
 ]
 
-# 最佳33特征配置 (AUC: 0.8168)
+# 最佳32特征配置 (AUC: 0.8119)
+BEST_32_FEATURES = [
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20'
+]
+
+# 最佳33特征配置 (AUC: 0.8118)
 BEST_33_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21'
 ]
 
-# 最佳34特征配置 (AUC: 0.8104)
+# 最佳34特征配置 (AUC: 0.8109)
 BEST_34_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28'
 ]
 
-# 最佳35特征配置 (AUC: 0.8095)
+# 最佳35特征配置 (AUC: 0.8066)
 BEST_35_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24'
 ]
 
-# 最佳36特征配置 (AUC: 0.8098)
+# 最佳36特征配置 (AUC: 0.8051)
 BEST_36_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38'
 ]
 
-# 最佳37特征配置 (AUC: 0.8097)
+# 最佳37特征配置 (AUC: 0.8026)
 BEST_37_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9'
 ]
 
-# 最佳38特征配置 (AUC: 0.8071)
+# 最佳38特征配置 (AUC: 0.8066)
 BEST_38_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30', 'Feature21'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18'
 ]
 
-# 最佳39特征配置 (AUC: 0.8049)
+# 最佳39特征配置 (AUC: 0.8052)
 BEST_39_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30', 'Feature21', 'Feature9'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53'
 ]
 
-# 最佳40特征配置 (AUC: 0.8089)
+# 最佳40特征配置 (AUC: 0.8043)
 BEST_40_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30', 'Feature21', 'Feature9', 'Feature16'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45'
 ]
 
-# 最佳41特征配置 (AUC: 0.8091)
+# 最佳41特征配置 (AUC: 0.8067)
 BEST_41_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37'
 ]
 
-# 最佳42特征配置 (AUC: 0.8045)
+# 最佳42特征配置 (AUC: 0.8026)
 BEST_42_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57',
-    'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56',
-    'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29',
-    'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58',
-    'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24',
-    'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3'
 ]
 
-# 最佳43特征配置 (AUC: 0.8036)
+# 最佳43特征配置 (AUC: 0.8047)
 BEST_43_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4'
 ]
 
-# 最佳44特征配置 (AUC: 0.7992)
+# 最佳44特征配置 (AUC: 0.8037)
 BEST_44_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26'
 ]
 
-# 最佳45特征配置 (AUC: 0.7967)
+# 最佳45特征配置 (AUC: 0.8007)
 BEST_45_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50'
 ]
 
-# 最佳46特征配置 (AUC: 0.8022)
+# 最佳46特征配置 (AUC: 0.8041)
 BEST_46_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19'
 ]
 
-# 最佳47特征配置 (AUC: 0.7979)
+# 最佳47特征配置 (AUC: 0.7987)
 BEST_47_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51'
 ]
 
-# 最佳48特征配置 (AUC: 0.7999)
+# 最佳48特征配置 (AUC: 0.7971)
 BEST_48_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15'
 ]
 
-# 最佳49特征配置 (AUC: 0.7971)
+# 最佳49特征配置 (AUC: 0.7999)
 BEST_49_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31'
 ]
 
-# 最佳50特征配置 (AUC: 0.7981)
+# 最佳50特征配置 (AUC: 0.8019)
 BEST_50_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54'
 ]
 
-# 最佳51特征配置 (AUC: 0.7976)
+# 最佳51特征配置 (AUC: 0.7981)
 BEST_51_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41'
 ]
 
-# 最佳52特征配置 (AUC: 0.7984)
+# 最佳52特征配置 (AUC: 0.7965)
 BEST_52_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11'
 ]
 
-# 最佳53特征配置 (AUC: 0.8026)
+# 最佳53特征配置 (AUC: 0.7954)
 BEST_53_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6'
 ]
 
-# 最佳54特征配置 (AUC: 0.8009)
+# 最佳54特征配置 (AUC: 0.7935)
 BEST_54_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6', 'Feature35'
 ]
 
-# 最佳55特征配置 (AUC: 0.7954)
+# 最佳55特征配置 (AUC: 0.7905)
 BEST_55_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37', 'Feature41'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6', 'Feature35', 'Feature30'
 ]
 
-# 最佳56特征配置 (AUC: 0.7974)
+# 最佳56特征配置 (AUC: 0.7924)
 BEST_56_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37', 'Feature41', 'Feature15'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6', 'Feature35', 'Feature30', 'Feature16'
 ]
 
-# 最佳57特征配置 (AUC: 0.7921)
+# 最佳57特征配置 (AUC: 0.7907)
 BEST_57_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37', 'Feature41', 'Feature15',
-    'Feature50'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6', 'Feature35', 'Feature30', 'Feature16',
+    'Feature10'
 ]
 
-# 最佳58特征配置 (AUC: 0.7261) - 基于RFE排序的最优58特征
+# 最佳58特征配置 (AUC: 0.7912)
 BEST_58_FEATURES = [
-    'Feature63', 'Feature2', 'Feature46', 'Feature57', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
-    'Feature49', 'Feature48', 'Feature22', 'Feature56', 'Feature32', 'Feature17', 'Feature44', 'Feature27',
-    'Feature52', 'Feature55', 'Feature47', 'Feature29', 'Feature60', 'Feature14', 'Feature39', 'Feature62',
-    'Feature38', 'Feature7', 'Feature8', 'Feature58', 'Feature25', 'Feature23', 'Feature3', 'Feature19',
-    'Feature35', 'Feature1', 'Feature53', 'Feature24', 'Feature30', 'Feature21', 'Feature9', 'Feature16',
-    'Feature59', 'Feature45', 'Feature26', 'Feature31', 'Feature20', 'Feature13', 'Feature4', 'Feature10',
-    'Feature6', 'Feature54', 'Feature18', 'Feature28', 'Feature51', 'Feature37', 'Feature41', 'Feature15',
-    'Feature50', 'Feature11'
+    'Feature63', 'Feature2', 'Feature46', 'Feature56', 'Feature61', 'Feature42', 'Feature43', 'Feature5',
+    'Feature48', 'Feature49', 'Feature22', 'Feature27', 'Feature59', 'Feature32', 'Feature57', 'Feature52',
+    'Feature55', 'Feature58', 'Feature44', 'Feature23', 'Feature47', 'Feature17', 'Feature29', 'Feature1',
+    'Feature14', 'Feature25', 'Feature7', 'Feature60', 'Feature62', 'Feature8', 'Feature39', 'Feature20',
+    'Feature21', 'Feature28', 'Feature24', 'Feature38', 'Feature9', 'Feature18', 'Feature53', 'Feature45',
+    'Feature37', 'Feature3', 'Feature4', 'Feature26', 'Feature50', 'Feature19', 'Feature51', 'Feature15',
+    'Feature31', 'Feature54', 'Feature41', 'Feature11', 'Feature6', 'Feature35', 'Feature30', 'Feature16',
+    'Feature10', 'Feature13'
 ]
 
 # 选定58特征 (包含所有A、B数据集共同特征) - 保持向后兼容
