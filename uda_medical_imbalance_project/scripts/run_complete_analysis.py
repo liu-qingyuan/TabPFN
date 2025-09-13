@@ -476,7 +476,7 @@ class CompleteAnalysisRunner:
         try:
             from tabpfn import TabPFNClassifier
             base_estimator = TabPFNClassifier(
-                n_estimators=32, 
+                n_estimators=32,
                 random_state=self.random_state,
                 ignore_pretraining_limits=True  # 允许超过500个特征
             )
