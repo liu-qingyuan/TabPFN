@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN/uda_medical_imbalance_project",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "Stop",
+    "stop_hook_active": false
+  }
+]

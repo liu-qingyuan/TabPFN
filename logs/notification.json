@@ -1,0 +1,16 @@
+[
+  {
+    "session_id": "e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/e5bd9c41-82e6-42e7-b2c6-eeeb3af6caa6.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  }
+]

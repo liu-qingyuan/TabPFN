@@ -469,8 +469,7 @@ class CompleteAnalysisRunner:
             return {}
         
         # 选择要测试的UDA方法
-        # uda_methods_to_test = ['TCA', 'SA', 'CORAL', 'KMM']
-        uda_methods_to_test = ['TCA']
+        uda_methods_to_test = ['TCA', 'SA', 'CORAL', 'KMM']
         uda_results = {}
         
         # 创建基础估计器
@@ -844,6 +843,22 @@ class CompleteAnalysisRunner:
                     })
                     if self.verbose:
                         print(f"  SA参数优化: n_components=auto")
+                elif method_name == 'CORAL':
+                    # CORAL参数优化：相关性对齐
+                    processor.config.method_params.update({
+                        'lambda_': 1.0  # 平衡参数，适合医疗数据
+                    })
+                    if self.verbose:
+                        print(f"  CORAL参数优化: lambda_=1.0")
+                elif method_name == 'KMM':
+                    # KMM参数优化：核均值匹配
+                    processor.config.method_params.update({
+                        'kernel': 'linear',  # 线性核，适合小样本医疗数据
+                        'B': 1000,          # 权重边界
+                        'eps': None         # 自动计算约束参数
+                    })
+                    if self.verbose:
+                        print(f"  KMM参数优化: kernel=linear, B=1000")
                 
                 if self.verbose:
                     print(f"  创建{method_name}处理器成功")

@@ -257,11 +257,56 @@ class FeatureSweepAnalyzer:
                         'target_tca_accuracy': tca.get('accuracy', 0),
                         'target_tca_f1': tca.get('f1', 0)
                     })
-                    
+
                     # 计算TCA相对于基线的提升
                     if 'target_baseline_auc' in performance and performance['target_baseline_auc'] > 0:
                         improvement = performance['target_tca_auc'] - performance['target_baseline_auc']
                         performance['tca_auc_improvement'] = improvement
+
+            # SA结果
+            if 'SA' in uda_results:
+                sa = uda_results['SA']
+                if 'error' not in sa:
+                    performance.update({
+                        'target_sa_auc': sa.get('auc', 0),
+                        'target_sa_accuracy': sa.get('accuracy', 0),
+                        'target_sa_f1': sa.get('f1', 0)
+                    })
+
+                    # 计算SA相对于基线的提升
+                    if 'target_baseline_auc' in performance and performance['target_baseline_auc'] > 0:
+                        improvement = performance['target_sa_auc'] - performance['target_baseline_auc']
+                        performance['sa_auc_improvement'] = improvement
+
+            # CORAL结果
+            if 'CORAL' in uda_results:
+                coral = uda_results['CORAL']
+                if 'error' not in coral:
+                    performance.update({
+                        'target_coral_auc': coral.get('auc', 0),
+                        'target_coral_accuracy': coral.get('accuracy', 0),
+                        'target_coral_f1': coral.get('f1', 0)
+                    })
+
+                    # 计算CORAL相对于基线的提升
+                    if 'target_baseline_auc' in performance and performance['target_baseline_auc'] > 0:
+                        improvement = performance['target_coral_auc'] - performance['target_baseline_auc']
+                        performance['coral_auc_improvement'] = improvement
+
+            # KMM结果
+            if 'KMM' in uda_results:
+                kmm = uda_results['KMM']
+                if 'error' not in kmm:
+                    performance.update({
+                        'target_kmm_auc': kmm.get('auc', 0),
+                        'target_kmm_accuracy': kmm.get('accuracy', 0),
+                        'target_kmm_f1': kmm.get('f1', 0)
+                    })
+
+                    # 计算KMM相对于基线的提升
+                    if 'target_baseline_auc' in performance and performance['target_baseline_auc'] > 0:
+                        improvement = performance['target_kmm_auc'] - performance['target_baseline_auc']
+                        performance['kmm_auc_improvement'] = improvement
         
         return performance
     
@@ -333,7 +378,13 @@ class FeatureSweepAnalyzer:
                     'source_f1': result.get('source_f1', 0),
                     'target_baseline_auc': result.get('target_baseline_auc', 0),
                     'target_tca_auc': result.get('target_tca_auc', 0),
-                    'tca_improvement': result.get('tca_auc_improvement', 0)
+                    'target_sa_auc': result.get('target_sa_auc', 0),
+                    'target_coral_auc': result.get('target_coral_auc', 0),
+                    'target_kmm_auc': result.get('target_kmm_auc', 0),
+                    'tca_improvement': result.get('tca_auc_improvement', 0),
+                    'sa_improvement': result.get('sa_auc_improvement', 0),
+                    'coral_improvement': result.get('coral_auc_improvement', 0),
+                    'kmm_improvement': result.get('kmm_auc_improvement', 0)
                 })
         
         if summary_data:
@@ -363,12 +414,18 @@ class FeatureSweepAnalyzer:
         ax1 = axes[0, 0]
         
         # 绘制源域和目标域AUC
-        ax1.plot(df['n_features'], df['source_auc'], 'b-o', 
+        ax1.plot(df['n_features'], df['source_auc'], 'b-o',
                 label='Source Domain (10-fold CV)', linewidth=2, markersize=5)
-        ax1.plot(df['n_features'], df['target_baseline_auc'], 'r-s', 
+        ax1.plot(df['n_features'], df['target_baseline_auc'], 'r-s',
                 label='Target Baseline (No UDA)', linewidth=2, markersize=4)
-        ax1.plot(df['n_features'], df['target_tca_auc'], 'g-^', 
-                label='Target TCA (With UDA)', linewidth=2, markersize=4)
+        ax1.plot(df['n_features'], df['target_tca_auc'], 'g-^',
+                label='Target TCA', linewidth=2, markersize=4)
+        ax1.plot(df['n_features'], df['target_sa_auc'], 'm-v',
+                label='Target SA', linewidth=2, markersize=4)
+        ax1.plot(df['n_features'], df['target_coral_auc'], 'c-<',
+                label='Target CORAL', linewidth=2, markersize=4)
+        ax1.plot(df['n_features'], df['target_kmm_auc'], 'y->',
+                label='Target KMM', linewidth=2, markersize=4)
         
         ax1.set_xlabel('Number of Features')
         ax1.set_ylabel('AUC Score')
@@ -377,26 +434,27 @@ class FeatureSweepAnalyzer:
         ax1.grid(True, alpha=0.3)
         ax1.set_ylim(0.6, 1.0)
         
-        # 2. TCA提升效果 (右上)
+        # 2. UDA方法提升效果 (右上)
         ax2 = axes[0, 1]
-        
-        # 绘制TCA相对于基线的提升
-        improvement_data = df['tca_improvement'].values
-        colors = ['green' if x > 0 else 'red' for x in improvement_data]
-        
-        bars = ax2.bar(df['n_features'], improvement_data, 
-                      color=colors, alpha=0.7, edgecolor='black', linewidth=0.5)
+
+        # 绘制所有UDA方法相对于基线的提升
+        x = df['n_features']
+        width = 0.2  # 柱状图宽度
+        x_pos = np.arange(len(x))
+
+        ax2.bar(x_pos - 1.5*width, df['tca_improvement'], width, label='TCA', alpha=0.8)
+        ax2.bar(x_pos - 0.5*width, df['sa_improvement'], width, label='SA', alpha=0.8)
+        ax2.bar(x_pos + 0.5*width, df['coral_improvement'], width, label='CORAL', alpha=0.8)
+        ax2.bar(x_pos + 1.5*width, df['kmm_improvement'], width, label='KMM', alpha=0.8)
+
         ax2.axhline(y=0, color='black', linestyle='-', linewidth=0.8)
         ax2.set_xlabel('Number of Features')
-        ax2.set_ylabel('AUC Improvement (TCA vs Baseline)')
-        ax2.set_title('TCA Domain Adaptation Improvement')
+        ax2.set_ylabel('AUC Improvement vs Baseline')
+        ax2.set_title('UDA Methods Domain Adaptation Improvement')
+        ax2.set_xticks(x_pos)
+        ax2.set_xticklabels(x.astype(int), rotation=45)
+        ax2.legend()
         ax2.grid(True, alpha=0.3)
-        
-        # 添加数值标签
-        for bar, improvement in zip(bars, improvement_data):
-            if abs(improvement) > 0.001:  # 只显示有意义的改进
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.001,
-                        f'{improvement:.3f}', ha='center', va='bottom', fontsize=8)
         
         # 3. 准确率对比 (左下)
         ax3 = axes[1, 0]
@@ -416,7 +474,8 @@ class FeatureSweepAnalyzer:
         ax4 = axes[1, 1]
         
         # 准备热力图数据
-        heatmap_data = df[['source_auc', 'target_baseline_auc', 'target_tca_auc']].T
+        heatmap_data = df[['source_auc', 'target_baseline_auc', 'target_tca_auc',
+                          'target_sa_auc', 'target_coral_auc', 'target_kmm_auc']].T
         heatmap_data.columns = df['feature_type'].values
         
         # 只显示部分特征集以避免过度拥挤
