@@ -322,10 +322,16 @@ class AnalysisVisualizer:
             if auc > best_uda_auc:
                 best_uda_auc = auc
                 # UDA方法名称处理
-                if 'TCA' in method or 'SA' in method or 'CORAL' in method or 'KMM' in method:
-                    best_uda_method = f"PANDA"
+                if 'TCA' in method:
+                    best_uda_method = f"PANDA (UDA-TCA)"
+                elif 'SA' in method:
+                    best_uda_method = f"PANDA (UDA-SA)"
+                elif 'CORAL' in method:
+                    best_uda_method = f"PANDA (UDA-CORAL)"
+                elif 'KMM' in method:
+                    best_uda_method = f"PANDA (UDA-KMM)"
                 else:
-                    best_uda_method = f"PANDA"
+                    best_uda_method = f"PANDA (UDA-{method})"
                 best_uda_metrics = {
                     'AUC': auc,
                     'Accuracy': result.get('accuracy', 0),
@@ -1239,7 +1245,16 @@ class AnalysisVisualizer:
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
-                            display_name = f"PANDA"
+                            if 'TCA' in method_name:
+                                display_name = f"PANDA (UDA-TCA)"
+                            elif 'SA' in method_name:
+                                display_name = f"PANDA (UDA-SA)"
+                            elif 'CORAL' in method_name:
+                                display_name = f"PANDA (UDA-CORAL)"
+                            elif 'KMM' in method_name:
+                                display_name = f"PANDA (UDA-KMM)"
+                            else:
+                                display_name = f"PANDA (UDA-{method_name})"
                             linestyle = '-'
                         
                         # 绘制校准曲线
@@ -1784,7 +1799,17 @@ class AnalysisVisualizer:
                                 display_name = f"{method_name}"
                                 linestyle = '--'
                         else:
-                            display_name = f"PANDA"
+                            # UDA方法名称处理
+                            if 'TCA' in method_name:
+                                display_name = f"PANDA (UDA-TCA)"
+                            elif 'SA' in method_name:
+                                display_name = f"PANDA (UDA-SA)"
+                            elif 'CORAL' in method_name:
+                                display_name = f"PANDA (UDA-CORAL)"
+                            elif 'KMM' in method_name:
+                                display_name = f"PANDA (UDA-KMM)"
+                            else:
+                                display_name = f"PANDA (UDA-{method_name})"
                             linestyle = '-'
                         
                         ax_calib_target.plot(mean_predicted_value, fraction_of_positives, 'o',
