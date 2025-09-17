@@ -171,105 +171,23 @@ class PreprocessorConfig:
         )
 
 
-def default_classifier_preprocessor_configs(
-    extended: bool | None = None
-) -> list[PreprocessorConfig]:
+def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
     """Default preprocessor configurations for classification.
 
-    Args:
-        extended: If True, return 165 extended configurations for ultra-large ensembles.
-                 If False, return 4 standard configurations for compatibility.
-                 If None (default), return standard configurations.
-
-    Standard (extended=False or None):
-    Returns 4 base configurations that will be expanded to 32 ensemble members:
-    - Config 1: High complexity + ordinal encoding (8 shuffle variants)
-    - Config 2: Low complexity + ordinal encoding (8 shuffle variants)
-    - Config 3: High complexity + numeric encoding (8 shuffle variants)
-    - Config 4: Low complexity + numeric encoding (8 shuffle variants)
-
-    Extended (extended=True):
     Returns 165 base configurations for ultra-large ensembles:
     - 11 numerical transforms × 5 categorical encodings × 3 global transforms = 165 configs
     - Supports ensemble sizes from 165 to 2,640+ members
     - Maximum preprocessing diversity for enhanced generalization
 
-    Usage examples:
-    - Standard: default_classifier_preprocessor_configs() → 4 configs
-    - Extended: default_classifier_preprocessor_configs(extended=True) → 165 configs
+    Configuration breakdown:
+    - Quantile transforms: 6 variants (coarse/medium/fine × uniform/normal)
+    - KDI transforms: 3 variants (normal/uniform output + specific alpha)
+    - Basic transforms: 2 variants (robust scaling + none)
+    - Categorical encodings: 5 variants (ordinal variations + onehot + numeric)
+    - Global transforms: 3 variants (SVD + scaling + none)
 
     Each config uses different feature transformations and categorical encodings
     to maximize ensemble diversity while maintaining balanced representation.
-    """
-    # Default to standard mode if not explicitly specified
-    if extended is None:
-        extended = False
-
-    if extended:
-        return extended_classifier_preprocessor_configs()
-
-    return [
-        # Config 1: High complexity + ordinal encoding
-        # Features: 8 original + 8 quantile + 4 SVD = 20 dimensions
-        PreprocessorConfig(
-            "quantile_uni_coarse",
-            append_original=True,
-            categorical_name="ordinal_very_common_categories_shuffled",
-            global_transformer_name="svd",
-            subsample_features=-1,
-        ),
-        # Config 2: Low complexity + ordinal encoding
-        # Features: 8 original (no transformation) = 8 dimensions
-        PreprocessorConfig(
-            "none",
-            categorical_name="ordinal_very_common_categories_shuffled",
-            subsample_features=-1,
-        ),
-        # Config 3: High complexity + numeric encoding
-        # Features: 8 original + 8 quantile + 4 SVD = 20 dimensions
-        PreprocessorConfig(
-            "quantile_uni_coarse",
-            append_original=True,
-            categorical_name="numeric",
-            global_transformer_name="svd",
-            subsample_features=-1,
-        ),
-        # Config 4: Low complexity + numeric encoding
-        # Features: 8 original (no transformation) = 8 dimensions
-        PreprocessorConfig(
-            "none",
-            categorical_name="numeric",
-            subsample_features=-1,
-        ),
-    ]
-
-
-def extended_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
-    """Extended preprocessor configurations for classification.
-
-    Returns 165 base configurations (11 numerical × 5 categorical × 3 global):
-
-    Numerical transforms (11):
-    - Quantile series: quantile_uni_coarse, quantile_norm_coarse, quantile_uni,
-                      quantile_norm, quantile_uni_fine, quantile_norm_fine
-    - KDI series: kdi, kdi_uni, kdi_alpha_1.0
-    - Scaling: robust, none
-
-    Categorical encodings (5):
-    - ordinal_very_common_categories_shuffled
-    - ordinal_common_categories_shuffled
-    - ordinal_very_common_categories
-    - onehot
-    - numeric
-
-    Global transforms (3):
-    - svd (SVD dimensionality reduction)
-    - scaler (standardization)
-    - None (no global transform)
-
-    Total: 11 × 5 × 3 = 165 unique configurations
-    Each config can be used with multiple ensemble members (e.g., 16 per config)
-    to create ultra-large ensembles (e.g., 165 × 16 = 2,640 total members).
     """
 
     # Define all transformation options
@@ -328,93 +246,6 @@ def extended_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
 
     return configs
 
-
-def generate_ultra_ensemble_configs_for_classification(
-    *,
-    total_members: int = 2640,
-    members_per_config: int = 16,
-    subsample_size: int | float | None = None,
-    max_index: int,
-    add_fingerprint_feature: bool = True,
-    polynomial_features: Literal["no", "all"] | int = "no",
-    feature_shift_decoder: Literal["shuffle", "rotate"] | None = None,
-    class_shift_method: Literal["rotate", "shuffle"] | None = None,
-    n_classes: int,
-    random_state: int | np.random.Generator | None = None,
-    use_extended_configs: bool = True,
-) -> list[ClassifierEnsembleConfig]:
-    """Generate ultra-large ensemble configurations for classification.
-
-    Creates ensemble with configurable number of members per preprocessor config.
-
-    Args:
-        total_members: Total number of ensemble members to generate.
-        members_per_config: Number of members per preprocessor configuration.
-        use_extended_configs: If True, use 165 extended configs. If False, use 4 default configs.
-        **other_args: Same as EnsembleConfig.generate_for_classification()
-
-    Returns:
-        List of ClassifierEnsembleConfig objects.
-
-    Examples:
-        # Ultra-large ensemble: 165 configs × 16 members = 2,640 total
-        configs = generate_ultra_ensemble_configs_for_classification(
-            total_members=2640,
-            members_per_config=16,
-            use_extended_configs=True,
-            **other_args
-        )
-
-        # Medium ensemble: 165 configs × 2 members = 330 total
-        configs = generate_ultra_ensemble_configs_for_classification(
-            total_members=330,
-            members_per_config=2,
-            use_extended_configs=True,
-            **other_args
-        )
-    """
-    # Get preprocessor configurations
-    if use_extended_configs:
-        base_configs = extended_classifier_preprocessor_configs()
-    else:
-        base_configs = default_classifier_preprocessor_configs()
-
-    # Calculate actual distribution
-    num_base_configs = len(base_configs)
-
-    # If total_members specified, override members_per_config
-    if total_members is not None:
-        members_per_config = total_members // num_base_configs
-
-    # Create expanded config list with desired replication
-    preprocessor_configs = []
-    for config in base_configs:
-        # Each base config gets members_per_config copies
-        preprocessor_configs.extend([config] * members_per_config)
-
-    # Handle remainder if total_members doesn't divide evenly
-    if total_members is not None:
-        remainder = total_members % num_base_configs
-        if remainder > 0:
-            # Add extra members by cycling through base configs
-            for i in range(remainder):
-                preprocessor_configs.append(base_configs[i])
-
-    actual_n = len(preprocessor_configs)
-
-    # Generate ensemble configs using the standard method with expanded config list
-    return EnsembleConfig.generate_for_classification(
-        n=actual_n,
-        subsample_size=subsample_size,
-        max_index=max_index,
-        add_fingerprint_feature=add_fingerprint_feature,
-        polynomial_features=polynomial_features,
-        feature_shift_decoder=feature_shift_decoder,
-        preprocessor_configs=preprocessor_configs,
-        class_shift_method=class_shift_method,
-        n_classes=n_classes,
-        random_state=random_state,
-    )
 
 
 def default_regressor_preprocessor_configs() -> list[PreprocessorConfig]:
