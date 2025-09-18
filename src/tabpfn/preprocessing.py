@@ -232,11 +232,11 @@ def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
             for global_transform in global_transforms:
 
                 # Determine if we should append original features
-                # Complex transforms benefit from keeping originals
-                append_original = num_transform not in ["none", "robust"]
+                # SVD global transforms benefit from keeping originals
+                append_original = global_transform == "svd"
 
                 config = PreprocessorConfig(
-                    transform_name=num_transform,
+                    num_transform,
                     append_original=append_original,
                     categorical_name=cat_encoding,
                     global_transformer_name=global_transform,
