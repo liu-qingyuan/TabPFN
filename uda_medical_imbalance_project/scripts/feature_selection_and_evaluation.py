@@ -67,7 +67,7 @@ class TabPFNWrapper(BaseEstimator, ClassifierMixin):
             target_tags=SimpleNamespace(required=True)
         )
 
-    def __init__(self, device='cuda', n_estimators=2640, softmax_temperature=0.9,
+    def __init__(self, device='cuda', n_estimators=1920, softmax_temperature=0.9,
                  balance_probabilities=False, average_before_softmax=False,
                  ignore_pretraining_limits=True, random_state=42,
                  n_repeats=5):
@@ -140,7 +140,7 @@ def select_features_rfe(X, y, n_features=3):
     # Initialize TabPFN wrapper
     base_model = TabPFNWrapper(
         device='cuda',
-        n_estimators=2640,
+        n_estimators=1920,
         softmax_temperature=0.9,
         balance_probabilities=False,
         average_before_softmax=False,
@@ -195,7 +195,7 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
     # Define feature numbers to test (3 to 58, AB交集特征)
     feature_numbers = list(range(3, len(ranked_features) + 1))
     print(f"🎯 将评估特征数: {feature_numbers[0]} 到 {feature_numbers[-1]} (共{len(feature_numbers)}次评估)")
-    print(f"⏰ 预计总用时: {len(feature_numbers) * 60:.1f}-{len(feature_numbers) * 120:.1f}分钟 (使用2640集成成员，约是64配置的41倍时间)")
+    print(f"⏰ 预计总用时: {len(feature_numbers) * 60:.1f}-{len(feature_numbers) * 120:.1f}分钟 (使用1920集成成员，约是64配置的41倍时间)")
     print("📝 使用10折交叉验证评估每个特征组合...")
     print("📊 生成结果：3-58特征性能对比数据")
     
@@ -226,7 +226,7 @@ def evaluate_feature_performance(X, y, feature_ranking, results_dir):
             start_time = time.time()
             clf = TabPFNClassifier(
                 device='cuda',
-                n_estimators=2640,
+                n_estimators=1920,
                 softmax_temperature=0.9,
                 balance_probabilities=False,
                 average_before_softmax=False,
@@ -343,9 +343,9 @@ def main():
     print("🧬 统一RFE特征选择和性能评估")
     print("=" * 60)
     
-    # 创建时间戳输出目录 (标注使用58个特征，2640个estimators配置)
+    # 创建时间戳输出目录 (标注使用58个特征，1920个estimators配置)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = project_root / "results" / f"feature_selection_evaluation_2640estimators_{timestamp}"
+    results_dir = project_root / "results" / f"feature_selection_evaluation_1920estimators_{timestamp}"
     results_dir.mkdir(parents=True, exist_ok=True)
     
     # 数据路径配置 (使用相对路径，参考loader.py的设计)
@@ -398,8 +398,8 @@ def main():
     
     print("🧠 使用TabPFN执行递归特征消除(RFE)...")
     print("📋 这将生成AB交集58个特征的完整重要性排序")
-    print("🚀 使用2640集成成员（165种配置 × 16成员）获得最高性能")
-    print("⏰ 预计用时：60-120分钟 (使用2640集成成员，需要大量GPU计算资源)")
+    print("🚀 使用1920集成成员（165种配置 × 16成员）获得最高性能")
+    print("⏰ 预计用时：45-90分钟 (使用1920集成成员，需要大量GPU计算资源)")
     
     try:
         # 执行RFE特征选择，选择3个最优特征但获得完整排序
@@ -418,7 +418,7 @@ def main():
         return None, None
     
     print(f"📁 完整特征排序已保存: {ranking_path}")
-    print(f"📊 RFE处理: 从AB交集{X.shape[1]}个特征开始，使用2640集成成员逐步消除到3个特征")
+    print(f"📊 RFE处理: 从AB交集{X.shape[1]}个特征开始，使用1920集成成员逐步消除到3个特征")
     print(f"📋 排序说明: Rank 1 = 最重要 (最后保留), Rank {X.shape[1]} = 最不重要 (最先消除)")
     print(f"🗑️ 已排除的特征: Feature12, Feature33, Feature34, Feature36, Feature40")
     

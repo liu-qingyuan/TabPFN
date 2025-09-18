@@ -174,15 +174,15 @@ class PreprocessorConfig:
 def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
     """Default preprocessor configurations for classification.
 
-    Returns 165 base configurations for ultra-large ensembles:
-    - 11 numerical transforms × 5 categorical encodings × 3 global transforms = 165 configs
-    - Supports ensemble sizes from 165 to 2,640+ members
+    Returns 120 base configurations for ultra-large ensembles:
+    - 8 numerical transforms × 5 categorical encodings × 3 global transforms = 120 configs
+    - Supports ensemble sizes from 120 to 1,920+ members
     - Maximum preprocessing diversity for enhanced generalization
 
     Configuration breakdown:
     - Quantile transforms: 6 variants (coarse/medium/fine × uniform/normal)
-    - KDI transforms: 3 variants (normal/uniform output + specific alpha)
     - Basic transforms: 2 variants (robust scaling + none)
+    - Safe for remote servers: avoids KDI/numba dependencies
     - Categorical encodings: 5 variants (ordinal variations + onehot + numeric)
     - Global transforms: 3 variants (SVD + scaling + none)
 
@@ -190,9 +190,10 @@ def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
     to maximize ensemble diversity while maintaining balanced representation.
     """
 
-    # Define all transformation options
+    # Use only transforms that are guaranteed to be available
+    # This avoids KDI dependency issues on remote servers
     numerical_transforms = [
-        # Quantile transform series (6 variants)
+        # Quantile transform series (6 variants - always available)
         "quantile_uni_coarse",      # Coarse uniform quantile (samples/10 quantiles)
         "quantile_norm_coarse",     # Coarse normal quantile
         "quantile_uni",             # Medium uniform quantile (samples/5 quantiles)
@@ -200,15 +201,14 @@ def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
         "quantile_uni_fine",        # Fine uniform quantile (samples quantiles)
         "quantile_norm_fine",       # Fine normal quantile
 
-        # KDI transform series (3 variants)
-        "kdi",                      # KDI with normal output
-        "kdi_uni",                  # KDI with uniform output
-        "kdi_alpha_1.0",           # KDI with specific alpha (fallback if others fail)
-
-        # Scaling transforms (2 variants)
+        # Basic transforms (always available)
         "robust",                   # Robust scaling (median + IQR)
         "none",                     # No numerical transform
     ]
+
+    # If we need more transforms for 165 configs, duplicate with slight variations
+    # This ensures 8 base transforms: 6 quantile + 2 basic
+    # We'll adjust to get exactly the number we need for clean math
 
     categorical_encodings = [
         "ordinal_very_common_categories_shuffled",  # Very common cats + shuffle
