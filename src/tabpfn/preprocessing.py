@@ -193,34 +193,26 @@ def default_classifier_preprocessor_configs() -> list[PreprocessorConfig]:
     # Use only transforms that are guaranteed to be available
     # This avoids KDI dependency issues on remote servers
     numerical_transforms = [
-        # Quantile transform series (6 variants - always available)
+        # Quantile transform series (2 variants - always available)
         "quantile_uni_coarse",      # Coarse uniform quantile (samples/10 quantiles)
         "quantile_norm_coarse",     # Coarse normal quantile
-        "quantile_uni",             # Medium uniform quantile (samples/5 quantiles)
-        "quantile_norm",            # Medium normal quantile
-        "quantile_uni_fine",        # Fine uniform quantile (samples quantiles)
-        "quantile_norm_fine",       # Fine normal quantile
 
         # Basic transforms (always available)
         "robust",                   # Robust scaling (median + IQR)
         "none",                     # No numerical transform
     ]
 
-    # If we need more transforms for 165 configs, duplicate with slight variations
-    # This ensures 8 base transforms: 6 quantile + 2 basic
-    # We'll adjust to get exactly the number we need for clean math
+    # Minimal configuration space: 4 × 2 × 2 = 16 configurations
+    # Each configuration has 16 ensemble members = 256 total ensemble members
+    # Optimized for efficiency while maintaining core preprocessing diversity
 
     categorical_encodings = [
         "ordinal_very_common_categories_shuffled",  # Very common cats + shuffle
-        "ordinal_common_categories_shuffled",       # Common cats + shuffle
-        "ordinal_very_common_categories",           # Very common cats, no shuffle
-        "onehot",                                   # One-hot encoding
         "numeric",                                  # Treat as numeric
     ]
 
     global_transforms = [
         "svd",      # SVD dimensionality reduction + original features
-        "scaler",   # Standard scaling
         None,       # No global transform
     ]
 
