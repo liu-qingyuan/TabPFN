@@ -165,6 +165,13 @@ cython_debug/
 # AI assistant
 CLAUDE.md
 GEMINI.md
+AGENTS.md
 
 # Dissertation LaTeX files
 dissertation/latex/
+
+# Logs
+logs/
+
+# UV lock file
+uv.lock

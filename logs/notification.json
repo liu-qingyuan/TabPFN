@@ -12,5 +12,34 @@
     "cwd": "/Users/lqy/work/TabPFN",
     "hook_event_name": "Notification",
     "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "78b7c060-1cfb-422d-b594-9199213c7a33",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/78b7c060-1cfb-422d-b594-9199213c7a33.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "78b7c060-1cfb-422d-b594-9199213c7a33",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/78b7c060-1cfb-422d-b594-9199213c7a33.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "78b7c060-1cfb-422d-b594-9199213c7a33",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/78b7c060-1cfb-422d-b594-9199213c7a33.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "64fe47ab-f780-4905-8677-737887ce1e12",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/64fe47ab-f780-4905-8677-737887ce1e12.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]
