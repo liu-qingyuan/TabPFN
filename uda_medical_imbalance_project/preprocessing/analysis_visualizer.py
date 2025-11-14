@@ -18,10 +18,81 @@ from typing import Dict, List, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
-# ROC曲线相关导入
-from sklearn.metrics import roc_curve, auc
-from sklearn.model_selection import StratifiedKFold
-from sklearn.utils import resample
+RIDGE_LABEL = "Ridge LR"
+
+
+def _normalize_baseline_label(name: str) -> str:
+    """Map any variant of the legacy Paper baseline name to Ridge LR."""
+    if not name:
+        return name
+    cleaned = name.replace('\n', ' ').strip()
+    if cleaned.split('_')[0].upper() == 'PAPER' or cleaned.lower().startswith('paper'):
+        return RIDGE_LABEL
+    return name
+
+
+def _resample_array(array: np.ndarray, random_state: Optional[int] = None) -> np.ndarray:
+    """Simple bootstrap resampling that mimics sklearn.utils.resample."""
+    rng = np.random.default_rng(random_state)
+    array = np.asarray(array)
+    if array.size == 0:
+        return array
+    indices = rng.integers(low=0, high=array.size, size=array.size)
+    return array[indices]
+
+
+def _roc_curve(y_true: np.ndarray, y_score: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compute ROC curve using numpy only."""
+    y_true = np.asarray(y_true).astype(float)
+    y_score = np.asarray(y_score).astype(float)
+    if y_true.size == 0:
+        return np.array([0.0, 1.0]), np.array([0.0, 1.0]), np.array([np.inf, -np.inf])
+    pos_total = np.sum(y_true == 1)
+    neg_total = np.sum(y_true == 0)
+    if pos_total == 0 or neg_total == 0:
+        # Degenerate case: return diagonal or zero curve
+        if pos_total == 0:
+            return np.array([0.0, 1.0]), np.array([0.0, 0.0]), np.array([np.inf, -np.inf])
+        return np.array([0.0, 1.0]), np.array([0.0, 1.0]), np.array([np.inf, -np.inf])
+    order = np.argsort(-y_score)
+    y_true_sorted = y_true[order]
+    y_score_sorted = y_score[order]
+    distinct_value_indices = np.where(np.diff(y_score_sorted))[0]
+    threshold_idxs = np.r_[distinct_value_indices, y_true_sorted.size - 1]
+    tps = np.cumsum(y_true_sorted)[threshold_idxs]
+    fps = 1 + threshold_idxs - tps
+    tps = np.r_[0, tps]
+    fps = np.r_[0, fps]
+    thresholds = y_score_sorted[threshold_idxs]
+    thresholds = np.r_[thresholds, thresholds[-1] - np.finfo(y_score_sorted.dtype).eps]
+    fpr = fps / neg_total
+    tpr = tps / pos_total
+    return fpr, tpr, thresholds
+
+
+def _roc_auc_score(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    fpr, tpr, _ = _roc_curve(y_true, y_score)
+    return np.trapz(tpr, fpr)
+
+
+def _calibration_curve(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> Tuple[np.ndarray, np.ndarray]:
+    """Compute calibration curve without sklearn."""
+    y_true = np.asarray(y_true)
+    y_prob = np.asarray(y_prob)
+    if y_true.size == 0:
+        return np.array([]), np.array([])
+    y_prob = np.clip(y_prob, 0, 1)
+    bins = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_ids = np.digitize(y_prob, bins) - 1
+    fraction_of_positives = []
+    mean_predicted_value = []
+    for b in range(n_bins):
+        mask = bin_ids == b
+        if not np.any(mask):
+            continue
+        fraction_of_positives.append(np.mean(y_true[mask]))
+        mean_predicted_value.append(np.mean(y_prob[mask]))
+    return np.array(fraction_of_positives), np.array(mean_predicted_value)
 
 # 设置Nature期刊标准字体
 plt.rcParams.update({
@@ -81,7 +152,7 @@ class AnalysisVisualizer:
                 # 提取方法名称（去掉特征集后缀）
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper_LR'
+                    method_name = RIDGE_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -186,15 +257,15 @@ class AnalysisVisualizer:
                     tabpfn_baseline.append((method_name, display_name))
                     method_colors.append('#F0CFEA')  # 科研配色4 - PANDA基线
                 elif result.get('baseline_category') == 'ml_baseline':
-                    display_name = method_name
+                    display_name = _normalize_baseline_label(method_name)
                     ml_baselines.append((method_name, display_name))
                     method_colors.append('#3ABF99')  # 科研三色配色2 - 机器学习基线
                 else:
-                    display_name = method_name
+                    display_name = _normalize_baseline_label(method_name)
                     traditional_baselines.append((method_name, display_name))
                     method_colors.append('#F0A73A')  # 科研三色配色3 - 传统基线
             else:
-                display_name = method_name
+                display_name = _normalize_baseline_label(method_name)
                 uda_methods.append((method_name, display_name))
                 method_colors.append('#2C91E0')  # 科研三色配色1 - UDA方法
             
@@ -416,7 +487,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper_LR'
+                    method_name = RIDGE_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -508,12 +579,12 @@ class AnalysisVisualizer:
                     if method_name == 'TabPFN_NoUDA':
                         display_name = f"PANDA\n(No UDA)"
                     elif result.get('baseline_category') == 'ml_baseline':
-                        display_name = f"{method_name}"
+                        display_name = _normalize_baseline_label(method_name)
                     else:
-                        display_name = f"{method_name}"
+                        display_name = _normalize_baseline_label(method_name)
                 else:
                     # UDA方法直接使用原名称
-                    display_name = f"{method_name}"
+                    display_name = _normalize_baseline_label(method_name)
                 
                 uda_methods[display_name] = {
                     'AUC': result.get('auc', 0) if result.get('auc') is not None else 0,
@@ -622,7 +693,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper method'
+                    method_name = RIDGE_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -645,11 +716,13 @@ class AnalysisVisualizer:
                 if result.get('is_baseline', False):
                     if method_name == 'TabPFN_NoUDA':
                         display_name = "PANDA (no UDA)"
+                    elif method_name == 'Paper_LR':
+                        display_name = RIDGE_LABEL
                     elif method_name in ['SVM', 'RF', 'GBDT', 'XGBoost', 'DT']:
                         # 保持标准的机器学习方法大写命名
                         display_name = method_name
                     else:
-                        display_name = method_name.replace('_', ' ')
+                        display_name = _normalize_baseline_label(method_name.replace('_', ' '))
                 else:
                     # UDA方法显示具体的方法名称
                     display_name = f"PANDA (UDA-{method_name})"
@@ -804,8 +877,8 @@ class AnalysisVisualizer:
         
         # 计算原始AUC作为参考
         try:
-            original_auc = roc_auc_score(y_true, y_scores)
-        except:
+            original_auc = _roc_auc_score(y_true, y_scores)
+        except Exception:
             original_auc = 0.5
         
         # Bootstrap采样
@@ -813,7 +886,7 @@ class AnalysisVisualizer:
         for i in range(n_bootstrap):
             try:
                 # 使用不同的随机种子进行Bootstrap采样
-                indices = resample(np.arange(len(y_true)), random_state=42 + i)
+                indices = _resample_array(np.arange(len(y_true)), random_state=42 + i)
                 y_boot = y_true[indices]
                 scores_boot = y_scores[indices]
                 
@@ -822,8 +895,8 @@ class AnalysisVisualizer:
                     continue
                 
                 # 计算ROC曲线
-                fpr, tpr, _ = roc_curve(y_boot, scores_boot)
-                roc_auc = auc(fpr, tpr)
+                fpr, tpr, _ = _roc_curve(y_boot, scores_boot)
+                roc_auc = np.trapz(tpr, fpr)
                 
                 # 检查AUC是否有效
                 if np.isnan(roc_auc) or np.isinf(roc_auc):
@@ -845,13 +918,13 @@ class AnalysisVisualizer:
         if valid_bootstrap_count < 10:
             print(f"Warning: Only {valid_bootstrap_count} valid bootstrap samples, using original data")
             try:
-                fpr, tpr, _ = roc_curve(y_true, y_scores)
-                original_auc = auc(fpr, tpr)
+                fpr, tpr, _ = _roc_curve(y_true, y_scores)
+                original_auc = np.trapz(tpr, fpr)
                 tpr_interp = np.interp(base_fpr, fpr, tpr)
                 tpr_interp[0] = 0.0
                 # 返回原始数据，置信区间设为原始AUC ± 0.05
                 return base_fpr, tpr_interp, original_auc, (max(0, original_auc - 0.05), min(1, original_auc + 0.05))
-            except:
+            except Exception:
                 return base_fpr, base_fpr, 0.5, (0.4, 0.6)
         
         # 计算平均值和置信区间
@@ -913,8 +986,8 @@ class AnalysisVisualizer:
                     # 直接计算原始ROC曲线和AUC
                     try:
                         # 计算ROC曲线
-                        fpr, tpr, _ = roc_curve(y_true, y_scores)
-                        roc_auc = auc(fpr, tpr)
+                        fpr, tpr, _ = _roc_curve(y_true, y_scores)
+                        roc_auc = np.trapz(tpr, fpr)
                         
                         # 绘制ROC曲线
                         raw_name = method_name.split('_')[0].upper()
@@ -974,19 +1047,21 @@ class AnalysisVisualizer:
                     # 直接计算原始ROC曲线和AUC
                     try:
                         # 计算ROC曲线
-                        fpr, tpr, _ = roc_curve(y_true, y_scores)
-                        roc_auc = auc(fpr, tpr)
+                        fpr, tpr, _ = _roc_curve(y_true, y_scores)
+                        roc_auc = np.trapz(tpr, fpr)
                         
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name} (ML Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name} (Traditional Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
@@ -1020,13 +1095,15 @@ class AnalysisVisualizer:
                     # 确定显示名称和样式
                     if result.get('is_baseline', False):
                         if result.get('baseline_category') == 'ml_baseline':
-                            display_name = f"{method_name} (ML Baseline)"
+                            base_label = _normalize_baseline_label(method_name)
+                            display_name = f"{base_label} (ML Baseline)"
                             linestyle = ':'
                         elif method_name == 'TabPFN_NoUDA':
                             display_name = f"PANDA_NoUDA (PANDA Baseline)"
                             linestyle = '-.'
                         else:
-                            display_name = f"{method_name} (Traditional Baseline)"
+                            base_label = _normalize_baseline_label(method_name)
+                            display_name = f"{base_label} (Traditional Baseline)"
                             linestyle = '--'
                     else:
                         # UDA方法名称处理
@@ -1099,8 +1176,6 @@ class AnalysisVisualizer:
         Returns:
             保存的图片路径（如果保存）
         """
-        from sklearn.calibration import calibration_curve
-        
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
         # Remove main title as requested
         
@@ -1147,7 +1222,7 @@ class AnalysisVisualizer:
                     
                     try:
                         # 计算校准曲线
-                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                        fraction_of_positives, mean_predicted_value = _calibration_curve(
                             y_true, y_scores, n_bins=10
                         )
                         
@@ -1158,7 +1233,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = RIDGE_LABEL
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1224,7 +1299,7 @@ class AnalysisVisualizer:
                     
                     try:
                         # 计算校准曲线
-                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                        fraction_of_positives, mean_predicted_value = _calibration_curve(
                             y_true, y_scores, n_bins=10
                         )
                         
@@ -1409,7 +1484,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = RIDGE_LABEL
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1479,13 +1554,15 @@ class AnalysisVisualizer:
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name} (ML Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name} (Traditional Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
@@ -1563,8 +1640,6 @@ class AnalysisVisualizer:
         c, d: 校准曲线 (Source Domain CV Calibration, Target Domain UDA Methods Calibration)  
         e, f: 决策曲线分析 (Source Domain CV Decision Curves, Target Domain UDA Methods Decision Curves)
         """
-        from sklearn.calibration import calibration_curve
-        
         # Apply Nature journal style
         plt.rcParams.update({
             'font.family': 'sans-serif',
@@ -1613,9 +1688,8 @@ class AnalysisVisualizer:
                         y_scores = y_proba
                     
                     try:
-                        from sklearn.metrics import roc_curve, auc
-                        fpr, tpr, _ = roc_curve(y_true, y_scores)
-                        roc_auc = auc(fpr, tpr)
+                        fpr, tpr, _ = _roc_curve(y_true, y_scores)
+                        roc_auc = np.trapz(tpr, fpr)
                         
                         raw_name = method_name.split('_')[0].upper()
                         display_name = "PANDA" if raw_name == "TABPFN" else raw_name
@@ -1652,20 +1726,21 @@ class AnalysisVisualizer:
                         y_scores = y_proba
                     
                     try:
-                        from sklearn.metrics import roc_curve, auc
-                        fpr, tpr, _ = roc_curve(y_true, y_scores)
-                        roc_auc = auc(fpr, tpr)
+                        fpr, tpr, _ = _roc_curve(y_true, y_scores)
+                        roc_auc = np.trapz(tpr, fpr)
                         
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name} (ML Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name} (Traditional Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
@@ -1727,14 +1802,14 @@ class AnalysisVisualizer:
                         y_scores = np.clip(y_scores, 0, 1)
                     
                     try:
-                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                        fraction_of_positives, mean_predicted_value = _calibration_curve(
                             y_true, y_scores, n_bins=10
                         )
                         
                         raw_method_name = method_name.split('_')[0].upper()
                         display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = RIDGE_LABEL
                         
                         ax_calib_source.plot(mean_predicted_value, fraction_of_positives, 'o-',
                                            color=custom_colors[color_idx % len(custom_colors)], 
@@ -1783,7 +1858,7 @@ class AnalysisVisualizer:
                         y_scores = np.clip(y_scores, 0, 1)
                     
                     try:
-                        fraction_of_positives, mean_predicted_value = calibration_curve(
+                        fraction_of_positives, mean_predicted_value = _calibration_curve(
                             y_true, y_scores, n_bins=10
                         )
                         
@@ -1891,7 +1966,7 @@ class AnalysisVisualizer:
                         raw_method_name = method_name.split('_')[0].upper()
                         display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = RIDGE_LABEL
                         
                         ax_dca_source.plot(thresholds, net_benefits, 
                                          color=custom_colors[color_idx % len(custom_colors)], 
@@ -1948,13 +2023,15 @@ class AnalysisVisualizer:
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name} (ML Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (ML Baseline)"
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name} (Traditional Baseline)"
+                                base_label = _normalize_baseline_label(method_name)
+                                display_name = f"{base_label} (Traditional Baseline)"
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
