@@ -145,5 +145,13 @@
     "hook_event_name": "Notification",
     "message": "Claude is waiting for your input",
     "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "5ddaecd5-de2c-48cc-8d0e-047b729c822a",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/5ddaecd5-de2c-48cc-8d0e-047b729c822a.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]
