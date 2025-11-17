@@ -2127,7 +2127,7 @@ def run_complete_analysis(self):
 ```python
 def run_source_domain_cv(self):
     # TabPFN vs 机器学习基线 vs 传统方法
-    methods = ['TABPFN', 'SVM', 'RF', 'GBDT', 'XGBoost', 'PKUPH', 'Mayo', 'Paper_LR']
+    methods = ['TABPFN', 'SVM', 'RF', 'GBDT', 'XGBoost', 'PKUPH', 'Mayo', 'Ridge_LR']
     # 10折分层交叉验证
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
 ```

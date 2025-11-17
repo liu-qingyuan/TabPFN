@@ -73,5 +73,77 @@
     "hook_event_name": "Notification",
     "message": "Claude is waiting for your input",
     "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "2b0e6dce-1343-4dc9-ad72-b78fab7d66fc",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/2b0e6dce-1343-4dc9-ad72-b78fab7d66fc.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "2b0e6dce-1343-4dc9-ad72-b78fab7d66fc",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/2b0e6dce-1343-4dc9-ad72-b78fab7d66fc.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "2b0e6dce-1343-4dc9-ad72-b78fab7d66fc",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/2b0e6dce-1343-4dc9-ad72-b78fab7d66fc.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "2b0e6dce-1343-4dc9-ad72-b78fab7d66fc",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/2b0e6dce-1343-4dc9-ad72-b78fab7d66fc.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "76ad47e9-59f6-41ee-9484-8c139cad611f",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/76ad47e9-59f6-41ee-9484-8c139cad611f.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "76ad47e9-59f6-41ee-9484-8c139cad611f",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/76ad47e9-59f6-41ee-9484-8c139cad611f.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "422f77d1-0c62-4e80-9779-73c6bae03f38",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/422f77d1-0c62-4e80-9779-73c6bae03f38.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "422f77d1-0c62-4e80-9779-73c6bae03f38",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/422f77d1-0c62-4e80-9779-73c6bae03f38.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "422f77d1-0c62-4e80-9779-73c6bae03f38",
+    "transcript_path": "/Users/lqy/.claude/projects/-Users-lqy-work-TabPFN/422f77d1-0c62-4e80-9779-73c6bae03f38.jsonl",
+    "cwd": "/Users/lqy/work/TabPFN",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]

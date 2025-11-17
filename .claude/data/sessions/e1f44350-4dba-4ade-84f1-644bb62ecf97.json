@@ -1,0 +1,6 @@
+{
+  "session_id": "e1f44350-4dba-4ade-84f1-644bb62ecf97",
+  "prompts": [
+    "'/Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025/Section/Introduction.tex' \u8fd9\u4e00\u90e8\u5206\u5199\u7684\u4e0d\u5bf9\u554a:\n\u6ca1\u6709\u5bf9\u5e94\u5f71\u50cf\u5b66\u7684\u6570\u636e\u554a, \u5c31\u662f\u533b\u7597\u7279\u5f81\u7684\u8868\u683c\u6570\u636e\u554a\n\nThis study presents PANDA (Pretrained Adaptation Network with Domain Alignment), a domain-\nadaptive framework aimed at improving malignant solitary pulmonary nodules (MSPN) prediction by\nutilizing clinical, radiological, laboratory, and pulmonary function data from two hospitals. PANDA\nintegrates a pre-trained Transformer model with Transfer Component Analysis to tackle feature repre-\nsentation and distribution shifts in small-sample scenarios. It excels in cross-institutional pulmonary\nnodule cohorts, demonstrating improved generalization with limited data. PANDA is benchmarked\nagainst traditional machine learning models and clinical scoring systems, showcasing its stability and\npractical utility in real-world multi-center applications."
+  ]
+}
