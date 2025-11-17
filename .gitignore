@@ -166,6 +166,7 @@ cython_debug/
 CLAUDE.md
 GEMINI.md
 AGENTS.md
+.claude/
 
 # Dissertation LaTeX files
 dissertation/latex/

@@ -1,6 +1,7 @@
 {
   "session_id": "5ddaecd5-de2c-48cc-8d0e-047b729c822a",
   "prompts": [
-    "> git add -A -- .\nfatal: Unable to create '/Users/lqy/work/TabPFN/.git/index.lock': File exists.\n\nAnother git process seems to be running in this repository, e.g.\nan editor opened by 'git commit'. Please make sure all processes\nare terminated then try again. If it still fails, a git process\nmay have crashed in this repository earlier:\nremove the file manually to continue.\n"
+    "> git add -A -- .\nfatal: Unable to create '/Users/lqy/work/TabPFN/.git/index.lock': File exists.\n\nAnother git process seems to be running in this repository, e.g.\nan editor opened by 'git commit'. Please make sure all processes\nare terminated then try again. If it still fails, a git process\nmay have crashed in this repository earlier:\nremove the file manually to continue.\n",
+    "/Users/lqy/work/TabPFN/.claude \u8fd9\u4e2a\u6587\u4ef6\u5939\u52a0\u5230ignore\u91cc\u9762\u5427"
   ]
 }
