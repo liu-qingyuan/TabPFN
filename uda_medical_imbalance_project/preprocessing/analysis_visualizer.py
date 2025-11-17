@@ -18,16 +18,17 @@ from typing import Dict, List, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
-RIDGE_LABEL = "Ridge LR"
+LASSO_LABEL = "LASSO LR"
 
 
 def _normalize_baseline_label(name: str) -> str:
-    """Map any variant of the legacy Paper baseline name to Ridge LR."""
+    """Map any variant of the legacy Paper baseline name to LASSO LR."""
     if not name:
         return name
     cleaned = name.replace('\n', ' ').strip()
-    if cleaned.split('_')[0].upper() == 'PAPER' or cleaned.lower().startswith('paper'):
-        return RIDGE_LABEL
+    # 处理各种PAPER变体：PAPER, PAPER_LR, PAPER_L_R等
+    if cleaned.split('_')[0].upper() == 'PAPER' or 'PAPER' in cleaned.upper() or cleaned.lower().startswith('paper'):
+        return LASSO_LABEL
     return name
 
 
@@ -152,7 +153,7 @@ class AnalysisVisualizer:
                 # 提取方法名称（去掉特征集后缀）
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = RIDGE_LABEL
+                    method_name = LASSO_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -487,7 +488,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = RIDGE_LABEL
+                    method_name = LASSO_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -693,7 +694,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = RIDGE_LABEL
+                    method_name = LASSO_LABEL
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -717,7 +718,7 @@ class AnalysisVisualizer:
                     if method_name == 'TabPFN_NoUDA':
                         display_name = "PANDA (no UDA)"
                     elif method_name == 'Paper_LR':
-                        display_name = RIDGE_LABEL
+                        display_name = LASSO_LABEL
                     elif method_name in ['SVM', 'RF', 'GBDT', 'XGBoost', 'DT']:
                         # 保持标准的机器学习方法大写命名
                         display_name = method_name
@@ -991,7 +992,10 @@ class AnalysisVisualizer:
                         
                         # 绘制ROC曲线
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
+                        # 应用标签映射，确保PAPER方法正确显示为LASSO LR
+                        display_name = _normalize_baseline_label(raw_name)
+                        if display_name == raw_name and raw_name == "TABPFN":
+                            display_name = "PANDA"
                         ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                                 label=f'{display_name} (AUC = {roc_auc:.3f})',
                                 linewidth=2)
@@ -1005,15 +1009,26 @@ class AnalysisVisualizer:
             for exp_name, result in cv_results.items():
                 if 'summary' in result and result['summary']:
                     method_name = exp_name.split('_')[0].upper()
+                    # 应用标签映射，确保PAPER方法正确显示为LASSO LR
+                    display_name = _normalize_baseline_label(method_name)
+
+                    # 统一处理所有方法名称映射
+                    if display_name == method_name and method_name == "TABPFN":
+                        display_name = "PANDA"
+                    elif display_name != method_name:  # 如果被映射了（如PAPER→LASSO LR）
+                        display_name = display_name  # 使用映射后的名称
+
+                    # 调试输出：确认映射是否正确
+                    if method_name == 'PAPER':
+                        print(f"DEBUG PAPER mapping: exp_name={exp_name}, method_name={method_name}, display_name={display_name}")
+
                     auc_mean = result['summary'].get('auc_mean', 0)
                     auc_std = result['summary'].get('auc_std', 0)
-                    
+
                     # 绘制简化的ROC曲线（基于AUC值的估计）
                     fpr = np.linspace(0, 1, 100)
                     # 简单估计：假设ROC曲线形状
                     tpr = np.sqrt(fpr) * auc_mean + fpr * (1 - auc_mean)
-                    
-                    display_name = "PANDA" if method_name == "TABPFN" else method_name
                     ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                             label=f'{display_name} (AUC = {auc_mean:.3f} ± {auc_std:.3f})',
                             linewidth=2, linestyle='--', alpha=0.7)
@@ -1233,7 +1248,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = RIDGE_LABEL
+                            display_name = LASSO_LABEL
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1310,13 +1325,15 @@ class AnalysisVisualizer:
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name}"
+                                # 应用标签映射，确保Paper_LR显示为LASSO LR
+                                display_name = _normalize_baseline_label(method_name)
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name}"
+                                # 应用标签映射，确保Paper_LR显示为LASSO LR
+                                display_name = _normalize_baseline_label(method_name)
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
@@ -1484,7 +1501,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = RIDGE_LABEL
+                            display_name = LASSO_LABEL
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1692,7 +1709,10 @@ class AnalysisVisualizer:
                         roc_auc = np.trapz(tpr, fpr)
                         
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
+                        # 应用标签映射，确保PAPER方法正确显示为LASSO LR
+                        display_name = _normalize_baseline_label(raw_name)
+                        if display_name == raw_name and raw_name == "TABPFN":
+                            display_name = "PANDA"
                         ax_roc_source.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
                                         label=f'{display_name} (AUC = {roc_auc:.3f})',
                                         linewidth=2)
@@ -1807,9 +1827,10 @@ class AnalysisVisualizer:
                         )
                         
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
-                        if raw_method_name == 'PAPER':
-                            display_name = RIDGE_LABEL
+                        # 应用标签映射，确保PAPER方法正确显示为LASSO LR
+                        display_name = _normalize_baseline_label(raw_method_name)
+                        if display_name == raw_method_name and raw_method_name == "TABPFN":
+                            display_name = "PANDA"
                         
                         ax_calib_source.plot(mean_predicted_value, fraction_of_positives, 'o-',
                                            color=custom_colors[color_idx % len(custom_colors)], 
@@ -1865,13 +1886,15 @@ class AnalysisVisualizer:
                         # 确定显示名称和样式
                         if 'is_baseline' in pred_data and pred_data.get('is_baseline', False):
                             if pred_data.get('baseline_category') == 'ml_baseline':
-                                display_name = f"{method_name}"
+                                # 应用标签映射，确保Paper_LR显示为LASSO LR
+                                display_name = _normalize_baseline_label(method_name)
                                 linestyle = ':'
                             elif method_name == 'TabPFN_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
-                                display_name = f"{method_name}"
+                                # 应用标签映射，确保Paper_LR显示为LASSO LR
+                                display_name = _normalize_baseline_label(method_name)
                                 linestyle = '--'
                         else:
                             # UDA方法名称处理
@@ -1964,9 +1987,10 @@ class AnalysisVisualizer:
                             net_benefits.append(nb)
                         
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
-                        if raw_method_name == 'PAPER':
-                            display_name = RIDGE_LABEL
+                        # 应用标签映射，确保PAPER方法正确显示为LASSO LR
+                        display_name = _normalize_baseline_label(raw_method_name)
+                        if display_name == raw_method_name and raw_method_name == "TABPFN":
+                            display_name = "PANDA"
                         
                         ax_dca_source.plot(thresholds, net_benefits, 
                                          color=custom_colors[color_idx % len(custom_colors)], 
