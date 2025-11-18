@@ -168,3 +168,15 @@ GEMINI.md
 
 # Dissertation LaTeX files
 dissertation/latex/
+
+# Logs and temporary files
+logs/
+uda_medical_imbalance_project/logs/
+uda_medical_imbalance_project/.claude/data/sessions/
+
+# UV lock file
+uv.lock
+
+# IDE and AI assistant configuration
+.claude/
+.cursor/
