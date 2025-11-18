@@ -81,7 +81,7 @@ class AnalysisVisualizer:
                 # 提取方法名称（去掉特征集后缀）
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper_LR'
+                    method_name = 'LASSO LR'
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -410,7 +410,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper_LR'
+                    method_name = 'LASSO LR'
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -616,7 +616,7 @@ class AnalysisVisualizer:
             if 'summary' in result and result['summary']:
                 raw_method_name = exp_name.split('_')[0].upper()
                 if raw_method_name == 'PAPER':
-                    method_name = 'Paper method'
+                    method_name = 'LASSO LR'
                 elif raw_method_name == 'TABPFN':
                     method_name = 'PANDA'
                 else:
@@ -1152,7 +1152,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = 'LASSO LR'
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1394,7 +1394,7 @@ class AnalysisVisualizer:
                         # 确定显示名称
                         raw_method_name = method_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = 'LASSO LR'
                         else:
                             display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         
@@ -1700,7 +1700,7 @@ class AnalysisVisualizer:
                         raw_method_name = method_name.split('_')[0].upper()
                         display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = 'LASSO LR'
                         
                         ax_calib_source.plot(mean_predicted_value, fraction_of_positives, 'o-',
                                            color=custom_colors[color_idx % len(custom_colors)], 
@@ -1847,7 +1847,7 @@ class AnalysisVisualizer:
                         raw_method_name = method_name.split('_')[0].upper()
                         display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
                         if raw_method_name == 'PAPER':
-                            display_name = 'Paper_LR'
+                            display_name = 'LASSO LR'
                         
                         ax_dca_source.plot(thresholds, net_benefits, 
                                          color=custom_colors[color_idx % len(custom_colors)], 
