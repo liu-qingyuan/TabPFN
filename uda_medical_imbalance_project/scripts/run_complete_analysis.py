@@ -571,9 +571,14 @@ class CompleteAnalysisRunner:
                                     'y_pred_proba': pred_data['y_pred_proba']
                                 }
                         
+                        # 确定显示名称
+                        display_name = model_name
+                        if model_name == 'Paper_LR':
+                            display_name = 'LASSO LR'
+
                         # 存储基线模型结果
                         baseline_model_results = {
-                            'method_name': model_name,
+                            'method_name': display_name,
                             'accuracy': float(summary.get('accuracy_mean', 0)),
                             'auc': float(summary.get('auc_mean', 0)) if summary.get('auc_mean') is not None else None,
                             'f1': float(summary.get('f1_mean', 0)),
@@ -589,7 +594,7 @@ class CompleteAnalysisRunner:
                         # 添加预测数据
                         baseline_model_results.update(prediction_data)
                         
-                        uda_results[model_name] = baseline_model_results
+                        uda_results[display_name] = baseline_model_results
                         
                         if self.verbose:
                             print(f"✅ {model_name}基线 完成:")
