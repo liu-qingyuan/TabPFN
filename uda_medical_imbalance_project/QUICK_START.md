@@ -39,7 +39,7 @@ python examples/complete_analysis_example.py
 
 2. **源域10折交叉验证**
    - TabPFN模型
-   - 论文方法 (Paper LR)
+   - 论文方法 (LASSO LR)
    - 基线模型 (PKUPH, Mayo)
    - 性能指标对比
 

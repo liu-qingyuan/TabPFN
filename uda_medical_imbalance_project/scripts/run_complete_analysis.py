@@ -1036,7 +1036,7 @@ class CompleteAnalysisRunner:
                     # 处理方法名称显示
                     raw_method_name = exp_name.split('_')[0].upper()
                     if raw_method_name == 'PAPER':
-                        method_name = 'Paper_LR'
+                        method_name = 'LASSO LR'
                     else:
                         method_name = raw_method_name
                     summary = result['summary']
@@ -1147,7 +1147,7 @@ class CompleteAnalysisRunner:
                         best_source_auc = auc
                         raw_method_name = exp_name.split('_')[0].upper()
                         if raw_method_name == 'PAPER':
-                            best_source_method = 'Paper_LR'
+                            best_source_method = 'LASSO LR'
                         else:
                             best_source_method = raw_method_name
         
