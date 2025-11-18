@@ -912,7 +912,12 @@ class AnalysisVisualizer:
                         
                         # 绘制ROC曲线
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
+                        if raw_name == "TABPFN":
+                            display_name = "PANDA"
+                        elif raw_name == "PAPER":
+                            display_name = "LASSO LR"
+                        else:
+                            display_name = raw_name
                         ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                                 label=f'{display_name} (AUC = {roc_auc:.3f})',
                                 linewidth=2)
@@ -934,7 +939,12 @@ class AnalysisVisualizer:
                     # 简单估计：假设ROC曲线形状
                     tpr = np.sqrt(fpr) * auc_mean + fpr * (1 - auc_mean)
                     
-                    display_name = "PANDA" if method_name == "TABPFN" else method_name
+                    if method_name == "TABPFN":
+                        display_name = "PANDA"
+                    elif method_name == "PAPER":
+                        display_name = "LASSO LR"
+                    else:
+                        display_name = method_name
                     ax1.plot(fpr, tpr, color=colors[color_idx % len(colors)], 
                             label=f'{display_name} (AUC = {auc_mean:.3f} ± {auc_std:.3f})',
                             linewidth=2, linestyle='--', alpha=0.7)
@@ -1594,7 +1604,12 @@ class AnalysisVisualizer:
                         roc_auc = auc(fpr, tpr)
                         
                         raw_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_name == "TABPFN" else raw_name
+                        if raw_name == "TABPFN":
+                            display_name = "PANDA"
+                        elif raw_name == "PAPER":
+                            display_name = "LASSO LR"
+                        else:
+                            display_name = raw_name
                         ax_roc_source.plot(fpr, tpr, color=custom_colors[color_idx % len(custom_colors)], 
                                         label=f'{display_name} (AUC = {roc_auc:.3f})',
                                         linewidth=2)
@@ -1696,11 +1711,14 @@ class AnalysisVisualizer:
                         fraction_of_positives, mean_predicted_value = calibration_curve(
                             y_true, y_scores, n_bins=10
                         )
-                        
+
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
-                        if raw_method_name == 'PAPER':
+                        if raw_method_name == "TABPFN":
+                            display_name = "PANDA"
+                        elif raw_method_name == 'PAPER':
                             display_name = 'LASSO LR'
+                        else:
+                            display_name = raw_method_name
                         
                         ax_calib_source.plot(mean_predicted_value, fraction_of_positives, 'o-',
                                            color=custom_colors[color_idx % len(custom_colors)], 
@@ -1843,11 +1861,14 @@ class AnalysisVisualizer:
                         for threshold in thresholds:
                             nb = calculate_net_benefit(y_true, y_scores, threshold)
                             net_benefits.append(nb)
-                        
+
                         raw_method_name = method_name.split('_')[0].upper()
-                        display_name = "PANDA" if raw_method_name == "TABPFN" else raw_method_name
-                        if raw_method_name == 'PAPER':
+                        if raw_method_name == "TABPFN":
+                            display_name = "PANDA"
+                        elif raw_method_name == 'PAPER':
                             display_name = 'LASSO LR'
+                        else:
+                            display_name = raw_method_name
                         
                         ax_dca_source.plot(thresholds, net_benefits, 
                                          color=custom_colors[color_idx % len(custom_colors)], 
