@@ -1,0 +1,18 @@
+{
+  "timestamp": "20251119_185712",
+  "models": [
+    "PANDA_TabPFN_TCA",
+    "TabPFN_Only",
+    "LASSO_LR",
+    "Random_Forest",
+    "XGBoost",
+    "SVM",
+    "KNN"
+  ],
+  "total_experiments": 126,
+  "experiment_types": [
+    "single_center",
+    "cross_domain"
+  ],
+  "framework": "adapt library - TCA only"
+}

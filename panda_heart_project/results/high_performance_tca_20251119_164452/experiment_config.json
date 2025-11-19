@@ -1,0 +1,12 @@
+{
+  "timestamp": "20251119_164452",
+  "models": [
+    "PANDA_TabPFN_TCA"
+  ],
+  "total_experiments": 15,
+  "experiment_types": [
+    "single_center",
+    "cross_domain"
+  ],
+  "framework": "High-Performance TCA (mu=1.0, linear kernel)"
+}

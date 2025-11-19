@@ -1,0 +1,7 @@
+ACS Income Experiment Results (CA -> TX)
+=======================================
+
+LogisticRegression: Acc=0.7680, AUC=0.8388
+XGBoost: Acc=0.7930, AUC=0.8681
+TabPFN_NoAdapt: Acc=0.8110, AUC=0.8808
+PANDA: Acc=0.7680, AUC=0.8488
