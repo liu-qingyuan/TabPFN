@@ -180,3 +180,12 @@ uv.lock
 # IDE and AI assistant configuration
 .claude/
 .cursor/
+
+# PANDA TableShift large data files (4.4GB total)
+panda_tableshift_project/data/raw/LLCP*.XPT
+panda_tableshift_project/data/raw/LLCP*XPT.zip
+panda_tableshift_project/data/raw/dataset_diabetes.zip
+panda_tableshift_project/data/raw/dataset_diabetes/
+
+# TableShift cached datasets (can be regenerated)
+panda_tableshift_project/data/raw/*/

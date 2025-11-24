@@ -11,15 +11,13 @@ TableShift (NeurIPS 2023) 是专门针对表格数据分布偏移（Distribution
 - **主要目标**: 验证 PANDA 框架在 TableShift 定义的 "ID vs OOD" 严格偏移场景下的有效性。
 - **具体场景**:
   1. **Diabetes (BRFSS)**: 验证在种族（Race）偏移下的公平性和鲁棒性。
-  2. **Hospital Readmission**: 验证在不同入院来源（Admission Source）下的跨机构泛化能力。
 - **学术目标**: 将 PANDA 的验证范围从私有小样本医疗数据（肺结节、心脏病）扩展到大规模公共基准，增强论文的说服力。
 
 ### 1.3 任务定义
 
-| 任务名称                       | 任务类型              | 数据来源                | Shift 定义 (Source → Target)                                    | 样本量 (Est.) |
+| 任务名称                       | 任务类型              | 数据来源                | Shift 定义 (Source → Target)                                    | 样本量 (Total) |
 | :----------------------------- | :-------------------- | :---------------------- | :--------------------------------------------------------------- | :------------ |
-| **Diabetes**             | 二分类 (是否糖尿病)   | BRFSS 调查数据          | **种族偏移**: White (Non-Hispanic) → Other Race/Ethnicity | ~250k (Total) |
-| **Hospital Readmission** | 二分类 (30天内再入院) | UCI Diabetes (130 医院) | **机构偏移**: Admission Source A → Admission Source B     | ~100k (Total) |
+| **Diabetes**             | 二分类 (是否糖尿病)   | CDC BRFSS 调查数据      | **种族偏移**: White (Non-Hispanic) → Other Race/Ethnicity | 1,444,176 |
 
 ---
 
@@ -27,15 +25,15 @@ TableShift (NeurIPS 2023) 是专门针对表格数据分布偏移（Distribution
 
 ### 2.1 Diabetes Prediction (BRFSS)
 
-- **背景**: 基于 CDC 的行为风险因素监测系统 (BRFSS)。
-- **输入特征**: 20+ 个特征，包括生活方式（吸烟、BMI）、既往病史、人口学特征。
-- **Shift 挑战**: 训练集为白人数据，测试集为非白人数据。模型往往在多数群体（白人）上表现好，在少数群体上性能下降。PANDA 需要缩小这种 Performance Gap。
-
-### 2.2 Hospital Readmission (UCI)
-
-- **背景**: 覆盖 1999-2008 年 130 家美国医院的糖尿病患者临床护理数据。
-- **输入特征**: 40+ 个特征，包括药物使用、化验结果、诊断代码等。
-- **Shift 挑战**: 按照“入院来源”划分域（例如：急诊转入 vs 门诊转入 vs 其他医院转入）。这模拟了模型在不同类型医疗流程或机构间的迁移。
+- **数据来源**: CDC Behavioral Risk Factor Surveillance System (BRFSS) 2015, 2017, 2019, 2021 年数据
+- **任务定义**: 二分类任务 DIABETES（>=1: 糖尿病阳性 vs 0: 无糖尿病/前糖尿病/临界）
+- **域划分**: 基于 `PRACE1`（自报种族）进行分布偏移定义
+  - **源域/ID (In-Distribution)**: 非西班牙裔白人 (`PRACE1 == 1`)，训练集 969,229 样本，正例占比 12.47%
+  - **目标域/OOD (Out-of-Distribution)**: 其他种族 (`PRACE1 in {2,3,4,5,6}`)，测试集 209,375 样本，正例占比 17.42%
+- **输入特征**: 142 个数值特征，跨年份对齐，包含生活方式、健康状况、人口学特征
+- **预处理**: 跨年份特征对齐、去除前导下划线、SEX 映射为 {0,1}、健康天数 88->0、删除饮酒未知记录、处理缺失值
+- **Shift 挑战**: 种族间协变量偏移明显，49.3% 的特征存在显著分布差异 (p < 1e-3)
+- **实验采样**: 源域训练 1,024 条，目标域测试 2,048 条（随机种子 42）
 
 ---
 
@@ -56,10 +54,11 @@ graph LR
 
 ### 3.2 适配策略
 
-由于 TableShift 数据集规模可能较大（>10k），而 TabPFN 原生针对小样本（<10k）：
+由于 BRFSS 数据集规模较大（1.4M+ 样本），而 TabPFN 原生针对小样本（<10k）：
 
-1. **采样策略 (Subsampling)**: 从 Source 和 Target 中构建多个 "Support Set" (e.g., size=1024, 2048) 进行 TabPFN 推理，验证 PANDA 在**小样本跨域**场景下的优势（这是 TabPFN 的甜点区）。
-2. **全量对比**: 使用 XGBoost/LightGBM 在全量数据上训练作为 "Skyline" 或强基线，对比 PANDA 在小样本下是否能逼近全量传统模型的性能。
+1. **采样策略 (Subsampling)**: 从源域和目标域中分别采样 1,024 和 2,048 样本进行 TabPFN 推理，验证 PANDA 在**小样本跨域**场景下的优势（这是 TabPFN 的甜点区）。
+2. **保持分布**: 采用分层采样，确保源域和目标域的标签分布与原始数据集一致
+3. **可重现性**: 固定随机种子（42），确保实验结果可重现
 
 ---
 
@@ -79,12 +78,17 @@ graph LR
 
 ### 4.2 参数与可复现性约束
 
-- 模型超参严格复用
-  `panda_tableshift_project/results/tuning_extended_brfss_diabetes.csv` 的
-  最佳/已用配置；运行脚本需显式复刻读取该表，避免参数漂移。
-- PANDA(TCA) 与 TabPFN(No TCA) 的 `n_estimators` 分别锁定为 32 与 1，只在
-  结果元数据/表格中记录，不在图表中单独强调。
-- 固定随机种子、数据拆分与预处理流程，确保与现有实验可重复对比。
+- 模型超参严格复用 `panda_tableshift_project/results/tuning_extended_brfss_diabetes.csv` 的最佳/已用配置
+- PANDA(TCA) 与 TabPFN(No TCA) 的 `n_estimators` 分别锁定为 32 与 1
+- 固定随机种子（42）、数据拆分与预处理流程，确保实验可重现
+- 实验配置：
+  - `SVM`: RBF 核，`C=1.0`, `gamma=scale`, `probability=True`
+  - `DT`: `max_depth=None`, `random_state=42`
+  - `RF`: `n_estimators=200`, `max_depth=None`, `n_jobs=-1`, `random_state=42`
+  - `GBDT`: `n_estimators=200`, `learning_rate=0.05`, `max_depth=3`, `random_state=42`
+  - `XGBoost`: `n_estimators=400`, `max_depth=6`, `learning_rate=0.05`, `subsample=0.9`, `colsample_bytree=0.8`, `tree_method=hist`, `eval_metric=logloss`, `random_state=42`
+  - `PANDA_NoUDA`: `n_estimators=1`, `ignore_pretraining_limits=True`, `random_state=42`
+  - `PANDA_TCA`: `n_estimators=32`, `kernel=linear`, `mu=0.01`, `n_components=20`, `random_state=42`
 
 ### 4.3 评估指标
 
@@ -137,11 +141,9 @@ graph LR
   - [X] 将 `panda_heart_project` 中的 `PANDA_Adapter` 逻辑迁移到本项目。
   - [X] 针对 TableShift 的数据格式（Pandas/Numpy）进行接口适配。
 - [X] **S6. 跨域验证 (Linear TCA)**:
-  - [X] **Exp 1 (Race Shift)**: 在 Diabetes 上应用 TCA 版 TabPFN
+  - [X] **Exp 1 (Race Shift)**: 在 BRFSS Diabetes 上应用 TCA 版 TabPFN
     (`n_estimators=32`)，与 TabPFN 无 TCA (`n_estimators=1`) 及传统模型基线
-    一并写入同一指标表和可视化（图中不单列 `32 vs 1`）。
-  - [X] **Exp 2 (Institution Shift)**: 在 Readmission 上按相同方式记录和绘
-    制。
+    一并写入同一指标表和可视化。
   - [x] **结论**: Linear TCA 已完成对比（参数取自 `tuning_extended_brfss_diabetes.csv`），
     结果落盘于 `results/complete_analysis_brfss_diabetes_20251121_142307/`，当前版本不再追加调参。
 
@@ -163,6 +165,7 @@ graph LR
     + `preprocessing/analysis_visualizer.py` 的组合图，输出
       `combined_analysis_figure.pdf` 与 `combined_heatmaps_nature.pdf`，路径为
       `panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/`。
+  - **主要结果**: PANDA_TCA 在 OOD 测试集上达到最佳 AUC 0.8038，相比基线模型有提升
 - [ ] **S10. 文档输出**:
   - [ ] 更新论文，添加 "Experiment on Public Benchmarks" 章节。
   - [ ] 撰写 `results/tableshift_analysis_report_final.md`。
