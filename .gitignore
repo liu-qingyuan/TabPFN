@@ -201,3 +201,8 @@ panda_tableshift_project/data/raw/LLCP2019.XPT
 panda_tableshift_project/data/raw/LLCP2019XPT.zip
 panda_tableshift_project/data/raw/LLCP2021.XPT
 panda_tableshift_project/data/raw/LLCP2021XPT.zip
+# Reproduce doc artifacts (avoid LFS upload limits)
+reproduce/
+
+# Ignore embedded TableShift repo (treated as plain folder)
+panda_tableshift_project/src/tableshift_repo/
