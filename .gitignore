@@ -192,5 +192,12 @@ panda_tableshift_project/data/raw/*/
 
 # Additional large data files causing push failures
 data/2018/1-Year/*.csv
-panda_tableshift_project/data/raw/LLCP*.XPT
-panda_tableshift_project/data/raw/LLCP*XPT.zip
+panda_tableshift_project/data/raw/dataset_diabetes.zip
+panda_tableshift_project/data/raw/LLCP2015.XPT
+panda_tableshift_project/data/raw/LLCP2015XPT.zip
+panda_tableshift_project/data/raw/LLCP2017.XPT
+panda_tableshift_project/data/raw/LLCP2017XPT.zip
+panda_tableshift_project/data/raw/LLCP2019.XPT
+panda_tableshift_project/data/raw/LLCP2019XPT.zip
+panda_tableshift_project/data/raw/LLCP2021.XPT
+panda_tableshift_project/data/raw/LLCP2021XPT.zip
