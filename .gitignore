@@ -189,3 +189,8 @@ panda_tableshift_project/data/raw/dataset_diabetes/
 
 # TableShift cached datasets (can be regenerated)
 panda_tableshift_project/data/raw/*/
+
+# Additional large data files causing push failures
+data/2018/1-Year/*.csv
+panda_tableshift_project/data/raw/LLCP*.XPT
+panda_tableshift_project/data/raw/LLCP*XPT.zip
