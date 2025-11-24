@@ -17,7 +17,7 @@ The pieces fit together as a challenge-driven architecture: each module targets 
 \subsection{Foundation Model Architecture}
 
 \subsubsection{TabPFN Backbone Details}
-TabPFN uses a 10-layer Transformer with four attention heads and 128-dimensional embeddings. Clinical samples are tokenized as $[\text{CLS}, \mathbf{x}_1, \ldots, \mathbf{x}_d, \text{SEP}]$ with positional encodings to preserve ordering. Training instances and test queries are processed jointly in one forward pass, enabling in-context learning without gradient updates.
+TabPFN uses a 12-layer Transformer with four attention heads and 128-dimensional embeddings. Clinical samples are tokenized as $[\text{CLS}, \mathbf{x}_1, \ldots, \mathbf{x}_d, \text{SEP}]$ with positional encodings to preserve ordering. Training instances and test queries are processed jointly in one forward pass, enabling in-context learning without gradient updates.
 
 \subsubsection{Synthetic Task Generation}
 
