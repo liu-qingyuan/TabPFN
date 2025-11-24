@@ -1,0 +1,12 @@
+{
+  "source_cv_comparison": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/source_cv_comparison.pdf",
+  "uda_methods_comparison": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/uda_methods_comparison.pdf",
+  "overall_comparison": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/overall_comparison.pdf",
+  "source_cv_heatmap": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/source_cv_heatmap.pdf",
+  "uda_methods_heatmap": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/uda_methods_heatmap.pdf",
+  "roc_comparison": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/roc_curves/roc_comparison.pdf",
+  "calibration_curve": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/calibration_curves.pdf",
+  "decision_curve_analysis": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/decision_curve_analysis.pdf",
+  "combined_analysis_figure": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/combined_analysis_figure.pdf",
+  "combined_heatmaps_nature": "/Users/lqy/work/TabPFN/panda_tableshift_project/results/complete_analysis_brfss_diabetes_20251121_142307/combined_heatmaps_nature.pdf"
+}

@@ -1,0 +1,134 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+We assess PANDA across cross-institutional performance, domain adaptation, interpretability, and clinical utility, using a protocol meant to resemble what deployment would actually look like.
+
+\subsection{Evaluation Metrics and Statistical Analysis}
+
+\subsubsection{Classification Performance Metrics}
+
+Results are averaged over 10-fold stratified cross-validation to temper label imbalance, the metrics are:
+
+\[
+\begin{aligned}
+&\text{True Positive Rate:} && TPR(\tau) = \frac{TP(\tau)}{TP(\tau) + FN(\tau)} \\
+&\text{False Positive Rate:} && FPR(\tau) = \frac{FP(\tau)}{FP(\tau) + TN(\tau)} \\
+&\text{AUC:} && AUC = \int_0^1 TPR(\tau)\, d(FPR(\tau)) \\
+&\text{Accuracy:} && \frac{TP + TN}{TP + TN + FP + FN} \\
+&\text{Precision:} && \frac{TP}{TP + FP} \\
+&\text{Recall (Sensitivity):} && \frac{TP}{TP + FN} \\
+&\text{F1 Score:} && \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2TP}{2TP + FP + FN} \\
+&\text{Specificity:} && \frac{TN}{TN + FP}
+\end{aligned}
+\]
+
+Let $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n$ denote the full dataset, and $\mathcal{D}_k$ be the $k$-th fold. For metric $M$, the mean and standard deviation over $K=10$ folds are:
+
+\[
+\bar{M} = \frac{1}{K}\sum_{k=1}^K M_k, \quad \sigma_M = \sqrt{\frac{1}{K-1} \sum_{k=1}^K (M_k - \bar{M})^2}
+\]
+
+
+\subsubsection{Visualization-Based Evaluation}
+
+\begin{itemize}
+\item \textbf{ROC Curves:} Plot $TPR(\tau)$ versus $FPR(\tau)$ for $\tau \in [0,1]$ to see the sensitivity-specificity trade-off. 
+
+\item \textbf{Calibration Curves:} Check agreement between predicted probability $\hat{p}_i$ and observed frequency $y_i$. For $K$ equal-width bins $B_k = [k/K, (k+1)/K)$:
+
+\[
+\bar{p}_k = \frac{1}{|B_k|} \sum_{i \in B_k} \hat{p}_i, \quad \bar{y}_k = \frac{1}{|B_k|} \sum_{i \in B_k} y_i
+\]
+
+\item \textbf{Decision Curve Analysis (DCA):}
+
+\[
+NB(p_t) = \frac{TP(p_t)}{n} - \frac{FP(p_t)}{n} \cdot \frac{p_t}{1 - p_t}
+\]
+
+With benchmark strategies:
+
+\[
+NB_{all}(p_t) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{p_t}{1 - p_t}, \quad NB_{none} = 0
+\]
+
+where $\text{Prevalence} = \frac{1}{n} \sum_{i=1}^n y_i$
+\end{itemize}
+
+\subsection{Experimental Setup and Results}
+
+Structured clinical data from two cancer centers in China provided a training cohort (Cohort A, $n_s=295$) and an external test cohort (Cohort B, $n_t=190$). Cohort A contained 63 structured features; Cohort B contained 58 (Table~\ref{tab:cohort_summary}).
+
+\begin{table}[htbp]
+\centering
+\caption{The training (Cohort A) and testing (Cohort B) cohorts.}
+\label{tab:cohort_summary}
+\begin{tabular}{lcc}
+\hline
+\textbf{Characteristic} & \textbf{Cohort A (n = 295)} & \textbf{Cohort B (n = 190)} \\
+\hline
+Upper lobe & & \\
+\quad Yes/Positive & 121 (41.0\%) & 98 (51.6\%) \\
+\quad No/Negative & 174 (59.0\%) & 92 (48.4\%) \\
+Age (years) & 56.95 $\pm$ 11.03 & 58.26 $\pm$ 9.57 \\
+Lobe location (upper) & & \\
+\quad Category 1 & 161 (54.6\%) & 98 (51.6\%) \\
+\quad Category 2 & 29 (9.8\%) & 18 (9.5\%) \\
+\quad Category 3 & 105 (35.6\%) & 74 (38.9\%) \\
+DLCO1 & 5.90 $\pm$ 2.89 & 6.31 $\pm$ 1.55 \\
+VC & 3.33 $\pm$ 0.80 & 2.92 $\pm$ 0.73 \\
+CEA & 4.23 $\pm$ 6.90 & 4.15 $\pm$ 10.61 \\
+CRE & 73.41 $\pm$ 17.16 & 62.94 $\pm$ 13.64 \\
+NSE & 13.07 $\pm$ 3.90 & 13.82 $\pm$ 4.36 \\
+Outcome (Malignant) & & \\
+\quad Yes/Positive & 189 (64.1\%) & 125 (65.8\%) \\
+\quad No/Negative & 106 (35.9\%) & 65 (34.2\%) \\
+\hline
+\end{tabular}
+\end{table}
+
+In source-domain evaluation (10-fold cross-validation on Cohort A), PANDA led on all metrics (Fig.~\ref{fig:performance-heatmaps}): AUC 0.829, accuracy 0.746, F1-score 0.810, precision 0.786, recall 0.846. The high recall is what screening workflows tend to care about. Classical machine learning methods were moderate (Random Forest AUC 0.752; XGBoost 0.742), and clinical scores fared poorly.
+
+For external validation (train on Cohort A, test on Cohort B), the TCA-enhanced PANDA model again came out ahead (AUC 0.705, F1-score 0.808, recall 0.944), with the non-adaptive version slightly behind at AUC 0.698. Among baselines, LASSO LR reached AUC 0.668 with recall 0.943; Random Forest dropped to 0.632; SVM, GBDT, and XGBoost fell below 0.59, underscoring shift sensitivity.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{combined_heatmaps_nature.pdf}
+    \caption{\textbf{Performance comparison across source and target domains.}
+    \textbf{a} Source domain 10-fold cross-validation performance heatmap across five classification metrics. The PANDA framework achieves the best overall performance across all metrics. \textbf{b} Cross-domain performance heatmap on the external validation set. The TCA-enhanced PANDA model shows the highest AUC and recall, indicating improved generalization under domain shift.}
+    \label{fig:performance-heatmaps}
+\end{figure}
+
+Feature-space checks (Fig.~\ref{fig:tca-visualization}) suggest TCA is doing its job: PCA and t-SNE views tighten the alignment between source and target after transformation, even if some scatter remains.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{TCA_dimensionality_reduction.pdf}
+    \caption{TCA-based domain adaptation visualization. \textbf{a,b} PCA visualization before and after TCA transformation, showing improved alignment of target samples with source samples. \textbf{c,d} t-SNE visualization before and after TCA transformation, demonstrating enhanced cluster center alignment and distribution consistency.}
+    \label{fig:tca-visualization}
+\end{figure}
+
+
+\subsection{Model Explainability, Reliability, and Clinical Utility}
+
+RFE with the pre-trained model kept interpretation manageable, and performance across subset sizes leveled off around 9--13 features (Fig.~\ref{fig:rfe-performance}). In terms of reliability, the ROC curves give PANDA a clear edge—AUC 0.829 on the source cohort and 0.705 for the TCA-augmented model on the external one. Calibration plots also place PANDA closer to the diagonal, with TCA nudging the target-side curve a bit nearer to what we would hope for. Decision curves, which weigh net clinical benefit across thresholds, tilt in PANDA’s favor as well, and the TCA variant adds a small but noticeable gain on the external cohort.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{feature_performance_comparison_comprehensive.pdf}
+    \caption{Comprehensive feature selection and performance analysis using recursive feature elimination (RFE). 
+    \textbf{a} AUC, accuracy, and F1 curves as functions of the number of selected features. Performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. 
+    \textbf{b} Class-specific accuracy for malignant and benign cases across feature subset sizes, illustrating how predictive balance shifts as features are removed. 
+    \textbf{c} Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. 
+    \textbf{d} Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. 
+    \textbf{e} Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations.}
+    \label{fig:rfe-performance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{combined_analysis_figure.pdf}
+    \caption{\textbf{Performance and utility across source and target domains.}              
+    \textbf{a,b} ROC curves. \textbf{c,d} Calibration plots. \textbf{e,f} Decision curves.}
+    \label{fig:combined_analysis}
+\end{figure}

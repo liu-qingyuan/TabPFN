@@ -1,0 +1,16 @@
+{
+  "dataset": "brfss_diabetes",
+  "n_train": 1024,
+  "n_test": 2048,
+  "device": "cpu",
+  "timestamp": "20251121_142307",
+  "models": [
+    "SVM",
+    "DT",
+    "RF",
+    "GBDT",
+    "XGBoost",
+    "PANDA_NoUDA",
+    "PANDA_TCA"
+  ]
+}

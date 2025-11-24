@@ -1,0 +1,85 @@
+\section{Solution}
+\label{sec:solution}
+
+PANDA targets the three core limitations identified in sample scarcity, distribution shift, and feature heterogeneity.
+
+\subsection*{Compositional Architecture}
+
+PANDA consists of four sequential operators, each resolving a specific challenge in cross-hospital prediction, as depicted in Fig.~\ref{fig:model_details}.
+
+\paragraph{(1) Cross-domain feature selection.}
+The operator $\mathcal{T}_{\text{RFE}}: \mathbb{R}^d \rightarrow \mathbb{R}^{d'}$ selects a 
+domain-stable subset of features via cross-domain recursive elimination:
+\[
+\mathcal{T}_{\text{RFE}}(\mathbf{x}) = \mathbf{x}_{\mathcal{F}^*}, \qquad 
+\mathcal{F}^* = \arg\min_{\mathcal{F}'} 
+    \sum_{j \in \mathcal{F}'} \mathrm{Var}_{\mathrm{domain}}(\mathbf{x}_j)
+    + \lambda |\mathcal{F}'|.
+\]
+This yields a compact and clinically consistent feature set shared across institutions.
+
+\paragraph{(2) Foundation-model representation.}
+The pretrained TabPFN encoder $\Phi_{\mathrm{FM}}: \mathbb{R}^{d'} \rightarrow \mathbb{R}^{h}$ maps 
+the reduced features into a smooth latent space:
+\[
+\Phi_{\mathrm{FM}}(\mathbf{x}) 
+    = \mathrm{Transformer}_{\theta^{*}}(\mathrm{Tokenize}(\mathbf{x})).
+\]
+This step injects inductive priors learned from millions of synthetic tasks, yielding representations that generalize even when few labeled samples exist.
+
+\paragraph{(3) Domain-invariant alignment via TCA.}
+Transfer Component Analysis (TCA) learns a projection that reduces distribution discrepancies 
+between hospitals:
+\[
+\min_{W} \; \mathrm{tr}(W^\top K L K^\top W) 
+          + \mu \, \mathrm{tr}(W^\top K H K^\top W),
+\]
+where $L$ encodes maximum mean discrepancy (MMD), $H$ is a centering matrix, and 
+$K$ is a kernel matrix (linear kernel in our implementation). The aligned representation is
+\[
+\mathbf{z} = W^\top \phi(\mathbf{x}), \qquad \phi: \mathbb{R}^d \to \mathbb{R}^k,
+\]
+with $k$ chosen automatically to preserve information while enabling effective alignment.
+
+\paragraph{(4) Classification head with ensemble aggregation.}
+The final classifier $h: \mathbb{R}^k \rightarrow [0,1]$ operates on aligned features and aggregates 
+predictions across multiple preprocessing branches and random seeds:
+\[
+f(\mathbf{x}) = \frac{1}{B} \sum_{b=1}^{B} h_b\!\left(
+    \mathcal{A}_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}^{(b)}(\mathbf{x}))
+\right).
+\]
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{Pre-trained Tabular Foundation Mode Pipeline_new.pdf}
+    \caption{\textbf{The PANDA framework architecture.}
+    (a) Compositional pipeline: from original tabular data through ensemble training, prediction aggregation, class imbalance adjustment, to final classification output. 
+    (b) Multi-branch ensemble with $B=4$ preprocessing strategies, 
+    each generating $S=8$ ensemble members via different random seeds.}
+    \label{fig:model_details}
+\end{figure}
+
+\subsection*{Unified Objective}
+
+The complete PANDA mapping is:
+\[
+f(\mathbf{x}) = h\!\left(
+    \mathcal{A}_{\mathrm{TCA}}\!\left(
+        \Phi_{\mathrm{FM}}\!\left(
+            \mathcal{T}_{\mathrm{RFE}}(\mathbf{x})
+        \right)
+    \right)
+\right).
+\]
+
+The joint optimization objective minimizes source-domain classification loss while aligning source and 
+target distributions:
+\[
+\min_{W, h} 
+\frac{1}{n_s} \sum_{i=1}^{n_s}
+    \ell\!\left(h(\mathcal{A}_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(\mathbf{x}_i^s))), y_i^s\right)
++ \lambda_1 d_{\mathrm{MMD}}(\mathbf{Z}_s, \mathbf{Z}_t),
+\]
+where $\mathbf{Z}_s = \mathcal{A}_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(\mathcal{D}_s))$ and 
+$\mathbf{Z}_t = \mathcal{A}_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(\mathbf{X}_t))$.

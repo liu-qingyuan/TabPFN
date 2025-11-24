@@ -1,0 +1,184 @@
+\section{Results}
+
+\subsection{Study Cohort}
+
+This study utilized structured clinical data from two authoritative cancer centers in China to construct a cross-institutional training–testing framework for evaluating model generalization in real-world medical scenarios. The training cohort (Cohort A, $n=295$) was derived from Sun Yat-sen University Cancer Center (Guangzhou, China), consisting of patients diagnosed with solitary pulmonary nodules (SPNs) between January 2011 and December 2016. The external testing cohort (Cohort B, $n=190$) was obtained from Henan Tumor Hospital (Zhengzhou, China) between January 2013 and [month/year redacted].
+
+All enrolled patients met the following inclusion criteria: (1) presence of SPNs with lesion diameter $\leq$ 3 cm detected by chest CT; (2) no history of extrapulmonary malignancies; (3) complete clinical, imaging, and laboratory records within 7 days before diagnosis; and (4) histologically confirmed diagnosis via CT-guided biopsy, bronchoscopy, thoracoscopy, or surgical resection.
+
+Each sample was annotated with a binary label indicating malignancy status (0 = benign, 1 = malignant), and the core objective of this study was to develop a robust classifier for malignancy prediction under domain shift.
+
+Cohort A contained 63 structured features covering demographics, vital signs, biochemistry, tumor markers, and imaging descriptors. Due to partial data omissions, Cohort B included 58 features—a subset of Cohort A. To ensure domain consistency, we applied recursive feature elimination (RFE) on the source cohort and selected the top 9 predictive features. One feature (Feature40, CYSC) was unavailable in Cohort B and excluded from final modeling. The remaining 8 features were used consistently across both domains and formed the basis for domain-adaptive learning.
+
+Model performance was evaluated under two settings. First, we conducted 10-fold cross-validation on the training cohort (Cohort A) to assess within-domain predictive stability and robustness. Then, the final model was retrained using all samples in Cohort A and deployed on the target cohort (Cohort B) for external evaluation. Specifically, Cohort B was equally divided into 10 subsets, and the trained model was used to generate predictions on each subset without retraining. The final performance on the test set was reported as the mean and standard deviation across the 10 subsets. This strategy enables robust estimation of generalization ability under distribution shift while preserving the integrity of a single trained model.
+
+Summary statistics of key variables in both cohorts are provided in Table~\ref{tab:cohort_summary}. While the distributions of several variables—such as age, upper lobe location, and tumor marker levels (CEA, CRE, NSE)—showed moderate shifts between domains, their structural alignment and clinical relevance make them suitable candidates for subsequent feature-aligned domain adaptation.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Summary statistics of the training (Cohort A) and testing (Cohort B) cohorts.}
+\label{tab:cohort_summary}
+\begin{tabular}{lcc}
+\hline
+\textbf{Characteristic} & \textbf{Cohort A (n = 295)} & \textbf{Cohort B (n = 190)} \\
+\hline
+Upper lobe & & \\
+\quad Yes/Positive & 121 (41.0\%) & 98 (51.6\%) \\
+\quad No/Negative & 174 (59.0\%) & 92 (48.4\%) \\
+Age (years) & 56.95 $\pm$ 11.03 & 58.26 $\pm$ 9.57 \\
+Lobe location (upper) & & \\
+\quad Category 1 & 161 (54.6\%) & 98 (51.6\%) \\
+\quad Category 2 & 29 (9.8\%) & 18 (9.5\%) \\
+\quad Category 3 & 105 (35.6\%) & 74 (38.9\%) \\
+DLCO1 & 5.90 $\pm$ 2.89 & 6.31 $\pm$ 1.55 \\
+VC & 3.33 $\pm$ 0.80 & 2.92 $\pm$ 0.73 \\
+CEA & 4.23 $\pm$ 6.90 & 4.15 $\pm$ 10.61 \\
+CRE & 73.41 $\pm$ 17.16 & 62.94 $\pm$ 13.64 \\
+NSE & 13.07 $\pm$ 3.90 & 13.82 $\pm$ 4.36 \\
+Outcome (Malignant) & & \\
+\quad Yes/Positive & 189 (64.1\%) & 125 (65.8\%) \\
+\quad No/Negative & 106 (35.9\%) & 65 (34.2\%) \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+\subsection{Quantitative Performance}
+
+To comprehensively evaluate the performance of our proposed framework, we constructed a multidimensional evaluation protocol encompassing classification metrics, statistical confidence estimation, visualization-based analysis, and domain alignment assessment. This protocol was applied across both internal (source-domain) and external (target-domain) validation settings, reflecting realistic deployment scenarios in multi-institutional medical environments.
+
+Classification performance was assessed using five standard metrics widely adopted in clinical machine learning: area under the receiver operating characteristic curve (AUC), accuracy, F1-score, sensitivity (recall), and specificity (precision). These metrics collectively measure overall discriminative ability, correct classification rate, class balance, and positive/negative case detection capability. All performance indicators were averaged over 10-fold cross-validation to ensure robustness and reproducibility.
+
+To quantify uncertainty in performance estimates, 95\% confidence intervals (CIs) for AUC were calculated via 1000-round bootstrap resampling. This provides a statistical measure of model stability and offers meaningful interpretability for clinical application.
+
+We also employed visualization-based assessments, including ROC curves, calibration plots, and decision curve analysis (DCA), to examine model reliability and potential clinical benefit under varying decision thresholds. These tools offer intuitive comparisons between methods and supplement numerical evaluation.
+
+To assess the effectiveness of domain adaptation, we further evaluated the distributional shift between source and target domains using both qualitative and quantitative analyses. Principal component analysis (PCA) and t-distributed stochastic neighbor embedding (t-SNE) were used to visualize domain overlap, while standardized Wasserstein distance, symmetric KL divergence, and maximum mean discrepancy (MMD) were calculated to quantify distribution alignment before and after adaptation.
+
+Benchmark comparisons included four method groups: (1) the pre-trained tabular foundation model without domain adaptation; (2) traditional clinical scoring systems (e.g., PKUPH, Mayo); (3) classical machine learning algorithms (e.g., SVM, RF, GBDT, XGBoost); and (4) our TCA-enhanced foundation model. This rigorous comparative design enables clear attribution of performance gains to the domain adaptation strategy and highlights its value in real-world medical deployment scenarios.
+
+
+
+
+\subsubsection{Internal Validation Performance (Train Cohort A)}
+
+To evaluate the generalization capacity of different models on the source domain, we conducted 10-fold cross-validation using the training cohort (Cohort A). Model performance was assessed across five metrics: area under the ROC curve (AUC), accuracy, F1-score, precision, and recall. The averaged results for each method are summarized in descending order of AUC to highlight the most globally effective model.
+
+Figure~\ref{fig:performance-heatmaps} presents a comprehensive comparison of model performance across both internal and external validation settings. In the source domain (Figure~\ref{fig:performance-heatmaps}a), our proposed model, based on a pre-trained tabular foundation model, achieved superior performance across all five metrics: AUC of 0.826, accuracy of 0.743, F1-score of 0.807, precision of 0.786, and recall of 0.841. These results demonstrate the model's strong classification capability and high sensitivity for identifying positive cases, which is critical in clinical screening scenarios.
+
+In comparison, classical machine learning methods showed moderate performance. Random forest (RF) and XGBoost ranked third and fourth in AUC (0.752 and 0.742, respectively), maintaining relatively stable results but still falling short of our method. Other methods, such as GBDT, SVM, and decision tree (DT), exhibited lower F1-scores and accuracy, indicating limited modeling capacity on high-dimensional medical data.
+
+Clinical scoring systems performed substantially worse than data-driven models. In particular, the Mayo score failed entirely in this setting, with an F1-score, precision, and recall of 0.000. Analysis of the confusion matrices revealed that the Mayo model consistently predicted all samples as benign (negative class), resulting in zero true positive predictions and consequently zero precision and recall for malignancy detection. The PKUPH score also underperformed across all metrics.
+
+The rule-based reference model Paper method exhibited decent AUC (0.763) and F1-score (0.810) but was inferior to our method in terms of accuracy (0.722) and precision (0.723). This may indicate potential overfitting or sensitivity to class imbalance in the training data.
+
+\subsubsection{External Validation Performance (Cross-Institutional Generalization A→B)}
+
+To simulate a real-world clinical deployment across institutions, we evaluated model generalization under a cross-domain setting: training on Cohort A and testing on Cohort B. As illustrated in Figure~\ref{fig:performance-heatmaps}b, the TCA-augmented foundation model achieved the best performance across all external validation metrics: AUC of 0.709, F1-score of 0.811, and recall of 0.944. These results significantly outperformed the version without domain adaptation (AUC = 0.698), underscoring the critical role of TCA in mitigating domain shift and enhancing sensitivity on unseen target data.
+
+In contrast, the non-adaptive version—though strong on the source domain—exhibited clear degradation on Cohort B, exemplifying a typical domain shift effect and validating the necessity of domain adaptation in cross-institutional scenarios.
+
+Among other methods, Paper LR, RF, and PKUPH showed moderate generalization with AUCs ranging from 0.63 to 0.67. While Paper LR achieved high recall (0.943), it suffered from low precision (0.682) and accuracy (0.674), suggesting a tendency toward over-identifying positive cases. Classical ML models such as SVM, GBDT, XGBoost, and DT performed poorly, with AUCs below 0.63; notably, XGBoost and DT dropped to 0.567 and 0.509, respectively, indicating sensitivity to distribution shifts.
+
+The Mayo clinical score failed entirely on the target domain, with F1-score, precision, and recall all equal to 0.000. Similar to the source domain performance, the Mayo model consistently predicted all samples as benign, resulting in zero true positive detections.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{combined_heatmaps_nature.pdf}
+    \caption{\textbf{Performance comparison across source and target domains.} 
+    \textbf{a} Source domain 10-fold cross-validation performance heatmap across five classification metrics (AUC, accuracy, F1-score, precision, recall). Models are sorted by descending AUC. The pre-trained tabular foundation model (PANDA) achieves the best overall performance across all metrics. \textbf{b} Cross-domain performance heatmap on the external validation set (Cohort B). All models were trained on Cohort A and evaluated on Cohort B without retraining. The TCA-enhanced model (PANDA) shows the highest AUC and recall, indicating improved generalization under domain shift.}
+    \label{fig:performance-heatmaps}
+\end{figure}
+
+
+
+Taken together, the TCA-enhanced tabular foundation model demonstrated robust external performance and outperformed both machine learning and clinical baselines, validating its potential for reliable deployment in real-world multi-center settings.
+
+
+
+
+\subsection{Domain Adaptation Evaluation}
+
+To comprehensively assess the effectiveness of Transfer Component Analysis (TCA) in improving cross-domain classification, we conducted a three-part evaluation including feature space visualization, quantitative domain distance analysis, and metric-level performance comparison between domain-adaptive and non-adaptive models.
+
+\textbf{(1) Feature Space Visualization via PCA and t-SNE}
+
+Figure~\ref{fig:tca-visualization} illustrates the latent feature distributions of source and target domains before and after TCA transformation. Prior to adaptation (left panels), the target and source domain samples already show partial overlap in both PCA and t-SNE projections, but their central tendencies and density structures remain misaligned. After applying TCA (right panels), the target domain samples become more tightly aligned with the source domain, with cluster centers in closer proximity and distribution densities showing greater similarity. This indicates that TCA not only preserves the inherent structure of each domain but also learns a shared latent space where the two distributions are better matched, thereby facilitating more reliable cross-domain generalization.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{TCA_dimensionality_reduction.pdf}
+    \caption{TCA-based domain adaptation visualization and dimensionality reduction analysis. \textbf{a} PCA visualization of source and target domain samples before TCA transformation, showing partial overlap but differences in central tendency and density distribution. \textbf{b} PCA visualization after TCA transformation, where target samples align more closely with source samples and exhibit more consistent density structures. \textbf{c} t-SNE visualization before TCA transformation, indicating moderate clustering overlap but noticeable differences in distribution compactness. \textbf{d} t-SNE visualization after TCA transformation, showing improved alignment of cluster centers and more similar distribution densities across domains. These results confirm that TCA reduces subtle distribution mismatches by enhancing center alignment and density consistency, thereby supporting robust inter-institutional generalization.}
+    \label{fig:tca-visualization}
+\end{figure}
+
+\textbf{(2) Domain Distance Quantification}
+
+To quantify domain shift reduction achieved by TCA, we computed four standard distributional discrepancy metrics before and after adaptation. The results showed consistent improvements across all measures:
+
+The normalized linear discrepancy between source and target domains decreased by 0.070 after TCA transformation, indicating improved alignment in the projected latent space. Similarly, the normalized Frechét distance was reduced by 0.018, the Wasserstein distance by 0.006, and the symmetric KL divergence by 0.022. These reductions, although varying in magnitude, consistently reflect the same trend—TCA effectively mitigates inter-domain statistical divergence under multiple distance metrics.
+
+Taken together, these results confirm that TCA narrows domain discrepancies from complementary mathematical perspectives, thereby enabling more stable and transferable feature representations across hospital datasets.
+
+
+\textbf{(3) Classification Performance Improvement}
+
+Compared to the non-adaptive baseline, the TCA-enhanced model exhibited consistent improvements across multiple classification metrics on the target domain (Cohort B):
+
+\begin{itemize}
+  \item Accuracy improved from 0.658 to 0.711 (+5.3\%).
+  \item F1-score increased from 0.767 to 0.811.
+  \item Precision rose from 0.695 to 0.711.
+  \item Recall increased from 0.856 to 0.944, reflecting substantial improvement in positive case detection.
+  \item AUC improved from 0.681 to 0.709 (+2.8\%).
+\end{itemize}
+
+These consistent gains further validate the efficacy of TCA in enhancing cross-domain model performance, especially in sensitive clinical applications where recall is a key requirement.
+
+Taken together, from latent space structure to statistical alignment and classification performance, the proposed TCA-enhanced framework demonstrated clear advantages in mitigating domain shift and improving generalization across hospital settings.
+
+
+
+
+\subsection{Model Explainability via Feature Selection}
+
+Interpretability and compactness are essential for clinical deployment of machine learning models. To reduce model complexity while maintaining predictive accuracy, we performed recursive feature elimination (RFE) using our pre-trained tabular foundation model as the estimator. This approach ranks all 63 input features based on their contribution to classification performance, as measured by AUC, accuracy, and F1-score under 10-fold cross-validation.
+
+To identify the optimal feature subset, we evaluated model performance across different feature set sizes. As shown in Figure~\ref{fig:rfe-performance}a, model performance (measured by AUC) steadily increased with the number of selected features, reaching an optimal plateau in the range of 9 to 13 features. This pattern exemplifies Occam's Razor—the principle that simpler models should be preferred when they achieve comparable performance to more complex alternatives.
+
+Based on these results, the top 9 features were initially selected as the optimal subset. However, one of these—Feature 40—was missing in the target domain (Cohort B). To ensure cross-domain consistency, we excluded this feature and retained the remaining top 8 features for all downstream training and evaluation. This feature selection strategy not only preserved predictive accuracy but also enhanced domain robustness by reducing the risk of overfitting to cohort-specific noise.
+
+The 8-features configuration achieved strong performance in both internal and external validation, demonstrating that a compact and interpretable feature set is sufficient for effective pulmonary nodule malignancy prediction. This parsimonious approach contributes to more stable and efficient real-world deployment while maintaining clinical interpretability—a critical requirement for medical AI systems.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{feature_performance_comparison_comprehensive.pdf}
+    \caption{Comprehensive feature selection and performance analysis using recursive feature elimination (RFE). \textbf{a} Model performance curves showing AUC, accuracy, and F1-score as functions of the number of selected features. Performance reaches an optimal plateau at 9-13 features, consistent with Occam's Razor principle favoring parsimonious models. Shaded areas represent cross-validation variance across 10 folds. \textbf{b} Class-specific accuracy analysis demonstrating model performance for both malignant and benign cases across different feature subset sizes, ensuring balanced predictive capability. \textbf{c} Training time complexity evaluation showing computational efficiency as a function of feature dimensionality, with training time measured in seconds per cross-validation fold. \textbf{d} Performance stability assessment using coefficient of variation across 10-fold cross-validation, indicating the robustness and reliability of feature selection at different subset sizes. Lower values indicate more stable performance. \textbf{e} Cost-effectiveness index combining multiple criteria: Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15, providing a comprehensive metric for optimal feature subset selection that balances predictive accuracy with practical deployment considerations.}
+    \label{fig:rfe-performance}
+\end{figure}
+
+
+\subsection{Model Reliability and Clinical Utility}
+
+Beyond predictive accuracy, clinical deployment of machine learning models requires reliable probability estimates and demonstrable decision-making value. We therefore conducted a comprehensive multi-dimensional evaluation of our pre-trained tabular foundation model, encompassing receiver operating characteristic (ROC) analysis, calibration assessment, and decision curve analysis (DCA) across both source and target domains.
+
+To assess model discrimination performance, we visualized ROC curves for all baseline and proposed methods on both domains. As shown in Figure~\ref{fig:combined_analysis}a, the source domain ROC curves were computed from 10-fold cross-validation on Cohort A. The pre-trained tabular foundation model achieved the highest AUC of 0.820, clearly outperforming traditional machine learning models such as SVM (AUC = 0.712), XGBoost (AUC = 0.734), and random forest (AUC = 0.742), indicating superior fitting and discriminative capacity. Note that AUC values in ROC curves are computed directly from aggregated predictions across all folds, while performance heatmaps (e.g., Figure~\ref{fig:performance-heatmaps}a) report fold-averaged AUC values, explaining minor numerical differences between visualizations. Figure~\ref{fig:combined_analysis}b shows ROC curves on the target domain (Cohort B) under cross-institutional generalization settings. The TCA-enhanced model maintained the highest AUC (0.709) with curves consistently above all baselines, demonstrating strong robustness against domain shift. In contrast, the non-adaptive version experienced noticeable degradation (AUC = 0.698), reflecting typical domain shift effects. Notably, the Mayo clinical scoring system (AUC = 0.584) showed poor discriminative performance, though slightly better than random chance.
+
+Calibration curves assess the agreement between predicted probabilities and observed event rates, where the dashed diagonal represents perfect calibration. As illustrated in Figure~\ref{fig:combined_analysis}c, in the source domain ou't demonstrates closer alignment to the ideal calibration line than conventional machine learning baselines, indicating more trustworthy risk estimates. Figure~\ref{fig:combined_analysis}d shows that in the target domain, applying TCA-based unsupervised domain adaptation further reduces deviations from perfect calibration, mitigating both systematic underestimation and overestimation across probability bins. This improvement is particularly relevant for risk-stratified decision-making, where accurate probability outputs directly influence clinical thresholds.
+
+Decision curve analysis quantifies the net clinical benefit of different models over a range of decision thresholds. The dashed and dotted black lines correspond to the strategies of treating all patients or treating none, respectively. As shown in Figure~\ref{fig:combined_analysis}e, in the source domain our consistently delivers higher net benefit than baseline models across clinically relevant thresholds. Figure~\ref{fig:combined_analysis}f demonstrates that in the target domain, integrating TCA-based adaptation yields additional gains in net benefit, underscoring the value of domain adaptation for improving decision-making utility in external cohorts.
+
+Overall, the ROC curve comparison provides an intuitive and comprehensive view of model discrimination performance across domains. The calibration analysis validates probability reliability for clinical risk assessment. The decision curve analysis confirms superior clinical utility across relevant threshold ranges. Collectively, this multi-dimensional evaluation demonstrates the robustness and reliability of our TCA-enhanced foundation model approach, validating its effectiveness for cross-institutional deployment and supporting its readiness for real-world clinical applications.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{combined_analysis_figure.pdf}
+    \caption{\textbf{Comprehensive model performance analysis across source and target domains.} 
+    \textbf{a,b} ROC curve comparison for source-domain (10-fold cross-validation on Cohort A) and target-domain (external testing on Cohort B) performance. The TCA-enhanced model consistently achieves the highest AUC across both domains. \textbf{c,d} Model calibration analysis showing agreement between predicted probabilities and observed event rates. The dashed diagonal represents perfect calibration. Our method exhibits improved calibration over conventional baselines in the source domain, with further gains when applying TCA-based UDA in the target domain. \textbf{e,f} Decision curve analysis for clinical utility assessment across a range of decision thresholds. The dashed and dotted black lines correspond to treating all patients or treating none, respectively. Our method consistently outperforms baseline methods in net benefit, with TCA-based UDA further improving decision-making value in the target domain.}
+    \label{fig:combined_analysis}
+\end{figure}
+
+

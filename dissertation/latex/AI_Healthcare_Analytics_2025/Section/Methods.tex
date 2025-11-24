@@ -1,0 +1,90 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Motivating Challenges and Methodological Response}
+Cross-hospital malignancy prediction poses interdependent obstacles that destabilize standard pipelines, and PANDA is shaped around those pain points. Small cohorts mean most hospitals contribute only a few hundred annotated patients, leaving deep networks hypersensitive to randomness and prone to overfitting. PANDA leans on a pre-trained tabular foundation model that performs in-context learning, reusing inductive biases from millions of synthetic tasks instead of trying to learn everything from scratch in a tiny clinical cohort.
+
+Pronounced distributional differences between hospitals sit on the next rung: divergent CT scanners, laboratory ranges, and demographics nudge covariates far enough to erode boundaries learned at one site. PANDA embeds Transfer Component Analysis (TCA) inside the latent space produced by the foundation model so alignment happens before classification, which seems to soften the covariate shift without discarding signal.
+
+Feature heterogeneity complicates things further. Institutions disagree on which variables they collect and how they encode them; missingness patterns differ as well. Training on every available variable bakes in site-specific artifacts, while tightening to the intersection risks losing signal. PANDA applies cross-domain recursive feature elimination to keep a compact subset of variables that stay predictive in both hospitals, making sure the downstream adaptation actually operates on features the sites share in practice.
+
+Class imbalance becomes especially visible in small datasets, where the number of malignant cases can differ sharply by hospital. Naïve models tend to collapse onto the majority class, a pattern we’ve seen more than once. Using class-balanced sampling and calibrated loss terms helps the minority signals stay present enough to maintain the sensitivity that screening workflows typically expect.
+
+Small samples also inflate variance: minor tweaks in preprocessing, feature ordering, or even the random seed can shift predictions more than one might like to admit. A multi-branch ensemble counters this by viewing each patient through several slightly different representations—shuffled feature orders, alternate encodings, and varied distribution transforms—and then pooling the results. The averaged probabilities, once temperature-scaled, tend to stay calibrated enough to support clinical thresholds rather than forcing everything into brittle hard labels.
+
+The pieces fit together as a challenge-driven architecture: each module targets a known failure mode in cross-hospital prediction instead of being bolted on for novelty.
+
+\subsection{Foundation Model Architecture}
+
+\subsubsection{TabPFN Backbone Details}
+TabPFN uses a 10-layer Transformer with four attention heads and 128-dimensional embeddings. Clinical samples are tokenized as $[\text{CLS}, \mathbf{x}_1, \ldots, \mathbf{x}_d, \text{SEP}]$ with positional encodings to preserve ordering. Training instances and test queries are processed jointly in one forward pass, enabling in-context learning without gradient updates.
+
+\subsubsection{Synthetic Task Generation}
+
+Pre-training draws diverse synthetic classification tasks from several function priors, including Gaussian processes, multilayer perceptrons, and ridge regression families. This variety teaches generalizable tabular reasoning patterns that appear to transfer to real-world medical classification tasks.
+
+\subsection{Feature Selection and Preprocessing}
+
+\subsubsection{Cross-Domain RFE Algorithm}
+
+We recursively eliminate features based on domain-invariant importance scores:
+
+\[
+\text{Importance}(\mathbf{x}_j) = \frac{1}{M}\sum_{m=1}^{M} \left| \mathcal{R}_s^{(m)}(\mathcal{F} \setminus \{\mathbf{x}_j\}) - \mathcal{R}_s^{(m)}(\mathcal{F}) \right|
+\]
+
+where $M = 5$ permutation repeats evaluate feature stability. The RFE procedure first surfaced nine highly discriminative features. To enforce cross-institutional availability, one feature absent from the target domain (Dataset B) was removed, yielding a final set of $|\mathcal{F}^*| = 8$ clinical variables that both hospitals record.
+
+\subsubsection{Multi-Branch Preprocessing Pipeline}
+The 32-model ensemble comes from four simple branches: two keep the original or rotated feature order with plain numerical encodings, and two pair those orders with a quantile transform plus ordinal encoding. Each branch spits out eight runs with seeds 1--8, and a majority vote settles the label. Balanced-accuracy weights keep the malignant class from getting drowned out.
+
+\subsection{Domain Adaptation Implementation}
+
+\subsubsection{TCA Optimization}
+Transfer Component Analysis learns domain-invariant representations by solving:
+\[
+\min_{\mathbf{W}} \text{tr}(\mathbf{W}^\top \mathbf{X} \mathbf{L} \mathbf{X}^\top \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W})
+\]
+where $\mathbf{L}$ is the MMD kernel matrix with entries $L_{ij} = K_{ij}/(n_s^2) + K_{ij}/(n_t^2) - 2K_{ij}/(n_s n_t)$. The kernel matrix $K$ adopts Gaussian RBF kernels with bandwidth $\sigma$ set via the median heuristic.
+
+The alignment step preserves discriminative information while reducing domain discrepancy:
+\[
+\mathbf{z} = \mathbf{W}^\top \phi(\mathbf{x}), \quad \phi: \mathbb{R}^d \rightarrow \mathbb{R}^h
+\]
+where latent dimensionality $h = 15$ balances information preservation with alignment effectiveness.
+
+\subsection{Ethics Statement and Data Collection}
+This study received Institutional Review Board approval from two participating hospitals in China and followed the Declaration of Helsinki. Patient data were retrospectively extracted from electronic medical records and fully de-identified before analysis. Written informed consent for research use of clinical information was obtained from all patients with solitary pulmonary nodules (SPNs) at admission, and no identifiable personal data were retained.
+
+The training cohort (Cohort A, $n=295$) originated from Hospital A between January 2011 and December 2016. The external test cohort (Cohort B, $n=190$) was collected at Hospital B. All participants provided written informed consent for scientific use of their clinical data at the time of admission.
+
+\subsubsection{Data Variables and Measurements}
+Collected variables included demographics (age, sex, height, weight, body mass index), smoking history, family cancer history, and symptoms (fever, cough, hemoptysis, chest pain). Radiologic descriptors of SPNs covered anatomical location (lung side and lobe), nodule diameter and area, calcification, cavity, spiculation, pleural thickening, and adhesion. Laboratory data comprised hematologic and biochemical indices such as white blood cell count (WBC), neutrophil-to-lymphocyte ratio (NLR), platelet-to-lymphocyte ratio (PLR), albumin/globulin ratio (AGR), liver and renal function markers, and tumor biomarkers including CEA, Cyfra21-1, and NSE.
+
+\subsection{Experimental Procedures}
+
+\subsubsection{Cross-Validation Protocol}
+For internal validation, we applied 10-fold cross-validation on Cohort A. The dataset was randomly split into 10 equal parts with class balance preserved. Each fold served once as validation while the remaining nine folds trained the model. This cycle was repeated 10 times with different random seeds to strengthen robustness of performance estimates.
+
+
+\subsubsection{Baseline Methods}
+
+For comparison, we included a few familiar baselines:
+
+\begin{itemize}
+
+\item Decision Tree (CART)~\cite{breiman1984classification}
+
+\item Gradient Boosting Decision Tree~\cite{friedman2001greedy}
+
+\item Random Forest~\cite{breiman2001random}
+
+\item XGBoost~\cite{chen2016xgboost}
+
+\item Support Vector Machine~\cite{cortes1995support}
+
+\item LASSO Logistic Regression for nodule risk~\cite{he2021novel}
+
+\item Clinical scores (Mayo Clinic, PKUPH)~\cite{swensen1997chest,perandini_solid_2016}
+
+\end{itemize}

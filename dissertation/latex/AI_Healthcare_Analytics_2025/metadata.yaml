@@ -1,0 +1,58 @@
+---
+title: "PANDA: Pretrained Adaptation Network with Domain Alignment for Feature-Efficient Cross-Hospital Pulmonary Nodule Classification"
+author:
+  - name: Qingyuan Liu
+    affiliation: Department of Computing, The Hong Kong Polytechnic University, Hong Kong SAR, China
+date: ""
+number-tables: true
+number-figures: true
+links-as-notes: true
+toc: true
+list-of-figures: true
+list-of-tables: true
+---
+
+# Abstract
+
+Fragmented hospital silos and strict privacy rules often leave medical AI models staring at small, uneven, mismatched tabular cohorts, so anything trained straight on those data tends to wobble once it crosses sites. Here we sketch *PANDA* (Pretrained Adaptation Network with Domain Alignment)—a cross-hospital setup that leans on a pre-trained tabular foundation model, keeps the feature budget lean, and folds in unsupervised domain adaptation, even if calling it a "framework" may be a stretch. PANDA uses a TabPFN-style Transformer encoder meta-trained on millions of synthetic tables; that pretraining appears to capture higher-order interactions that tuned gradient-boosting ensembles often miss when samples are scarce. A cross-cohort RFE step uses the foundation model to identify eight biomarkers that stay predictive across both hospitals, cutting data-collection demands and stabilizing interpretation. To ease distribution gaps, we add TCA to the training loop so source and target cohorts land in a shared latent space. This mix—foundation-model representations, RFE-filtered features, and TCA—seems to reduce covariate shift and keep those eight variables useful even when each site ranks them differently. On two lung-nodule cohorts (295 training, 190 external), PANDA lifts AUC and sensitivity over supervised and non-adaptive baselines, hinting that pairing foundation-model priors with statistical alignment may improve generalization in small, cross-domain medical tasks.
+
+{#abstract}
+
+# Introduction
+
+[Content from Introduction section]
+
+# Methods
+
+## Data Cohorts
+
+Structured clinical data from two cancer centers in China provided a training cohort (Cohort A, $n_s=295$) and an external test cohort (Cohort B, $n_t=190$). Cohort A contained 63 structured features; Cohort B contained 58 ([@tab:cohort_summary]).
+
+: The training (Cohort A) and testing (Cohort B) cohorts. {#tab:cohort_summary}
+
+| **Characteristic** | **Cohort A (n = 295)** | **Cohort B (n = 190)** |
+|---|---|---|
+| **Upper lobe** | | |
+| &nbsp;&nbsp;&nbsp;Yes/Positive | 121 (41.0%) | 98 (51.6%) |
+| &nbsp;&nbsp;&nbsp;No/Negative | 174 (59.0%) | 92 (48.4%) |
+| Age (years) | 56.95 ± 11.03 | 58.26 ± 9.57 |
+| **Lobe location (upper)** | | |
+| &nbsp;&nbsp;&nbsp;Category 1 | 161 (54.6%) | 98 (51.6%) |
+| &nbsp;&nbsp;&nbsp;Category 2 | 29 (9.8%) | 18 (9.5%) |
+| &nbsp;&nbsp;&nbsp;Category 3 | 105 (35.6%) | 74 (38.9%) |
+| DLCO1 | 5.90 ± 2.89 | 6.31 ± 1.55 |
+| VC | 3.33 ± 0.80 | 2.92 ± 0.73 |
+| CEA | 4.23 ± 6.90 | 4.15 ± 10.61 |
+| CRE | 73.41 ± 17.16 | 62.94 ± 13.64 |
+| NSE | 13.07 ± 3.90 | 13.82 ± 4.36 |
+| **Outcome (Malignant)** | | |
+| &nbsp;&nbsp;&nbsp;Yes/Positive | 189 (64.1%) | 125 (65.8%) |
+| &nbsp;&nbsp;&nbsp;No/Negative | 106 (35.9%) | 65 (34.2%) |
+
+# Results
+
+[Content from Results section]
+
+# Conclusion
+
+[Content from Conclusion section]

@@ -2137,7 +2137,7 @@ def run_source_domain_cv(self):
 ```python
 def run_uda_methods_comparison(self):
     # 在源域A训练，目标域B测试
-    # 方法对比：TabPFN_NoUDA vs UDA方法 vs 基线
+    # 方法对比：PANDA_NoUDA vs UDA方法 vs 基线
     uda_methods = ['TCA', 'SA', 'CORAL', 'KMM']
 ```
 

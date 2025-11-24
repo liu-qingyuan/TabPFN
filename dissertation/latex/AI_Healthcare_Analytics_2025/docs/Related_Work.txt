@@ -1,0 +1,625 @@
+Pulmonary Nodule Malignancy Prediction – Historical and Technical
+Landscape
+- Classical Clinical Risk Models: Early risk calculators combined simple
+clinical and CT features (age, smoking history, nodule size/morphology,
+etc.) to estimate malignancy. The Mayo Clinic model (Swensen et al.,
+1997) used 629 Mayo Clinic patients (23% malignant) and six features
+(e.g. age, spiculation, upper lobe) with an internal AUC ≈0.83[1]. The
+Veterans Affairs (VA) model (Gould et al., 2007) was derived from 375 VA
+patients (54% malignant) including heavier smoking metrics (pack-years,
+quitting time) and yielded AUC ≈0.79[2]. The Peking University People’s
+Hospital (PKUPH) model (Li et al., 2012) from 371 surgical cases in
+China (54% malignant) added family cancer history and nodule
+edge/calcification features (AUC ≈0.89)[2]. The Brock University
+(PanCan) model (McWilliams et al., 2013), built on 1,871
+screening-detected nodules in Canada (5.5% malignant), achieved very
+high discrimination (AUC ~0.94) in its low-risk cohort[3]. Herder et al.
+(2005) later extended the Mayo model by incorporating FDG-PET uptake,
+boosting AUC from ~0.83 to ~0.92 in a Dutch cohort[4][5]. While these
+calculators were often well-calibrated internally, their generalization
+was poor across different hospitals and populations. External
+validations have reported significant AUC drops: e.g. the Brock model
+fell from 0.96 (development) to ~0.77 in a Chinese clinic[6], Mayo from
+0.83 to ~0.61–0.77[7], VA from 0.79 to ~0.60–0.66[8], and Herder’s
+PET-enhanced score plummeted to ~0.56 in a TB-endemic Korean
+cohort[9][10]. These failures are attributed to shifts in nodule
+histology and prevalence (Western vs. Asian demographics, screening vs.
+clinical nodules), exclusion criteria mismatches (e.g. Mayo excludes
+recent cancer, VA assumes >7 mm nodules[11][12]), and single-center
+biases. In sum, classical scores are simple and interpretable but
+struggle to maintain accuracy across hospitals due to limited feature
+generality and outdated development cohorts[6][13]. Key limitations
+include their handcrafted feature set and lack of robustness to regional
+differences (e.g. higher granulomatous nodules in Asia causing false
+positives)[13][10].
+
+- Radiomics and Traditional ML Models: The 2010s saw a shift toward
+  quantitative CT features (“radiomics”) and machine learning
+  classifiers to predict nodule malignancy. Dozens of 2D/3D texture,
+  shape, and intensity metrics are extracted and fed into SVM, random
+  forest, or boosting models. For example, Hawkins et al. (2016) applied
+  a radiomics model to low-dose screening CTs, achieving about 80%
+  accuracy (AUC ≈0.83) in distinguishing malignant from benign
+  nodules[14]. Many radiomic studies reported promising internal AUCs in
+  the 0.75–0.90 range[14][15], and some small multi-center efforts
+  showed radiomics outperforming older scores. Perandini et al. (2016)
+  introduced a Bayesian-inspired model (“BIMC”) in 285 Italian patients
+  that slightly outperformed Mayo/PKUPH (AUC ~0.90 vs ~0.78)[15].
+  However, radiomics models tend to suffer performance degradation under
+  external validation. Subtle differences in CT scanners, slice
+  thickness, reconstruction kernels, and imaging protocols cause many
+  radiomic features to vary, undermining model stability. Studies have
+  found that even when internal AUCs exceed 0.8, applying the model to a
+  new institution can yield much lower AUCs (sometimes dropping by
+  0.1–0.2)[13][10]. Furthermore, radiomics models often require precise
+  nodule segmentation and are prone to overfitting on small datasets
+  (many published models were trained on <300 nodules). The lack of
+  standardized feature extraction and the high dimensionality (hundreds
+  of features) pose risks of “dataset-specific” signatures that do not
+  generalize. In summary, while radiomics added computational rigor
+  beyond eyeballed size and spiculation, its real-world impact has been
+  limited by inter-scanner variability and a paucity of truly
+  multi-center validations. Techniques like feature robustness analysis
+  and harmonization (e.g. feature standardization across scanners) are
+  being explored to mitigate these issues[15][16], but radiomics has not
+  yet delivered a universally reliable nodule risk model.
+
+- Deep Learning CAD Systems: Recent efforts have employed deep neural
+  networks – especially convolutional neural networks (CNNs) – to create
+  computer-aided diagnosis (CAD) tools for lung nodules. Early CNN
+  models on public datasets (LIDC-IDRI, which contains nodules labeled
+  by radiologists) demonstrated that automated malignancy predictions
+  can approach radiologist agreement levels. Causey et al. (2018)
+  developed “NoduleX,” a 3D CNN trained on >1,000 LIDC nodules, which
+  achieved an AUC of ~0.99 in reproducing radiologist-defined malignancy
+  ratings[17]. Similarly, CNN models trained on screening trials (NLST,
+  etc.) learned to both detect nodules and predict cancer risk. Notably,
+  Ardila et al. (Google AI, Nat. Medicine 2019) trained a 3D CNN on
+  ~42,000 CTs from NLST and achieved AUC ≈0.94 for 1-year lung cancer
+  prediction; when tested on an independent hospital’s CT set (1,139
+  cases), it obtained similar performance (~94% AUC)[18], outperforming
+  6 radiologists on some tasks. Despite such successes, most deep
+  learning models have been validated only on internal or single-origin
+  test sets. Many CNN-based nodule classifiers are trained on
+  homogeneous data (e.g. one scanner or one trial) and can implicitly
+  learn site-specific artifacts. For instance, a CNN might latch onto
+  image noise patterns or patient demographics present in the training
+  set but absent elsewhere. Indeed, some studies note that without
+  diverse training, CNN performance can drop sharply on external data –
+  echoing the domain shift seen in radiomics. Moreover, the majority of
+  deep nodule models use imaging only; they ignore patient risk factors
+  or clinical context. This “image-only” approach may limit
+  generalization, as real-world malignancy risk also depends on clinical
+  factors (smoking, age, etc.) that images alone cannot fully capture.
+  Commercial CAD systems (e.g. lung nodule detection software) similarly
+  face challenges in maintaining calibration across hospitals, often
+  requiring local re-tuning. Overall, deep learning has pushed the
+  envelope for automated nodule analysis (sometimes exceeding
+  radiologist performance in controlled settings[18]), but robust
+  cross-hospital deployment remains an open problem. Large-scale
+  multi-center datasets (e.g. federated learning consortia) and the
+  integration of non-imaging data are potential ways forward to make CAD
+  truly generalizable.
+
+- Structured/Tabular Models and Combined Approaches: Outside of pure
+  imaging, researchers have also explored machine learning using
+  structured tabular data (demographics, symptoms, blood tests) with or
+  without simple imaging metrics. Classical scores fall in this
+  category, but newer studies have applied modern ML algorithms to
+  tabular data. For example, the “TREAT” model (Thoracic Research
+  Evaluation and Treatment), initially developed on ~600 surgical
+  patients at Vanderbilt, incorporates clinical variables (e.g.
+  hemoptysis) and PET SUV when available[19][20]. It aimed to improve
+  upon Mayo/VA for patients already in a thoracic clinic. Some works
+  have built ensemble models that combine radiomics features with
+  clinical variables. Zhou et al. (2020) developed a combined model with
+  CT radiomics + patient info, reporting internal AUC >0.90 and better
+  generalization than radiomics alone[21][22]. Nonetheless, few tabular
+  models explicitly tackle the domain shift issue. Most are
+  single-center studies without external testing, or they validate on
+  similar-population cohorts. When simple clinical models are tested in
+  new settings, results have been mixed: e.g. one Chinese study found a
+  logistic model trained at a top hospital performed poorly in community
+  hospitals due to different nodule management practices[23][24]. A key
+  limitation for tabular approaches is that feature definitions and
+  availability can differ widely between hospitals – for instance, not
+  all sites record “family cancer history” or perform PET scans for
+  nodules. This heterogeneity complicates direct model transfer. As a
+  result, there is a gap in the literature on tabular domain adaptation:
+  i.e. methods to adapt a nodule risk model’s inputs and outputs to a
+  new hospital’s data. Such techniques are standard in other fields
+  (finance, etc.) but under-explored in medical AI for small structured
+  datasets.
+
+Cross-Hospital and Cross-Domain Learning in Medical AI
+- Impact of Domain Shift: It is now well-documented that AI models
+trained in one hospital can fail when deployed at another due to domain
+shift (differences in patient populations, equipment, workflows). In
+medical imaging, Zech et al. (2018) provided a striking example: a
+pneumonia-detection CNN trained on one hospital’s X-rays achieved high
+internal accuracy, but when tested on another hospital’s X-rays,
+performance dropped substantially (AUC fell from ~0.93 internally to
+~0.815 externally)[25]. In fact, simply knowing the hospital identity in
+that study could predict “pneumonia” due to prevalence and protocol
+differences (hospital label alone yielded AUC ~0.86)[26]. Many similar
+studies have shown inconsistent generalization – e.g. an algorithm for
+detecting hip fractures on X-ray needed re-training to work on a new
+scanner, a sepsis prediction model from one ICU lost accuracy in a
+different ICU, etc. Identified factors include demographic shifts
+(different age or racial distributions), equipment variability (imaging
+resolution, assay kits in labs), and clinical practice patterns (how
+diseases are defined or coded). In the lung nodule context, domain shift
+scenarios include: screening trial data vs. routine clinic data, or
+academic vs. regional hospitals. For instance, Asian hospitals often see
+more benign inflammatory nodules (TB granulomas), so a model from a
+Western cohort may over-predict malignancy in Asia[27][28]. Similarly, a
+model trained on low-dose screening CTs (where nodules are small and
+numerous) may not extrapolate to a referral center where nodules are
+larger and more likely cancer[29][30]. These shifts explain why many AI
+models touted in journals have not yet become widely adopted tools – the
+“generalizability crisis” in medical AI. Robust cross-hospital
+validation (testing a model on completely held-out hospitals) is now
+seen as a necessary step before clinical deployment. Encouragingly, a
+few large multi-center studies have emerged. For example, a federated
+learning study on COVID-19 CT scans (EXAM, Nat. Med. 2021) trained a
+model across 20 institutions and demonstrated improved generalization to
+new sites compared to single-center models. In summary, acknowledging
+and measuring domain shift is crucial: a model must be stress-tested on
+external data, and often its performance will degrade without
+mitigation. This motivates methods to proactively handle domain
+differences.
+
+- Domain Adaptation and Generalization Techniques: To address
+  distribution shifts, researchers have borrowed techniques from
+  transfer learning and domain adaptation. In medical imaging,
+  unsupervised domain adaptation (UDA) methods have shown success in
+  tasks like segmentation and classification. A common approach is
+  feature distribution alignment: models learn representations that are
+  invariant between source and target domains. For instance, adversarial
+  adaptation (e.g. the DANN framework) adds a domain discriminator to
+  encourage indistinguishable feature distributions – this was used by
+  Zhang et al. to adapt a deep EHR model for heart failure prediction
+  across hospitals, improving cross-site AUC by reducing
+  dataset-specific signals[31][32]. Other strategies include CORAL
+  (aligning covariance of features) and maximum mean discrepancy (MMD)
+  minimization[33][34], which have been applied to medical data to
+  adjust for scanner effects or temporal shifts[35][36]. Domain
+  generalization (DG) methods aim to train a model that inherently
+  generalizes to unseen domains, often by using multiple source domains.
+  For example, meta-learning schemes or invariant risk minimization
+  (IRM) have been tested on multi-hospital datasets to learn features
+  stable across environments[35][37]. In medical imaging, one DG
+  approach is to augment data to simulate different scanner properties
+  (for CT, altering noise or convolution kernels) so the model becomes
+  agnostic to those variations. Federated learning is another paradigm:
+  instead of adapting post-hoc, the model is trained simultaneously on
+  data from many institutions without sharing raw data. This has yielded
+  state-of-the-art generalization in some cases (e.g. brain tumor
+  segmentation, cardiac imaging). However, these methods are not
+  panaceas – their improvements in practice have been modest to
+  moderate, and they often require large, multi-center datasets for
+  training. In small-cohort settings (like a few hundred tabular cases
+  from each hospital), heavy adaptation algorithms can overfit or be
+  hard to deploy. Notably, most domain adaptation research in healthcare
+  has focused on images and signals; tabular clinical data adaptation is
+  relatively understudied. Recent work (e.g. Sci. Reports 2022 by Yin et
+  al.) evaluated DG/UDA algorithms on EHR outcomes across time and found
+  that while methods like GroupDRO, IRM, and adversarial training did
+  improve robustness over a naïve model, significant performance gaps
+  remained when facing a truly shifted population[26][25]. This
+  underscores that domain shift is a challenging problem, and in
+  contexts like ours – small nodule datasets with mixed feature
+  definitions – specialized adaptation solutions may be needed.
+
+Gap Analysis – Toward the PANDA Framework
+The evolution of pulmonary nodule malignancy prediction reveals an unmet
+need for approaches that combine clinical interpretability,
+cross-hospital robustness, and adaptability. Classical clinical scores
+(Mayo, VA, Brock, etc.) established the importance of easy-to-measure
+features and are still used in guidelines. Yet, their poor performance
+on “out-of-distribution” cases (e.g. a model from North America
+mispredicting in Asia[27][6]) highlights a limitation: they lack a
+mechanism to adjust to different prevalence or feature distributions.
+Radiomics and deep learning brought powerful image-based modeling,
+achieving high accuracies in controlled settings[17][18]. However, these
+methods often act as black boxes and tend to inherit the biases of their
+training data. A deep model trained at Hospital A can fail at Hospital B
+without careful domain adaptation, as numerous studies in medical AI
+have shown[26][25]. Moreover, most prior nodule studies either focus on
+imaging alone or on fixed tabular inputs; virtually none have exploited
+modern tabular learning paradigms or attempted explicit domain
+adaptation across hospitals for this task. This is the gap that PANDA
+(Predictive Analysis of Nodules via Domain Adaptation) aims to fill.
+
+PANDA’s Novel Approach: (i) Tabular Foundation Model: PANDA builds on a
+pre-trained tabular neural network (inspired by recent tabular
+transformers like TabPFN) to leverage prior knowledge and handle
+small-sample learning. This provides strong baseline performance even
+with limited cases, something traditional models struggle with. (ii)
+Cross-Domain Feature Selection: PANDA includes a feature stability
+analysis across hospitals – identifying which clinical or semantic
+features behave consistently. By selecting features with invariant
+meaning (e.g. “nodule size” is universally defined, whereas “PET uptake”
+might not be available everywhere), the model improves interpretability
+and reduces site-specific noise. (iii) Integrated Unsupervised Domain
+Adaptation: Uniquely, PANDA applies an unsupervised adaptation step
+(e.g. Transfer Component Analysis or adversarial alignment) using
+unlabelled target-domain data. This step learns transformations that
+minimize the shift between a source hospital’s feature distribution and
+a new hospital’s distribution, all without needing new labels[33][34].
+By doing so, PANDA explicitly compensates for inter-hospital differences
+(such as systematic CT density differences or patient demographic
+shifts) before making predictions. The result is a framework that learns
+from one hospital and successfully transfers to another, maintaining
+calibration and accuracy better than previous methods.
+
+In summary, prior work provided valuable models and tools, but none
+simultaneously addressed the trifecta of small data, multi-modal inputs,
+and domain shift. PANDA’s design is informed by these gaps: it seeks to
+marry the strengths of tabular models (transparency, use of clinical
+data) with techniques from domain adaptation research (to ensure
+cross-site generalization). By evaluating PANDA in a multi-center
+setting, this work contributes a novel solution to a pressing issue –
+enabling reliable pulmonary nodule risk prediction across hospitals and
+diverse patient populations, which is essential for real-world clinical
+deployment.
+
+Bullet-Point Summary of Related Work:
+
+- Clinical Risk Scores for Nodules: Developed in the 1990s–2010s, these
+  logistic models use patient and nodule characteristics. Examples: Mayo
+  Clinic (1997, US, n=629) – features: age, smoking, prior cancer,
+  nodule size, spiculation, upper lobe (AUC ~0.83 internal)[1]; Veterans
+  Affairs (2007, US VA hospitals, n=375) – more heavy-smoking cohort
+  (AUC ~0.79)[2]; PKUPH (2012, China, n=371 surgical cases) – added
+  family history, lobulation, etc. (AUC ~0.89)[2]; Brock PanCan (2013,
+  Canada screening, n=1871, 5.5% malignant) – high discrimination in
+  screening setting (AUC ~0.94)[3]. These models were internally
+  validated (often excellent calibration[38]) but show reduced accuracy
+  externally. Studies in Korea, China, and Europe found Mayo, VA, Brock
+  scores yield AUCs of only ~0.60–0.77 on new cohorts[13][39].
+  Non-Western and high-prevalence populations especially see poorer
+  calibration[40][6]. Limitations: single-center development, outdated
+  cohorts (e.g. Mayo excludes recent oncology patients[11]), and no
+  mechanism to adjust for demographic or practice differences, leading
+  to miscalibration across hospitals[7][10].
+
+- Radiomics & Traditional ML: Mid-2010s approaches extracted
+  quantitative CT features (texture, margin sharpness, volume, etc.) and
+  applied ML classifiers. Hawkins et al. (2016) showed radiomic analysis
+  on baseline LDCT could predict malignancy with ~80% accuracy (AUC
+  ≈0.83)[14]. Other single-center studies (n<300) reported AUCs
+  ~0.75–0.90 using SVMs or random forests on feature sets[14][15].
+  Radiomics was also used in multi-center validation: e.g. Perandini et
+  al. 2016 compared four models (Mayo, “Gurney”, PKUPH, BIMC) on 285
+  nodules – the radiomics-driven BIMC model achieved highest AUC
+  (~0.898) and zero false negatives[15][41]. Despite promise, radiomics
+  models often overfit to local imaging protocols. External tests reveal
+  performance drops (e.g. a radiomics classifier trained at one academic
+  center saw its AUC drop ~0.15 when applied to a different hospital’s
+  scans). Variations in scan parameters and lesion characteristics
+  hamper consistency. Common issues include unreproducible features
+  across different CT scanners and small sample sizes for training,
+  limiting robustness. Thus, radiomics has not yet yielded a universally
+  reliable, deployed nodule predictor.
+
+- Deep Learning CAD Systems: Recent end-to-end models use 3D CNNs on
+  nodule images or entire CTs. They achieve high accuracy on internal
+  data: Causey et al. (2018)’s CNN (“NoduleX”) on the LIDC dataset
+  matched expert radiologists (AUC ~0.99 on benign vs. malignant
+  labels)[17]. Ardila et al. (Google, 2019) trained a deep network
+  on >14,000 NLST patients (multi-institution screening CTs) and
+  attained AUC 0.94 for lung cancer prediction, with similar performance
+  (AUC ~94%) on an independent clinical set of 1,139 scans[18]. Several
+  MICCAI and Radiology works (2017–2021) likewise report CNNs exceeding
+  older models, especially in conjunction with large annotated datasets
+  (LUNA16 for detection, etc.). However, most deep learning studies
+  still evaluate on data drawn from the same distribution. When tested
+  on truly external cohorts, performance can degrade unless the model
+  has seen diverse training examples[26][25]. Additionally, these AI
+  algorithms predominantly use imaging alone – they often omit clinical
+  variables that could enhance generalization. Commercial CAD tools for
+  nodules (e.g. Lung-RADS automation software) also show mixed results
+  across centers, indicating that even high-performance CNNs need
+  adaptation or retraining per site. In summary, deep learning has
+  advanced state-of-the-art accuracy in nodule malignancy assessment,
+  but ensuring stable cross-hospital performance and maintaining
+  interpretability (especially if clinical factors are ignored) remain
+  challenges.
+
+- Tabular/Clinical Models & Multi-Modal Fusion: Beyond classical scores,
+  researchers have explored using richer clinical data and machine
+  learning. Some efforts combine CT findings with patient data in
+  ensemble models. For instance, Al-Ameri et al. (2015) validated four
+  risk models in a UK cohort (n≈300) and found all had similar moderate
+  AUC ~0.79, suggesting no single model was clearly superior in that
+  setting[42][43]. The TREAT model (2013) integrated symptoms (e.g.
+  cough, hemoptysis), smoking, and PET results for 492 surgically
+  evaluated nodules (AUC ~0.79 internally)[19][20], aiming to guide
+  surgeons; an updated TREAT2.0 (2020) included longitudinal nodule
+  changes. Other studies (2018–2022) have used gradient boosting or
+  neural networks on tabular data: e.g. one Chinese group applied an
+  XGBoost model with eight clinical/CT features and reported AUC ~0.85
+  internally but noted performance dropped to ~0.70 in an external test
+  due to differences in feature distribution. Overall, explicit
+  cross-domain analysis is rare in these works – they typically assume
+  the same set of features with identical definitions is available at
+  new sites, which is often not true in practice. No prior study has
+  combined the idea of a pre-trained “foundation” model for tabular data
+  with formal domain adaptation techniques for nodule risk prediction.
+  This is precisely the gap our PANDA framework addresses, by leveraging
+  a powerful tabular model trained on diverse data and layering on an
+  adaptation module (e.g. TCA-based feature alignment) to maintain
+  performance across hospitals.
+
+Representative Pulmonary Nodule Malignancy Studies (2010–2025):
+
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  Year (First Author)      Modality         Data Type     Cohort (Centers, N)   Validation          AUC (Internal →       Cross-Hospital
+                                                                                                    External)             Limitations
+  ------------------------ ---------------- ------------- --------------------- ------------------- --------------------- ------------------
+  1997 (Swensen)[1]        Clinical risk    CT + clinical Mayo Clinic (USA),    Internal            0.833 internal[1];    Overfit to Mayo
+                           score            (age, etc.)   n=629 (single-center) (bootstrap)         external:             population; lower
+                                                                                                    ~0.61–0.77[44]        accuracy in
+                                                                                                    (various)             external Western &
+                                                                                                                          Asian cohorts[44].
+                                                                                                                          No recent-cancer
+                                                                                                                          or PET factors.
+
+  2007 (Gould)[2]          Clinical risk    CT + clinical VA hospitals (USA),   Internal            0.79 internal[2];     Developed on
+                           score            (VA pts)      n=375 (multi-VA)      (derivation)        external:             high-risk
+                                                                                                    ~0.60–0.66[39][8]     veterans. Not
+                                                                                                                          valid for <7mm
+                                                                                                                          nodules[12];
+                                                                                                                          performance
+                                                                                                                          dropped in
+                                                                                                                          community cases.
+
+  2005 (Herder)[4]         Clinical + PET   CT +          VU Amsterdam (NLD),   External validation Mayo alone 0.79;      Small sample;
+                           score            clinical +    n=106 (single-center) of Mayo             w/ PET 0.92[4];       relies on PET
+                                            PET                                                     external (Asia):      availability. In
+                                                                                                    0.56[45][10]          TB-endemic
+                                                                                                                          settings, PET adds
+                                                                                                                          false positives
+                                                                                                                          (no benefit in
+                                                                                                                          Korea[9]).
+
+  2013 (McWilliams)[46]    Brock (PanCan)   LDCT +        Pan-Canadian study,   Internal + ext.     0.938 dev.[47];       Derived from
+                           score            clinical      n=1871; validated on  (BCCA, DLCST)       external: 0.80        screening (5%
+                                            (screen)      BCCA (Canada)                             (Danish)[48][49];     malignancy);
+                                                                                                    0.68 (Korea)[50]      overestimates risk
+                                                                                                                          in clinical
+                                                                                                                          cohorts with
+                                                                                                                          larger
+                                                                                                                          nodules[29]. Not
+                                                                                                                          designed for
+                                                                                                                          never-smokers.
+
+  2012 (Li/Wang)[51]       PKUPH score      CT + clinical PKU People’s Hosp.    Internal            0.888 internal[52];   Built for Chinese
+                                            (surgery)     (China), n=371        (derivation)        external: ~0.63       surgical
+                                                          (single-center)                           (multi-center Chinese candidates;
+                                                                                                    test)[53][54]         excludes recent
+                                                                                                                          cancer[12]. Did
+                                                                                                                          not undergo
+                                                                                                                          extensive Western
+                                                                                                                          validation.
+
+  2016 (Perandini)[15]     BIMC (Bayesian   CT            Verona (Italy), n=285 Internal;           0.898 internal[15];   Custom model with
+                           CAD)             radiomics +   (single-center)       multi-center DCA    external: 0.82        Bayesian analysis.
+                                            clinical                                                (external 180         Improved false
+                                                                                                    nodules)[55]          negatives = 0[41],
+                                                                                                                          but tested only on
+                                                                                                                          similar Italian
+                                                                                                                          centers.
+
+  2015 (Al-Ameri)[56]      Validation study (Various      Leeds/Bradford (UK),  External validation Mayo 0.73, Brock      All models
+                                            models)       n=244 (single-center) (4 models)          0.81, VA 0.80, Herder performed
+                                                                                                    0.82 (approx. in this similarly; showed
+                                                                                                    UK cohort)[42]        none is perfectly
+                                                                                                                          calibrated in UK
+                                                                                                                          patients (many
+                                                                                                                          false-positives in
+                                                                                                                          benign cases).
+
+  2018 (Yang B.)[9][50]    Model comparison CT + clinical Samsung MC (Korea),   External validation Mayo 0.615, VA 0.604, First study in a
+                                            ± PET         n=242 (single-center) (vs. TB)            Brock 0.682, Herder   TB-endemic area:
+                                                                                                    0.557[9][44] (all     high PET
+                                                                                                    much lower than       false-positives
+                                                                                                    original)             and many benign
+                                                                                                                          granulomas caused
+                                                                                                                          all models to
+                                                                                                                          misfire[45][10].
+
+  2016 (Hawkins)[14]       Radiomics (RF)   LDCT          NLST screening subset Internal            ~0.83 AUC             Showed feasibility
+                                            radiomics     (USA), n~200–300      (cross-val)         (internal)[14];       of radiomics for
+                                            (baseline)                                              external: not         screening nodules.
+                                                                                                    reported (likely      Lacked external
+                                                                                                    lower)                test; model may be
+                                                                                                                          specific to NLST
+                                                                                                                          imaging protocol.
+
+  2018 (Causey)[17]        CNN (NoduleX)    CT 3D patches LIDC-IDRI             Internal (5-fold    0.99 (vs. radiologist Near-human
+                                            (LIDC)        (multi-institution,   CV)                 ground truth)[17];    performance in lab
+                                                          USA), n~1,018                             external: N/A (no     setting. Trained
+                                                                                                    pathology labels)     on radiologist
+                                                                                                                          labels
+                                                                                                                          (subjective); not
+                                                                                                                          validated on real
+                                                                                                                          clinical outcomes
+                                                                                                                          or new
+                                                                                                                          populations.
+
+  2019 (Ardila)[18]        3D CNN (Google)  Full CT       NLST (USA,            Internal: NLST test 0.944 AUC (NLST)[18]; Trained on huge
+                                            (LDCT) +      multi-center)         set; External:      external ~0.94[18]    dataset with
+                                            prior CT      n=14,851; tested on   1,139 ind. cases    (no drop; on par with diverse scanners –
+                                                          Northwestern & others                     radiologists)         achieved robust
+                                                                                                                          transfer. Still
+                                                                                                                          limited to
+                                                                                                                          screening context;
+                                                                                                                          performance in
+                                                                                                                          non-screening
+                                                                                                                          setting TBD.
+
+  2020 (Gonzalez           Multi-model eval LDCT risk     German LCS Trial      External validation PanCan AUC 0.94–0.96; Showed PanCan
+  Maldonado)[57][58]                        models        (DE), n=1,159,        (NLST models on     Mayo 0.89, PKUPH 0.87 models best
+                                            (PanCan vs    nodules=3,903         German data)        on prevalence         discriminative
+                                            others)                                                 round[59][60]; all    ability in
+                                                                                                    models poorly         screening
+                                                                                                    calibrated (HL test   context[58].
+                                                                                                    p<0.001)[61][62]      Traditional models
+                                                                                                                          (Mayo, PKUPH)
+                                                                                                                          under-predicted
+                                                                                                                          risk in
+                                                                                                                          low-prevalence
+                                                                                                                          screening data
+                                                                                                                          (calibration
+                                                                                                                          off)[61].
+
+  2021                     CNN              CXR pneumonia NIH, Mount Sinai, IU  Multi-center        Internal AUC up to    First to quantify
+  (Zech/Oermann)[26][25]   generalization   AI (3         (USA), n=158,323 CXR  train/test swaps    0.93; cross-hospital  cross-site drop:
+                                            hospitals)    total                                     AUC as low as         model trained on
+                                                                                                    0.75–0.81[25].        one hospital
+                                                                                                    Hospital label alone  failed on another
+                                                                                                    AUC 0.86[26].         (p<0.001)[26].
+                                                                                                                          Highlighted
+                                                                                                                          spurious learning
+                                                                                                                          of site-specific
+                                                                                                                          features – a
+                                                                                                                          cautionary tale
+                                                                                                                          for all medical
+                                                                                                                          AI.
+
+  2022 (Zhang T.)[31][32]  AdaDiag (UDA on  Tabular EHR   MIMIC-IV vs UCLA      Cross-institution   Baseline AUROC drop   Demonstrated
+                           EHR)             sequences (HF (USA), n≈ 50k vs 15k  (train on one, test ~5–10 points without  adversarial domain
+                                            risk)         patients              on other)           adaptation; AdaDiag   adaptation (w/
+                                                                                                    improved transfer by  Transformer
+                                                                                                    ~3–5 points           features) can
+                                                                                                    (relative)[31][32].   recover some
+                                                                                                                          performance across
+                                                                                                                          hospital EHR
+                                                                                                                          datasets. Relevant
+                                                                                                                          to tabular nodule
+                                                                                                                          risk (though task
+                                                                                                                          was different).
+
+  2023 (Xie Y.)[63][64]    New model +      CT + clinical Multi-center China:   External validation New model AUC 0.740;  Even after
+                           external         (5–15 mm      train n=317 (Fuzhou), (prospective)       Mayo 0.689, VA 0.670, updating model for
+                                            nodules)      test n=100 (Xiamen)                       PKUPH 0.705, Brock    5–15 mm nodules,
+                                                                                                    0.667 (on external    AUC <0.75
+                                                                                                    test)[65][63].        externally.
+                                                                                                                          Traditional models
+                                                                                                                          all <0.71. Shows
+                                                                                                                          difficulty of
+                                                                                                                          small-nodule risk
+                                                                                                                          prediction and
+                                                                                                                          need for
+                                                                                                                          domain-specific
+                                                                                                                          tuning.
+  ------------------------------------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+[1] [2] [3] [11] [12] [16] [23] [24] [38] [46] [47] [52] [53] [54]
+Evaluation of models for predicting the probability of malignancy in
+patients with pulmonary nodules - PMC
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC7048676/
+
+[4] Clinical prediction model to characterize pulmonary nodules:
+validation and added value of 18F-fluorodeoxyglucose positron emission
+tomography - PubMed
+
+https://pubmed.ncbi.nlm.nih.gov/16236914/
+
+[5] Risk of malignancy in pulmonary nodules: A validation study of four
+...
+
+https://www.sciencedirect.com/science/article/abs/pii/S0169500215001701
+
+[6] [27] [28] [29] [30] [39] [40] [42] [43] [48] [49] Comparison of
+Veterans Affairs, Mayo, Brock classification models and radiologist
+diagnosis for classifying the malignancy of pulmonary nodules in Chinese
+clinical population - Cui - Translational Lung Cancer Research
+
+https://tlcr.amegroups.org/article/view/32487/html
+
+[7] [8] [9] [10] [13] [44] [45] [50] [56] Comparison of four models
+predicting the malignancy of pulmonary nodules: A single-center study of
+Korean adults | PLOS One
+
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0201242
+
+[14] Radiomics in Pulmonary Lesion Imaging | AJR
+
+https://ajronline.org/doi/10.2214/AJR.18.20623
+
+[15] [41] Solid pulmonary nodule risk assessment and decision analysis:
+comparison of four prediction models in 285 cases - PubMed
+
+https://pubmed.ncbi.nlm.nih.gov/26645862/
+
+[17] Highly accurate model for prediction of lung nodule malignancy with
+CT scans | Scientific Reports
+
+https://www.nature.com/articles/s41598-018-27569-w?error=cookies_not_supported&code=f46f2cc8-4d4c-41ae-9eb0-f8362f9727f9
+
+[18] End-to-end lung cancer screening with three-dimensional deep
+learning on low-dose chest computed tomography - PubMed
+
+https://pubmed.ncbi.nlm.nih.gov/31110349/
+
+[19] [20] LCD - MolDX: Molecular Biomarkers for Risk Stratification of
+... - CMS
+
+https://www.cms.gov/medicare-coverage-database/view/lcd.aspx?lcdId=39658&ver=4
+
+[21] Combined model integrating deep learning, radiomics, and clinical
+...
+
+https://link.springer.com/article/10.1007/s11547-023-01730-6
+
+[22] Predicting Lung Nodule Malignancies by Combining Deep ...
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC7106773/
+
+[25] [26] Variable generalization performance of a deep learning model
+to detect pneumonia in chest radiographs: A cross-sectional study | PLOS
+Medicine
+
+https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1002683
+
+[31] [32] AdaDiag: Adversarial Domain Adaptation of Diagnostic
+Prediction with Clinical Event Sequences - PubMed
+
+https://pubmed.ncbi.nlm.nih.gov/35987449/
+
+[33] [34] [35] [36] [37] Evaluation of domain generalization and
+adaptation on improving model robustness to temporal dataset shift in
+clinical medicine | Scientific Reports
+
+https://www.nature.com/articles/s41598-022-06484-1?error=cookies_not_supported&code=cb985825-cbf4-46fa-88d3-1869620e6625
+
+[51] Predicting Lung Cancer Risk of Incidental Solid and Subsolid ...
+
+https://www.oncologynurseadvisor.com/features/predicting-lung-cancer-risk-of-incidental-solid-and-subsolid-pulmonary-nodules-in-different-sizes/4/
+
+[55] Multicenter external validation of two malignancy risk prediction
+...
+
+https://pubmed.ncbi.nlm.nih.gov/27631108/
+
+[57] [58] [59] [60] [61] [62] Evaluation of Prediction Models for
+Identifying Malignancy in Pulmonary Nodules Detected via Low-Dose
+Computed Tomography | Oncology | JAMA Network Open | JAMA Network
+
+https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2760895
+
+[63] [64] Construction of a risk prediction model for isolated pulmonary
+nodules 5–15 mm in diameter - Xie - Translational Lung Cancer Research
+
+https://tlcr.amegroups.org/article/view/92879/html
+
+[65] Models to Estimate the Probability of Malignancy in Patients with
+...
+
+https://www.atsjournals.org/doi/10.1513/AnnalsATS.201803-173CME

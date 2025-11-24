@@ -1,0 +1,33 @@
+function Div(el)
+  -- Identify Divs created by Pandoc for LaTeX tables with \label{tab:xxx}
+  if el.identifier:match("^tab:") and #el.content == 1 and el.content[1].t == "Table" then
+    local tbl = el.content[1]
+    -- Rename tab: to tbl: for pandoc-crossref compatibility
+    -- and move the identifier from the wrapper Div to the Table itself
+    tbl.identifier = el.identifier:gsub("^tab:", "tbl:")
+    return tbl
+  end
+end
+
+function Cite(el)
+  -- Update citation IDs in text (e.g. [@tab:foo])
+  for _, citation in ipairs(el.citations) do
+    if citation.citationId and citation.citationId:match("^tab:") then
+      citation.citationId = citation.citationId:gsub("^tab:", "tbl:")
+    end
+  end
+  return el
+end
+
+function Link(el)
+  -- Update internal links (e.g. \ref{tab:foo} -> Link)
+  if el.attributes and el.attributes['reference'] and el.attributes['reference']:match("^tab:") then
+    el.attributes['reference'] = el.attributes['reference']:gsub("^tab:", "tbl:")
+  end
+  
+  -- Update target anchors (e.g. #tab:foo)
+  if el.target:match("^#tab:") then
+      el.target = el.target:gsub("^#tab:", "#tbl:")
+  end
+  return el
+end

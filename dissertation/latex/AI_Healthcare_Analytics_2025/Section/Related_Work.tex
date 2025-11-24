@@ -1,0 +1,50 @@
+\section{Related Work}
+\label{sec:related-work}
+
+\subsection{Tabular foundation models}
+
+Tabular foundation models have shifted small-sample learning by pairing large-scale pre-training with meta-learning. Gradient-boosted trees remain strong baselines for heterogeneous clinical data but need ample examples and often overfit small cohorts~\cite{chen2016xgboost,borisov2022deep}. Attention-based designs—TabNet, TabTransformer, SAINT, FT-Transformer—brought competitive performance with interpretability or streamlined architectures~\cite{arik2021tabnet,huang2020tabtransformer,somepalli2021saint,gorishniy2021revisiting}.
+
+Pre-trained tabular foundation models take the next step by training on millions of synthetic tasks to work with minimal real examples. TabPFN is a good example: its meta-trained Transformer can make a full prediction in a single forward pass, often matching the accuracy of tuned ensembles that typically take hours to run~\cite{hollmann2025accurate,hollmann_accurate_2025}. This speed—and the way it handles tiny datasets—is well suited to clinical settings where data are rarely abundant. Still, the model implicitly counts on reasonably stable feature distributions, which real hospitals don’t always provide.
+
+\subsection{Domain adaptation in medical AI}
+
+Domain adaptation has tried to bridge these distribution gaps, especially in medical imaging, where scanners, protocols, and patient mixes routinely differ from one institution to another. Alignment strategies—adversarial discriminators, CORAL, maximum mean discrepancy minimization—and domain generalization methods like meta-learning and invariant risk minimization have shown gains~\cite{zhang_adadiag_2022,sun2016correlationalignmentunsuperviseddomain,guo_evaluation_2022}.
+
+Even so, evaluations show that methods such as GroupDRO, IRM, and adversarial training still leave gaps on truly shifted populations~\cite{guo_evaluation_2022}. The focus on imaging leaves structured clinical data underexplored; feature heterogeneity and missingness pose different challenges than those in images~\cite{guan2021domain}. Tabular deployment thus inherits the hard parts of adaptation without many tailored tools.
+
+\subsection{Pulmonary nodule risk prediction and cross-hospital generalization}
+
+Pulmonary nodule malignancy prediction makes the cross-hospital problem concrete. Clinical risk models (Mayo Clinic, Veterans Affairs, Brock University) perform well in development cohorts (AUC 0.83–0.94) but drop sharply on external validation (AUC 0.60–0.77)~\cite{swensen1997chest,gould2007clinical,mcwilliams2013probability,cui_comparison_2019,li_evaluation_2020}. Radiomics and deep learning show similar declines, often losing 0.1–0.2 AUC when moved across institutions because of scanner variation and demographic shifts~\cite{hassani_radiomics_2019,causey_highly_2018}.
+
+Cross-hospital variability stems from demographic differences, equipment heterogeneity, and practice patterns that change coding and disease definitions~\cite{koch2024distribution,musa2025addressing,zech_variable_2018}. Feature heterogeneity adds inconsistent documentation and missing data patterns~\cite{zhou2025representationlearningadvancemultiinstitutional}. No single approach currently handles small sample sizes, feature heterogeneity, and distribution shift together for pulmonary nodules, leaving a gap for integrating pre-trained tabular models with feature selection and unsupervised adaptation.
+
+\subsection{Theoretical Foundation}
+
+Our approach leans on three theoretical ideas that motivate joining foundation models with domain adaptation; they hold under specific assumptions and should be read with that caveat.
+
+The smooth representation benefit notes that foundation model representations can contract domain discrepancies. Let $\Phi_{\mathrm{FM}} : \mathcal{X} \to \mathcal{Z}$ be $L$-Lipschitz. Let $P_s, P_t$ be source and target distributions on $\mathcal{X}$ and $P_{\Phi,s}, P_{\Phi,t}$ their pushforwards on $\mathcal{Z}$. For an RKHS $\mathcal{H}$ with a Lipschitz-bounded feature map, the induced MMD admits the bound
+\[
+d_{\mathcal{H}}(P_{\Phi,s}, P_{\Phi,t}) \;\le\; L \cdot d_{\mathcal{H}}(P_s, P_t),
+\]
+where $d_{\mathcal{H}}$ denotes maximum mean discrepancy. Under suitable kernel assumptions, smoother representations may contract domain discrepancies.
+
+Feature selection and domain adaptation interact. Let $\mathcal{F}^\star$ be the subset of shared features minimizing cross-domain variance, i.e.
+\[
+\mathcal{F}^\star = \arg\min_{\mathcal{F}' \subseteq \mathcal{F}} \operatorname{Var}_{\text{domain}}(x_{\mathcal{F}'}),
+\]
+where $\operatorname{Var}_{\text{domain}}(\cdot)$ denotes the pooled covariance across source and target domains. Assuming the TCA operator $A_{\mathrm{TCA}}$ is linear with bounded operator norm and letting $\Sigma_{\mathcal{F}}, \Sigma_{\mathcal{F}^\star}$ denote the corresponding covariance matrices in the encoded space, we have
+\[
+\operatorname{Var}\!\big(A_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(x_{\mathcal{F}^\star}))\big)
+= \operatorname{tr}\!\big(A_{\mathrm{TCA}} \Sigma_{\mathcal{F}^\star} A_{\mathrm{TCA}}^\top\big)
+\;\le\;
+\operatorname{tr}\!\big(A_{\mathrm{TCA}} \Sigma_{\mathcal{F}} A_{\mathrm{TCA}}^\top\big)
+= \operatorname{Var}\!\big(A_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(x_{\mathcal{F}}))\big),
+\]
+which indicates that selecting low-variance features can reduce alignment complexity.
+
+Finally, sample complexity reduction motivates the use of pre-training. Standard generalization bounds for classification in a hypothesis class of effective dimension $d_{\mathrm{eff}}$ yield
+\[
+n_{\mathrm{eff}} = O\!\left(\frac{d_{\mathrm{eff}}}{\varepsilon^2}\right).
+\]
+Mapping inputs into a pretrained representation $\Phi_{\mathrm{FM}}$ shapes a lower-dimensional, more structured hypothesis space than the raw $d'$-dimensional space, effectively reducing $d_{\mathrm{eff}}$ to roughly $\sqrt{d'}$ in our setting. The sample size then scales as $O(\sqrt{d'}/\varepsilon^2)$ instead of $O(d'/\varepsilon^2)$, reflecting transferred sample efficiency~\cite{bommasani2021opportunities,hollmann2025accurate}.

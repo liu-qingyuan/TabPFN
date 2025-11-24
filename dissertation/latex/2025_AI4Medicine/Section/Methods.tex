@@ -1,0 +1,636 @@
+\section{Methods}
+
+\subsection{Ethics statement and Data Collection}
+This study was approved by the Institutional Review Boards of Sun Yat-sen University Cancer Center (Guangzhou, China) and Henan Tumor Hospital (Zhengzhou, China), and conducted in accordance with the ethical principles of the Declaration of Helsinki. All patient data used in this study were retrospectively collected from electronic medical records and fully de-identified prior to analysis. Written informed consent for research use of clinical data was obtained from all patients diagnosed with solitary pulmonary nodules (SPNs) at the time of hospital admission. No identifiable personal information was retained.
+
+The training cohort (Cohort A, $n=295$) was derived from Sun Yat-sen University Cancer Center (Guangzhou, China) between January 2011 and December 2016. The external test cohort (Cohort B, $n=190$) was collected at Henan Tumor Hospital (Zhengzhou, China) from January 2013 to xxxxxx. All patients provided written informed consent for the use of clinical data in scientific research at the time of hospital admission.
+
+Inclusion criteria were as follows: (1) presence of a solitary pulmonary nodule with diameter $\leq 3$ cm identified by chest computed tomography (CT); (2) no evidence of extrapulmonary malignancy; (3) histopathological diagnosis confirmed by surgical resection, CT-guided transthoracic needle biopsy, or bronchoscopy; (4) complete electronic medical records, including clinical, laboratory, and imaging data collected within 7 days prior to anti-tumor treatment. Patients were excluded if they had prior thoracic malignancies, incomplete records, or other comorbidities interfering with diagnostic interpretation.
+
+The collected variables included patient demographics (age, sex, height, weight, body mass index), smoking history, family history of cancer, and symptoms (e.g., fever, cough, hemoptysis, chest pain). Radiologic features of SPNs were recorded, including anatomical location (lung side and lobe), nodule diameter and area, presence of calcification, cavity, spiculation, pleural thickening, and adhesion. Laboratory tests encompassed hematologic and biochemical indices such as white blood cell count (WBC), neutrophil-to-lymphocyte ratio (NLR), platelet-to-lymphocyte ratio (PLR), albumin/globulin ratio (AGR), liver and renal function markers, and tumor biomarkers including CEA, Cyfra21-1, and NSE.
+
+To facilitate reproducibility and verification, all key raw data used in this study have been deposited on the Research Data Deposit public platform (www.researchdata.org.cn) under approval number xxxxxx.
+
+
+\subsection{Overview of the PANDA Framework}
+
+Cross-institutional deployment of medical AI systems faces three critical challenges that significantly impede clinical adoption: (1) \textit{limited sample sizes} due to the inherent rarity of medical conditions and privacy constraints that restrict data sharing across institutions, (2) \textit{distributional heterogeneity} arising from systematic differences in patient populations, clinical protocols, and measurement equipment across hospitals, and (3) \textit{domain shift} where models trained at one institution often exhibit degraded performance when deployed at different clinical sites due to varying data collection practices and patient demographics. Traditional machine learning approaches struggle with these constraints, particularly in medical screening applications where high sensitivity is paramount and false negatives carry severe clinical consequences.
+
+The PANDA framework addresses these fundamental challenges through a principled integration of pre-trained foundation models and unsupervised domain adaptation, specifically designed for cross-institutional medical AI deployment. As illustrated in Figure~\ref{fig:model_details}a, PANDA operates through a three-stage pipeline: pre-training on synthetic datasets to establish generalizable tabular reasoning capabilities, training with feature selection and model adaptation to optimize performance on limited medical data, and prediction with unsupervised domain adaptation to maintain robust performance across institutional boundaries.
+
+This end-to-end design enables robust cross-institutional generalization by combining the representational power of foundation models with principled domain adaptation. The framework is particularly suited for medical applications where training data is scarce, class distributions are imbalanced, and deployment across different clinical sites is required.
+
+\paragraph{Implementation Overview.} The PANDA framework implementation encompasses three interconnected stages that build upon each other to achieve robust cross-institutional medical AI deployment.
+
+\textbf{Stage 1 (Pre-train)} establishes the foundational capabilities through extensive pre-training on synthetic tabular datasets, as depicted in the lower section of Figure~\ref{fig:model_details}a. The synthetic task generator creates diverse classification problems with varying statistical patterns, feature types, and data distributions, feeding synthetic datasets to train the Pre-trained Tabular Foundation Model that acquires generalizable tabular reasoning capabilities without requiring massive medical datasets.
+
+\textbf{Stage 2 (Train)} involves the medical-specific adaptation illustrated in Figure~\ref{fig:model_details}a. The feature selection process (shown on the left) identifies the most discriminative clinical variables, producing the Development Cohort (Cohort A) with Features + Label. This cohort then undergoes the sophisticated data preprocessing pipeline detailed in Figure~\ref{fig:model_details}b, which includes four parallel branches with feature order rotation, distribution transformations, and categorical encoding strategies, ultimately feeding into the Pre-trained Tabular Foundation Model.
+
+\textbf{Stage 3 (Predict)} addresses the cross-institutional deployment challenge through unsupervised domain adaptation, as shown in Figure~\ref{fig:model_details}a. The UDA process transforms target domain data into the Adapted Cohort (Cohort B' without label), which then follows the identical processing pathway as the training data: through the data preprocessing pipeline (Figure~\ref{fig:model_details}b) and the Pre-trained Tabular Foundation Model, ultimately generating Output Predicted Class Probabilities. This three-stage architecture systematically addresses the challenges of data scarcity, feature discriminativeness, and domain shift inherent in cross-institutional medical AI deployment.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{Pre-trained Tabular Foundation Mode Pipeline_new.pdf}
+    \caption{\textbf{The PANDA framework architecture.}
+    (a) Detailed architecture of the pre-trained tabular foundation model showing the complete pipeline from original tabular data through ensemble training, prediction aggregation, class imbalance adjustment, to final classification output.
+    (b) Detailed data preprocessing pipeline showing four parallel branches for ensemble diversity. Each branch applies feature order rotation followed by different combinations of distribution transformation (no transformation or quantile transformation) and categorical feature handling (treating as numeric or ordinal encoding). Each branch generates 16 parallel inferences, and all branches are combined through ensemble aggregation to produce the final prediction.}
+    \label{fig:model_details}
+\end{figure}
+
+\subsection{Data Preprocessing}
+
+Medical AI systems frequently fail when deployed across different hospitals due to subtle but systematic data preprocessing inconsistencies that are often overlooked in single-institution studies. Unlike standardized imaging or genomic data, tabular clinical data exhibits profound institutional variations in feature ordering (demographics-first versus lab-values-first organization), measurement protocols (different equipment calibrations and units), and categorical encoding schemes (institution-specific staging systems and risk classifications). These seemingly minor preprocessing differences can cause substantial performance degradation, with models trained at one institution showing accuracy drops of 10-20\% when deployed elsewhere, severely limiting the real-world impact of medical AI innovations.
+
+Cross-institutional medical datasets present unique preprocessing challenges that demand principled solutions rather than ad-hoc standardization approaches. Traditional preprocessing methods that impose uniform transformations across institutions risk suppressing important clinical variations or introducing systematic biases that favor specific data distributions. The PANDA framework addresses these challenges through a sophisticated preprocessing pipeline designed to maximize ensemble diversity while preserving clinical interpretability and cross-institutional robustness.
+
+The preprocessing strategy tackles three fundamental issues in medical tabular data that are particularly critical for cross-institutional deployment: positional bias from arbitrary feature ordering, distributional heterogeneity across institutions, and inconsistent categorical variable representations. These three issues were prioritized based on empirical analysis of multi-institutional medical datasets, which revealed that (1) Transformer-based models exhibit sensitivity to feature ordering despite theoretical position invariance, (2) clinical measurement protocols and equipment calibrations vary significantly across hospitals, leading to systematic distributional shifts, and (3) categorical medical variables (e.g., staging systems, risk classifications) often employ institution-specific encoding schemes that compromise model transferability.
+
+Rather than applying uniform transformations that may inadvertently suppress important institutional variations or introduce systematic biases favoring specific data distributions, PANDA employs a diversified preprocessing approach that generates multiple complementary data representations. This strategy allows the model to learn robust patterns across different data perspectives while preserving the natural variability that reflects real-world clinical heterogeneity.
+
+This multi-faceted preprocessing pipeline integrates three synergistic components that work collectively to enhance cross-domain robustness. Each component addresses specific aspects of data heterogeneity while contributing to overall ensemble diversity, enabling the model to learn from different perspectives of the same clinical information without losing essential medical semantics.
+
+\subsubsection{Feature Rotation}
+
+Clinical datasets often exhibit arbitrary feature ordering that can introduce systematic biases in Transformer-based models, despite their theoretical position invariance. Different medical institutions may organize clinical variables in varying sequences (e.g., demographics first vs. laboratory values first), creating subtle but persistent ordering patterns that models may inadvertently exploit. This rotation mechanism serves two critical purposes: (1) it eliminates systematic biases that could arise from arbitrary feature ordering in clinical datasets, and (2) it forces the Transformer encoder to learn position-invariant representations, enhancing robustness to feature arrangement variations across different clinical institutions.
+
+To address this challenge, feature rotation introduces positional diversity across ensemble members to counteract ordering biases inherent in the Transformer architecture. Each ensemble member applies a cyclical permutation to input features before processing:
+
+\[
+\mathbf{x}^{(k)}_{\text{rotated}} = \text{rotate}(\mathbf{x}, k) = [x_{(k) \bmod d}, x_{(k+1) \bmod d}, \ldots, x_{(k+d-1) \bmod d}]
+\]
+
+\noindent
+where $k \in [0, K_{\max})$ represents the rotation offset specific to ensemble member $k$, and $d$ is the feature dimensionality. The rotation offset is generated using a deterministic sequence starting from a random seed:
+
+\[
+k_i = (\text{start} + i) \bmod K_{\max}, \quad i = 0, 1, \ldots, N-1
+\]
+
+\noindent
+where $\text{start} \sim \text{Uniform}(0, K_{\max})$ and $N=64$ ensemble members. To ensure diversity, rotation offsets are sampled without replacement to guarantee unique permutations across ensemble members. The rotation ensures consistent and reproducible feature permutations during both training and inference phases.
+
+\subsubsection{Adaptive Feature Transformation}
+
+Medical institutions employ diverse measurement protocols, equipment calibrations, and laboratory standards that result in systematic distributional differences across sites. For instance, blood biomarker values may exhibit institution-specific ranges due to different assay methods, while imaging measurements can vary based on scanner manufacturers and acquisition protocols. These distributional heterogeneities pose significant challenges for cross-institutional model deployment, as models trained on one institution's data distribution may perform poorly when applied to data from institutions with different measurement characteristics.
+
+To address this challenge, the preprocessing pipeline employs a dual-strategy approach to balance distribution normalization with feature preservation, addressing the heterogeneous nature of clinical data. Two complementary transformation strategies are implemented:
+
+\noindent
+\textbf{Enhanced Feature Transformation:} Applies quantile transformation followed by dimensionality expansion:
+
+\[
+\mathbf{x}_{\text{quantile}} = \text{QuantileTransformer}(\mathbf{x}, n_{\text{quantiles}} = \max(\lfloor n_{\text{samples}}/10 \rfloor, 2))
+\]
+
+\noindent
+where the quantile transformer maps each feature to a uniform distribution $U(0,1)$ using empirical quantiles. Following quantile transformation, SVD-based dimensionality expansion is applied:
+
+\[
+\mathbf{X}_{\text{expanded}} = \text{SVD}(\mathbf{X}_{\text{quantile}}, n_{\text{components}} = \min(4, d))
+\]
+
+\noindent
+The final feature representation concatenates original and transformed features:
+
+\[
+\mathbf{x}_{\text{final}} = [\mathbf{x}_{\text{original}}; \mathbf{x}_{\text{quantile}}; \mathbf{x}_{\text{SVD}}]
+\]
+
+\noindent
+This increases dimensionality from 7 to 18 features (7 original + 7 quantile + 4 SVD), enhancing the model's representational capacity.
+
+\noindent
+\textbf{Preserved Feature Transformation:} Preserves raw feature distributions through identity transformation:
+
+\[
+\mathbf{x}_{\text{preserved}} = \mathbf{x}_{\text{original}}
+\]
+
+\noindent
+This maintains natural scale and distribution characteristics of clinical variables, resulting in unchanged 7-dimensional feature vectors. This configuration ensures that ensemble diversity encompasses both normalized and raw feature representations.
+
+\subsubsection{Intelligent Categorical Encoding}
+
+Categorical variable encoding represents a critical challenge in medical AI systems, where inappropriate encoding strategies can fundamentally distort model learning and lead to spurious clinical predictions. The core issue lies in the fact that naive numerical encoding (0, 1, 2, …) artificially imposes ordinal relationships on categorical variables that may be purely nominal, causing models to learn false mathematical relationships. For instance, if a blood type feature is encoded as A=0, B=1, AB=2, O=3, the model might incorrectly learn that AB is “twice as much” as B, or that there is a meaningful progression from A to O. Such artificial numerical relationships can lead to clinically meaningless predictions and compromise model reliability.
+
+Traditional one-hot encoding, while avoiding artificial ordinality, becomes computationally inefficient and may not capture the full diversity needed for robust ensemble training. Even when features are provided as anonymized identifiers (Feature01, Feature02, etc.), intelligent encoding strategies are essential to prevent the model from learning spurious numerical patterns while maintaining the diversity necessary for robust cross-institutional deployment.
+
+To maximize robustness and ensemble diversity, categorical feature encoding employs two distinct strategies applied across different branches of the preprocessing pipeline:
+
+\noindent
+\textbf{Ordinal Encoding with Frequency Filtering:} This strategy applies selective ordinal encoding with frequency-based filtering:
+
+\[
+\text{encode}(x_{ij}) = \begin{cases}
+\phi_j(x_{ij}) & \text{if feature $j$ has frequently occurring categories} \\
+x_{ij} & \text{otherwise}
+\end{cases}
+\]
+
+\noindent
+where $x_{ij}$ represents the categorical value of feature $j$ for sample $i$, and frequently occurring categories are defined as features with individual category counts $\geq 10$ and total unique categories $|U_j| < n_{\text{samples}}/10$. The ordinal mapping employs randomized category-to-integer assignment for ensemble diversity:
+
+\[
+\phi_j = \pi(\{0, 1, \ldots, |U_j|-1\})
+\]
+
+\noindent
+where $\phi_j$ represents the ordinal mapping function for feature $j$, $\pi(\cdot)$ denotes a random permutation operator, and $U_j$ is the set of unique categorical values in feature $j$.
+
+This approach ensures that only sufficiently represented categories undergo ordinal encoding, preventing overfitting to rare categorical values common in medical datasets.
+
+\noindent
+\textbf{Numeric Treatment Strategy:} This strategy treats categorical features as continuous numeric values:
+
+\[
+\text{encode}(x_{ij}) = \text{float}(x_{ij})
+\]
+
+This approach enables direct processing of categorical variables through quantile transformations and other numerical operations, particularly effective for ordinal categorical variables with natural numeric interpretations.
+
+\paragraph{Overall Ensemble Configuration Summary}
+
+The complete 64-member ensemble integrates all preprocessing components through a systematic 4-branch design as illustrated in Figure~\ref{fig:model_details}b:
+
+\begin{itemize}
+    \item \textbf{Branch 1} (No Distribution Transformation + Numeric Categorical): 16 ensemble members
+    \item \textbf{Branch 2} (No Distribution Transformation + Ordinal Encoding): 16 ensemble members
+    \item \textbf{Branch 3} (Quantile Transformation + Numeric Categorical): 16 ensemble members
+    \item \textbf{Branch 4} (Quantile Transformation + Ordinal Encoding): 16 ensemble members
+\end{itemize}
+
+Within each branch, the 16 ensemble members are differentiated through unique feature rotation patterns, ensuring comprehensive coverage of both transformation strategies and categorical encoding approaches. This systematic design guarantees balanced representation across all preprocessing variations while maximizing ensemble diversity for robust medical predictions across institutional boundaries.
+
+
+\subsection{Feature Selection}
+
+Robust feature selection is indispensable for cross-institutional medical AI, where the data landscape is typically high-dimensional, heterogeneous, and severely constrained in sample size. Without principled selection, models risk overfitting to site-specific noise or redundant variables, undermining both predictive performance and generalizability. To directly address these challenges, we employed recursive feature elimination (RFE) powered by a Pre-trained Tabular Foundation Model as the base estimator (Figure~\ref{fig:feature_selection_uda}a). This approach enables the identification of clinically meaningful and highly discriminative variables while simultaneously minimizing overfitting risk.
+
+RFE relies on permutation-based feature importance for iterative elimination. Permutation importance measures each feature’s contribution by randomly shuffling its values across samples and observing the resulting performance degradation—larger performance drops indicate more important features. This model-agnostic evaluation is particularly suited to pre-trained foundation models, where gradient-based or weight-based importance scores are not directly interpretable due to multiple attention layers and ensemble components. By directly quantifying each feature’s predictive contribution, the permutation approach offers a transparent and robust mechanism to rank features regardless of architectural complexity.
+
+This wrapper-based strategy iteratively removes the least informative features to produce a compact, domain-consistent subset optimized for downstream classification. As shown in Figure~\ref{fig:feature_selection_uda}a, our pipeline systematically applies RFE to Original Cohort A and Original Cohort B—each comprising 58 clinical variables with labels—yielding refined Development (Cohort A) and Validation (Cohort B) cohorts. This cross-institutional feature selection ensures that the retained features maintain high predictive power and clinical interpretability across different hospital settings.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{Feature Selection and UDA.pdf}
+    \caption{\textbf{Feature Selection and Unsupervised Domain Adaptation in the PANDA framework.} (a) \textbf{Feature Selection}: Recursive Feature Elimination (RFE) with Pre-trained Tabular Foundation Model systematically identifies the most discriminative clinical variables from the original 58-feature sets, reducing dimensionality while preserving predictive power to generate optimized feature subsets for both Development Cohort (Cohort A) and Validation Cohort (Cohort B). (b) \textbf{Unsupervised Domain Adaptation}: Transfer Component Analysis (TCA) performs distributional alignment between source and target domains without using labels, transforming the Validation Cohort (Cohort B) into an Adapted Cohort (Cohort B') that maintains clinical interpretability while being optimally aligned with the source domain distribution for robust cross-institutional prediction.}
+    \label{fig:feature_selection_uda}
+\end{figure}
+
+\paragraph{Algorithm Overview.}
+Given a dataset $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n$ with $\mathbf{x}_i \in \mathbb{R}^d$ and $y_i \in \{0, 1\}$, the RFE algorithm selects $k < d$ features by repeating the following steps:
+\begin{enumerate}
+    \item Train the Pre-trained Tabular Foundation Model $f_\Theta^{(t)}$ on the current feature subset $\mathcal{F}^{(t)}$.
+    \item Estimate feature importance scores $\mathbf{I}^{(t)} = [I^{(t)}_1, I^{(t)}_2, \dots, I^{(t)}_{|\mathcal{F}^{(t)}|}]$ using permutation-based evaluation.
+    \item Eliminate the feature with the lowest importance score:\\
+    $\mathcal{F}^{(t+1)} \leftarrow \mathcal{F}^{(t)} \setminus \{\arg\min_j I^{(t)}_j\}$.
+    \item Repeat until the target feature count $|\mathcal{F}^{(t+1)}| = k$ is reached.
+\end{enumerate}
+
+\paragraph{Permutation Importance.}
+To assess the contribution of each feature, we adopt permutation importance, a robust and model-agnostic metric. For a given feature $x_j$, its importance score is defined as the expected decrease in performance upon random shuffling:
+
+\[
+I_j = \frac{1}{R} \sum_{r=1}^{R} \left[ \mathrm{AUC}(f_\Theta, \mathcal{D}) - \mathrm{AUC}(f_\Theta, \mathcal{D}_{\text{perm}(j)}^{(r)}) \right],
+\]
+
+\noindent
+where $\mathcal{D}_{\text{perm}(j)}^{(r)}$ denotes the dataset with the $j$-th feature randomly permuted in the $r$-th repetition, and $R$ is the number of repeats (we use $R=5$). Larger $I_j$ values indicate stronger influence on model predictions.
+
+\paragraph{Implementation.}
+As illustrated in Figure~\ref{fig:feature_selection_uda}a, the feature selection process begins with Original Cohort A and Original Cohort B, both containing the full set of $d=58$ clinical features with their corresponding labels. We applied RFE with the Pre-trained Tabular Foundation Model to both cohorts simultaneously to identify features with consistent discriminative power across institutions. This cross-cohort approach ensures that selected features maintain their predictive value in both source and target domains.
+
+The RFE process systematically eliminated weakly contributing variables using permutation importance evaluation across both cohorts, ultimately yielding a ranked list of the top 9 features. However, one of these features (Feature40) was unavailable in the Original Cohort B, creating an inconsistency for cross-domain deployment. To ensure robust cross-institutional applicability, we excluded Feature40 and retained the remaining 7 features, producing the final Development Cohort (Cohort A) and Validation Cohort (Cohort B) with consistent feature subsets. This cross-validated feature selection strategy ensures that the selected clinical variables maintain high discriminative power across different institutional settings.
+
+
+\paragraph{Multi-dimensional Performance Analysis.}
+Beyond simple accuracy metrics, our RFE analysis incorporates multiple evaluation dimensions to ensure robust feature selection for clinical deployment. The following three analyses provide complementary perspectives on feature subset quality: 
+Figure~\ref{fig:rfe-performance}b presents class-specific accuracy analysis across different feature subset sizes. The balanced performance between malignant (positive) and benign (negative) cases demonstrates that our feature selection process maintains diagnostic sensitivity across both clinical scenarios. This balanced predictive capability is crucial for medical screening applications, where both false positives and false negatives carry significant clinical consequences.
+
+\paragraph{Computational Efficiency Assessment.}
+Training time complexity is a critical consideration for clinical deployment scalability. Figure~\ref{fig:rfe-performance}c illustrates the computational efficiency as a function of feature dimensionality, measured in seconds per cross-validation fold. The analysis reveals a near-linear relationship between feature count and training time, with the 9-features configuration achieving an optimal balance between computational efficiency and predictive performance. This efficiency profile supports real-time clinical decision-making requirements while maintaining model interpretability.
+
+\paragraph{Performance Stability Evaluation.}
+Model reliability in clinical settings requires consistent performance across different data splits and patient populations. Figure~\ref{fig:rfe-performance}d presents performance stability assessment using coefficient of variation (CV) across 10-fold cross-validation. Lower CV values indicate more stable and reliable performance, with our selected 9-features subset demonstrating superior stability compared to both smaller and larger feature configurations. This stability analysis ensures that the selected features provide robust predictions across diverse clinical scenarios and patient demographics.
+
+\paragraph{Multi-criteria Optimization Framework.}
+Feature selection in medical applications requires balancing multiple competing objectives beyond simple predictive accuracy. Clinical deployment demands consideration of computational efficiency for real-time decision-making, performance stability across diverse patient populations, and model simplicity for clinical interpretability and regulatory compliance. Rather than optimizing for a single metric, which may lead to suboptimal solutions that excel in one dimension while failing in others, we developed a principled multi-criteria optimization approach.
+
+To identify the globally optimal feature subset, we developed a comprehensive cost-effectiveness index that integrates multiple performance dimensions (Figure~\ref{fig:rfe-performance}e). Let $n$ denote the number of features in a given subset. The composite metric is defined as a weighted combination of four normalized scores:
+
+\[
+\text{CostEffectiveness}(n) = w_1 \cdot S_{\text{perf}}(n) + w_2 \cdot S_{\text{eff}}(n) + w_3 \cdot S_{\text{stab}}(n) + w_4 \cdot S_{\text{simp}}(n)
+\]
+
+\noindent
+where $(w_1, w_2, w_3, w_4) = (0.45, 0.15, 0.15, 0.25)$ represent theory-driven weights prioritizing performance for medical applications, with balanced consideration of stability, efficiency, and Occam's Razor simplicity. Each component score is normalized to $[0,1]$ as follows:
+
+\begin{itemize}
+    \item \textbf{Performance Score} ($S_{\text{perf}}$): A weighted combination of classification metrics:
+    \[
+    S_{\text{perf}}(n) = 0.5 \cdot \text{AUC}(n) + 0.3 \cdot \text{Accuracy}(n) + 0.2 \cdot \text{F1}(n)
+    \]
+
+    \item \textbf{Efficiency Score} ($S_{\text{eff}}$): Training time efficiency, normalized using min-max scaling:
+    \[
+    S_{\text{eff}}(n) = 1 - \frac{T(n) - T_{\min}}{T_{\max} - T_{\min}}
+    \]
+    where $T(n)$ is the mean training time for $n$ features, and shorter training times yield higher scores.
+
+    \item \textbf{Stability Score} ($S_{\text{stab}}$): Cross-validation consistency based on performance variance:
+    \[
+    S_{\text{stab}}(n) = 1 - \frac{\bar{\sigma}(n) - \bar{\sigma}_{\min}}{\bar{\sigma}_{\max} - \bar{\sigma}_{\min}}
+    \]
+    where $\bar{\sigma}(n) = \frac{1}{3}[\sigma_{\text{AUC}}(n) + \sigma_{\text{Accuracy}}(n) + \sigma_{\text{F1}}(n)]$ is the average standard deviation across metrics.
+
+    \item \textbf{Simplicity Score} ($S_{\text{simp}}$): Model complexity penalty following Occam's Razor principle, implemented as an exponential decay function that naturally favors simpler models:
+    \[
+    S_{\text{simp}}(n) = \exp(-\alpha \cdot n)
+    \]
+    where $\alpha = 0.015$ is the complexity penalty coefficient. This pure mathematical function ensures that fewer features always receive higher scores, strictly adhering to Occam's Razor without arbitrary cutoffs or baseline assumptions.
+\end{itemize}
+
+The optimization problem becomes:
+\[
+n^* = \arg\max_{n} \text{CostEffectiveness}(n)
+\]
+
+This multi-criteria optimization framework objectively determines that the 9-features configuration ($n^* = 9$) achieves the globally optimal trade-off across all evaluation dimensions. The theory-driven weight allocation prioritizes performance (0.45) and simplicity (0.25) as the primary concerns in medical applications, while maintaining balanced consideration of stability (0.15) and efficiency (0.15). The exponential decay simplicity function $\exp(-0.015 \cdot n)$ ensures pure adherence to Occam's Razor without arbitrary assumptions, naturally favoring simpler models while allowing empirical performance metrics to determine the optimal balance point. This methodology is both theoretically sound and practically deployable in real-world clinical environments, as evidenced by the peak in Figure~\ref{fig:rfe-performance}e at precisely 9 features.
+
+\paragraph{Cross-Domain Feature Consistency.}
+The cross-domain feature alignment process is detailed in Figure~\ref{fig:feature_selection_uda}a. Starting with Original Cohort A and Original Cohort B, each containing the full set of 58 clinical features, recursive feature elimination with the Pre-trained Tabular Foundation Model identifies the most discriminative variables across both institutions. To ensure robust cross-institutional deployment, we account for varying feature availability across different clinical sites by applying RFE simultaneously to both cohorts. This cross-validated approach produces the Development Cohort (Cohort A) and Validation Cohort (Cohort B) with consistent feature subsets that are available and discriminative in both institutions, guaranteeing reliable model deployment while preserving the most clinically relevant variables for malignancy prediction.
+
+
+
+
+
+\subsection{Pre-trained Tabular Foundation Model}
+
+Medical tabular classification faces unique challenges that distinguish it from traditional machine learning applications. Medical datasets typically contain heterogeneous feature types (continuous measurements, categorical variables, ordinal scales) with complex non-linear interactions that are difficult to capture using conventional algorithms. Furthermore, small sample sizes relative to feature dimensionality create high variance in model predictions, while institutional differences in data collection protocols lead to distribution shifts that compromise generalization. Traditional machine learning approaches often fail to adequately model these complex feature interactions while maintaining robustness across different clinical environments.
+
+Foundation models have revolutionized artificial intelligence by demonstrating remarkable capabilities in learning generalizable representations from large-scale data that can be adapted to diverse downstream tasks. These models, exemplified by large language models in NLP and vision transformers in computer vision, leverage massive pre-training on heterogeneous datasets to acquire broad knowledge that facilitates few-shot learning and cross-domain transfer. The success of foundation models stems from their ability to learn universal patterns and relationships during pre-training that generalize beyond specific tasks or domains. This paradigm shift from task-specific model training to pre-training followed by adaptation offers particular promise for medical applications, where data scarcity and domain heterogeneity are prevalent challenges.
+
+To address these challenges, we adopt and adapt TabPFN (Tabular Prior-Fitted Networks), a pre-trained Transformer-based foundation model for tabular data~\cite{hollmann2025accurate}. While TabPFN's core architecture treats each feature as a token and uses self-attention mechanisms for feature interaction modeling, our contribution lies in developing specialized preprocessing configurations and ensemble strategies specifically optimized for cross-institutional medical classification tasks. We enhance the original TabPFN framework with domain-adaptive preprocessing pipelines and systematic ensemble diversification strategies that address the unique challenges of medical tabular data across different clinical environments.
+
+\subsubsection{Architecture and Feature Encoding}
+
+\paragraph{Per-Feature Transformer Architecture.}
+Each structured input sample $\mathbf{x} = [x_1, x_2, \ldots, x_d] \in \mathbb{R}^d$ is treated as a sequence of tokens, where each feature $x_i$ corresponds to an individual token. This per-feature tokenization enables the model to learn feature-specific representations while modeling inter-feature dependencies through attention mechanisms.
+
+The feature encoding process follows a multi-step transformation:
+\[
+\mathbf{e}_i = \text{Embed}(x_i) + \mathbf{p}_i, \quad i = 1, \ldots, d
+\]
+where $\text{Embed}(\cdot): \mathbb{R} \rightarrow \mathbb{R}^{d_{\text{model}}}$ maps each feature value to a $d_{\text{model}}$-dimensional embedding space (where $d_{\text{model}} \in \{128, 192\}$ depending on model configuration), and $\mathbf{p}_i \in \mathbb{R}^{d_{\text{model}}}$ represents learned positional encodings that capture feature ordering information.
+
+The embedded sequence $\mathbf{E} = [\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_d]$ is processed through a 12-layer Transformer encoder. Each layer $\ell$ applies multi-head self-attention followed by a feedforward network:
+\[
+\mathbf{H}^{(\ell)} = \text{LayerNorm}(\text{MultiHead}(\mathbf{H}^{(\ell-1)}) + \mathbf{H}^{(\ell-1)})
+\]
+\[
+\mathbf{H}^{(\ell+1)} = \text{LayerNorm}(\text{FFN}(\mathbf{H}^{(\ell)}) + \mathbf{H}^{(\ell)})
+\]
+where $\mathbf{H}^{(0)} = \mathbf{E}$, and the feedforward network $\text{FFN}$ has $4 \times d_{\text{model}}$ hidden units. The multi-head attention mechanism employs 4 or 6 attention heads (depending on configuration), enabling the model to capture diverse feature interaction patterns simultaneously.
+
+\subsubsection{Pre-training}
+
+\paragraph{Motivation for Pre-training.}
+Medical tabular datasets present fundamental challenges that necessitate pre-training approaches. First, medical institutions typically possess small, specialized datasets that are insufficient for training robust deep learning models from scratch. The limited sample sizes (often hundreds to thousands of cases) combined with high-dimensional feature spaces create severe overfitting risks when using conventional supervised learning. Second, medical datasets exhibit significant heterogeneity across institutions due to differences in measurement protocols, equipment calibration, and patient populations, leading to substantial domain shift that compromises model generalizability. Third, unlike vision or language domains where massive public datasets exist, medical data sharing is severely constrained by privacy regulations and institutional policies, preventing the assembly of large-scale training corpora.
+
+These challenges necessitate models that can: (1) extract generalizable patterns from diverse statistical distributions and feature-label relationships across multiple domains, (2) adapt to new medical classification tasks through in-context learning without requiring parameter updates or fine-tuning, and (3) maintain robustness against distributional shifts by understanding diverse data-generating processes inherent in clinical environments.
+
+\paragraph{Synthetic Task Generation Strategy.}
+Deep neural networks require substantial training data to learn effective representations, yet collecting and labeling extensive medical datasets is prohibitively expensive, time-intensive, and often infeasible due to privacy constraints. To address this data scarcity while ensuring broad coverage of tabular reasoning patterns, we employ a stochastic task generator that synthesizes classification problems from diverse function priors.
+
+This synthetic data generation strategy enables the model to experience a vast range of tabular data characteristics, statistical patterns, and classification scenarios that would be impossible to encounter through real medical datasets alone. The task generator samples problems from a mixture of function priors, creating diverse synthetic classification tasks that collectively teach the model generalizable tabular reasoning capabilities applicable to real-world medical classification problems with varying sample sizes and domain characteristics.
+
+Let $\mathcal{X}\subset\mathbb{R}^d$ and $\mathcal{Y}=\{1,\dots,C\}$ for classification (or $\mathbb{R}$ for regression). For each training batch, we first sample a prior family and its hyperparameters:
+\[
+r \sim \mathrm{Categorical}(\boldsymbol{\pi}),\qquad
+\boldsymbol{\theta} \sim p(\boldsymbol{\theta}\mid r),
+\]
+where $r\in\{\text{gp},\text{mlp},\text{ridge},\text{mix\_gp}\}$ indexes different function priors including Gaussian Process (GP), Multi-Layer Perceptron (MLP), ridge regression, and mixed GP priors, $\boldsymbol{\pi}$ represents probability weights for prior family selection, and $\boldsymbol{\theta}$ is a hyperparameter vector containing kernel/architecture specifications, noise level, class count, and input scaling parameters.
+
+We draw $T=n_{\text{ctx}}+n_{\text{eval}}$ inputs where $n_{\text{ctx}}$ is the number of context (training) examples per synthetic task, $n_{\text{eval}}$ is the number of evaluation (test) examples per synthetic task, and $T$ is the total sequence length. Inputs are sampled independently from a factorized base distribution and optionally transformed:
+\[
+\mathbf{x}_t \sim p_{\text{base}}(\mathbf{x}), \qquad \tilde{\mathbf{x}}_t = \psi_{\boldsymbol{\theta}}(\mathbf{x}_t)
+\]
+where $p_{\text{base}}(\mathbf{x})$ is a factorized base distribution (often uniform or Gaussian per feature) and $\psi_{\boldsymbol{\theta}}(\cdot)$ is a feature transform function (e.g., quantile-to-normal normalization, standardization).
+\[
+\mathbf{x}_t \sim p_X(\cdot\mid \boldsymbol{\theta}_X)=\prod_{j=1}^d p_{X_j}(x_{t,j}), 
+\qquad 
+\tilde{\mathbf{x}}_t=\psi_{\boldsymbol{\theta}}(\mathbf{x}_t), 
+\quad t=1,\dots,T.
+\]
+Conditioned on $(r,\boldsymbol{\theta})$, a random function $f_\Theta$ generates latent outputs. For a GP prior ($r=\text{gp}$), each class logit is an independent draw from a GP with zero mean and kernel $k_{\boldsymbol{\theta}}$ (e.g., RBF with length-scale $\ell$ and output scale $\sigma_f^2$):
+\[
+f_c \sim \mathrm{GP}\!\big(0,k_{\boldsymbol{\theta}}\big),\qquad 
+\mathbf{z}_t=\big(f_1(\tilde{\mathbf{x}}_t),\dots,f_C(\tilde{\mathbf{x}}_t)\big)\in\mathbb{R}^C .
+\]
+For a random–MLP prior ($r=\text{mlp}$), we sample depth/width and weights,
+\[
+L\sim p(L),\ \ h_\ell\sim p(h_\ell),\ \ 
+\mathbf{W}_\ell \sim \mathcal{N}\!\Big(0,\frac{\sigma_w^2}{\mathrm{fan\_in}_\ell}\mathbf{I}\Big),\ \ 
+\mathbf{b}_\ell \sim \mathcal{N}(0,\sigma_b^2\mathbf{I}),
+\]
+and define
+\[
+\mathbf{h}_0=\tilde{\mathbf{x}}_t,\quad 
+\mathbf{h}_\ell=\phi\!\big(\mathbf{W}_\ell\mathbf{h}_{\ell-1}+\mathbf{b}_\ell\big)\ (\ell=1,\dots,L-1),\quad
+\mathbf{z}_t=\mathbf{W}_L\mathbf{h}_{L-1}+\mathbf{b}_L,
+\]
+with nonlinearity $\phi$ (e.g., ReLU). For ridge regression priors ($r=\text{ridge}$), linear models with L2 regularization are employed to generate smooth, generalizable functions. For mixed GP priors ($r=\text{mix\_gp}$), multiple Gaussian Process kernels are combined to capture diverse statistical relationships and function characteristics across different length scales and patterns. Observation noise models variability:
+\[
+\boldsymbol{\varepsilon}_t \sim \mathcal{N}\big(\mathbf{0},\sigma^2\mathbf{I}\big).
+\]
+The model output dimensionality $n_{\text{out}}$ is determined by the task type:
+\[
+n_{\text{out}} = \begin{cases}
+2 & \text{for regression with uncertainty (GaussianNLLLoss: mean and variance)} \\
+C & \text{for } C\text{-class classification (CrossEntropyLoss)} \\
+1 & \text{for binary classification (BCEWithLogitsLoss) or basic regression}
+\end{cases}
+\]
+For regression, $y_t=z_t+\varepsilon_t\in\mathbb{R}$; optionally a bucketized ("bar") likelihood is used by choosing bin borders $b_0<\cdots<b_B$ (e.g., prior-predictive quantiles) and training a categorical density over bins. For classification, temperature-scaled logits yield class probabilities and labels,
+\[
+\mathbf{p}_t=\mathrm{softmax}\!\big(\mathbf{z}_t/\tau\big),\qquad 
+y_t \sim \mathrm{Categorical}(\mathbf{p}_t),
+\]
+with an optional random class permutation to decorrelate semantic labels across tasks. The first $n_{\text{ctx}}$ pairs form the context $\mathcal{D}_{\text{ctx}}=\{(\tilde{\mathbf{x}}_t,y_t)\}_{t=1}^{n_{\text{ctx}}}$; the remaining inputs $\mathcal{Q}=\{\tilde{\mathbf{x}}_t\}_{t=n_{\text{ctx}}+1}^{T}$ are queries whose labels are withheld during the forward pass. We concatenate $(\mathcal{D}_{\text{ctx}},\mathcal{Q})$ into a single sequence for in-context conditioning and train the Transformer to predict $\{y_t\}_{t=n_{\text{ctx}}+1}^{T}$. The task distribution and objective are
+\[
+p(\mathcal{T})
+=\sum_{r}\pi_r\!\int p(\boldsymbol{\theta}\mid r)
+\prod_{t=1}^{T}\! \Big[p_X(\mathbf{x}_t\mid\boldsymbol{\theta})\, p\!\big(y_t\mid \tilde{\mathbf{x}}_t,\boldsymbol{\theta},r\big)\Big]\,
+\mathrm{d}\boldsymbol{\theta},
+\qquad
+\min_{\Theta}\ \mathbb{E}_{\mathcal{T}\sim p(\cdot)}\!\left[\sum_{t=n_{\text{ctx}}+1}^{T} 
+\ell\!\big(h_{\Theta}(\mathcal{D}_{\text{ctx}},\mathcal{Q})_t,\ y_t\big)\right],
+\]
+where $\ell$ is the task-specific loss function determined by task type and output configuration:
+\begin{align}
+\ell = \begin{cases}
+\text{BCEWithLogitsLoss}(\mathbf{z}_t, y_t) & \text{for binary classification} \\
+\text{CrossEntropyLoss}(\mathbf{z}_t, y_t) & \text{for multi-class classification} \\
+\text{MSELoss}(z_t, y_t) & \text{for basic regression} \\
+\text{GaussianNLLLoss}(\mu_t, y_t, |\sigma_t|) & \text{for regression with uncertainty, where } \\
+& \quad \mu_t = \mathbf{z}_t[0], \sigma_t = \mathbf{z}_t[1] \\
+\text{FullSupportBarDistribution}(\mathbf{z}_t, y_t) & \text{for discretized regression}
+\end{cases}
+\end{align}
+
+\paragraph{Pre-training Details.}
+The foundation model pre-training follows a systematic procedure designed to optimize learning across diverse synthetic tabular tasks. Pre-training is conducted using AdamW optimizer with learning rate determined by the OpenAI scaling law: $\text{lr} = 0.003 \cdot \sqrt{d_{\text{model}}/512}$, where $d_{\text{model}}$ is the model embedding dimension. The learning rate schedule employs cosine annealing with linear warmup over the first 50 epochs, followed by cosine decay over the remaining pre-training duration.
+
+Each pre-training epoch processes multiple synthetic tasks in parallel with batch size of 1000 sequences. Gradient accumulation is employed over multiple batches before parameter updates, with gradient clipping at norm 1.0 to ensure pre-training stability. Mixed precision training using automatic mixed precision (AMP) is utilized to accelerate computation and reduce memory requirements while maintaining numerical stability.
+
+The pre-training objective employs positional loss computation, where losses are calculated for each position in the sequence and averaged across valid positions. For in-context learning scenarios, only the query positions (beyond $n_{\text{ctx}}$) contribute to the loss calculation:
+\[
+\mathcal{L}_{\text{epoch}} = \frac{1}{N} \sum_{i=1}^{N} \frac{1}{n_{\text{eval}}} \sum_{t=n_{\text{ctx}}+1}^{T} \ell\!\big(h_{\Theta}(\mathcal{D}_{\text{ctx}}^{(i)},\mathcal{Q}^{(i)})_t,\ y_t^{(i)}\big)
+\]
+where $N$ is the batch size, and the inner sum averages over evaluation positions. Pre-training continues until convergence, typically requiring 200-500 epochs depending on model size and task complexity.
+
+\subsubsection{Inference}
+
+\paragraph{In-Context Learning Mechanism.}
+Real-world cross-institutional deployment faces three compounding issues: \emph{small labeled cohorts} that make fine-tuning prone to overfitting, \emph{heterogeneous feature distributions} across hospitals (protocols, equipment, populations), and \emph{domain shift} that would otherwise require site-specific retraining with substantial computational and operational cost. To address these challenges without updating parameters at deployment, we adopt an \emph{in-context learning} (ICL)–based inference design. Our Pre-trained Tabular Foundation Model uses ICL as the primary mechanism: the model internalizes task-specific patterns by observing a small set of labeled examples (context) within the input sequence and then predicts on unlabeled query samples. Compared with conventional fine-tuning, this approach (1) \textbf{improves sample efficiency under data scarcity} by leveraging pre-trained knowledge to generalize from minimal examples; (2) \textbf{facilitates cross-institutional generalization} by adapting to local characteristics without separate training per site; and (3) \textbf{reduces computational burden} by avoiding gradient computation and parameter updates during inference, enabling rapid and resource-efficient clinical deployment.
+
+At inference time, training and test samples are concatenated to form a composite input sequence:
+\[
+\mathbf{X}_{\text{context}} = [\mathbf{X}_{\text{train}}; \mathbf{X}_{\text{test}}] \in \mathbb{R}^{(n_{\text{train}} + n_{\text{test}}) \times 1 \times f}
+\]
+where $n_{\text{train}}$ is the number of training samples (e.g., 295 for medical dataset A), $n_{\text{test}}$ is the number of test samples (e.g., 190 for medical dataset B), and $f$ is the number of features (e.g., 7 features for the \texttt{best7} configuration). The middle dimension of 1 indicates that each sample is processed as an independent batch for sequential processing, rather than processing multiple samples simultaneously in a traditional training batch. For multi-batch scenarios, this extends to $(B, n_{\text{train}} + n_{\text{test}}, f)$ where $B$ represents the number of parallel inference tasks.
+
+Only training labels are provided during forward pass through label masking:
+\[
+\mathbf{y}_{\text{context}} = [\mathbf{y}_{\text{train}}; \varnothing] \in \{0,1\}^{n_{\text{train}}} \cup \{\varnothing\}^{n_{\text{test}}}
+\]
+where $\varnothing$ represents masked positions that the Transformer attention mechanism ignores during forward propagation. Specifically, the model applies causal masking to these positions, preventing gradient flow from test sample predictions back to model parameters. This masking enables the model to infer predictions for test samples without gradient updates, improving generalizability while maintaining computational efficiency.
+
+\paragraph{Train.}
+\textbf{Train} involves the medical-specific adaptation illustrated in Figure~\ref{fig:model_details}a. The feature selection process identifies the most discriminative clinical variables, producing the \textbf{Development Cohort (Cohort A)} with Features + Label. This cohort then undergoes the sophisticated data preprocessing pipeline detailed in Figure~\ref{fig:model_details}b, which includes four parallel branches with \emph{feature order rotation}, \emph{distribution transformations} (no transform vs.\ quantile transform), and \emph{categorical encoding strategies} (treat-as-numeric vs.\ ordinal encoding), ultimately feeding the frozen \textbf{Pre-trained Tabular Foundation Model} in an in-context manner (no parameter updates).
+
+\paragraph{Predict.}
+\textbf{Predict} addresses cross-institutional deployment through unsupervised domain adaptation, as shown in Figure~\ref{fig:model_details}a. The \textbf{UDA} process transforms target-domain data into the \textbf{Adapted Cohort (Cohort B' without label)}, which then follows the \emph{identical} processing pathway as the training data—namely, the data preprocessing pipeline (Figure~\ref{fig:model_details}b) and the \textbf{Pre-trained Tabular Foundation Model}—ultimately generating \textbf{Output Predicted Class Probabilities}. This Train→Predict design systematically addresses data scarcity, feature discriminativeness, and domain shift in cross-institutional medical AI.
+
+\paragraph{Ensemble Inference and Diversity Strategies.}
+To enhance robustness and mitigate overfitting to single parametric priors while emulating cross-site heterogeneity, the system employs a \textbf{64-member ensemble} realized by the four-branch pipeline in Figure~\ref{fig:model_details}b. Each branch applies feature order rotation followed by distinct combinations of distribution transformation and categorical encoding, creating four complementary representations that maximize ensemble diversity and improve generalization under domain shift. Each ensemble member outputs class logits, which are temperature-scaled and softmax-normalized; final predictions are obtained by averaging member probabilities:
+\[
+\hat{y} = \frac{1}{N} \sum_{i=1}^{N} \text{softmax}\!\left( \frac{z_i}{T} \right),
+\]
+where $z_i \in \mathbb{R}^{n_{\text{test}} \times C}$ denotes the logits from the $i$-th member, $T{=}0.9$ is the softmax temperature, and $N{=}64$ the number of members. Probability averaging (rather than logit averaging) preserves proper probabilistic interpretation. The four branches are:
+\begin{itemize}
+    \item \textbf{Branch 1}: Feature order rotation + no distribution transformation + treat categorical features as numeric (16 parallel inferences)
+    \item \textbf{Branch 2}: Feature order rotation + no distribution transformation + ordinal encoding of categorical features (16 parallel inferences)
+    \item \textbf{Branch 3}: Feature order rotation + quantile transformation + treat categorical features as numeric (16 parallel inferences)
+    \item \textbf{Branch 4}: Feature order rotation + quantile transformation + ordinal encoding of categorical features (16 parallel inferences)
+\end{itemize}
+All 64 inferences (16 per branch) are aggregated to produce robust final predictions while maintaining computational efficiency.
+
+
+\paragraph{Class Imbalance Correction.}
+To address the intrinsic label imbalance in real-world medical datasets, inverse-frequency reweighting is applied during output aggregation when the \texttt{balance\_probabilities} flag is enabled. Given predicted class probabilities $\mathbf{p} = (p_1, \dots, p_C)$ and empirical class distribution from training data $\boldsymbol{\pi} = (\pi_1, \dots, \pi_C)$ where $\pi_i = \frac{\text{count}_i}{\sum_{j=1}^C \text{count}_j}$, the reweighted probabilities are:
+\[
+\hat{p}_i = \frac{p_i / \pi_i}{\sum_{j=1}^{C} p_j / \pi_j}, \quad \text{for } i = 1, \dots, C,
+\]
+where $\pi_i$ represents the observed frequency of class $i$ in the training dataset. This method ensures that minority class predictions are not diluted by the class imbalance, which is particularly critical in small-sample medical datasets where rare conditions must maintain adequate sensitivity for clinical screening applications.
+
+\subsection{Transfer Component Analysis for Domain Adaptation}
+
+Cross-institutional deployment of medical AI inevitably encounters distributional shifts arising from differences in patient demographics, measurement protocols, and institutional practices. Without explicit alignment, models trained on one hospital’s data often exhibit degraded performance when applied to another, even when the underlying clinical concepts remain stable. To mitigate this critical barrier to generalization, we incorporated Transfer Component Analysis (TCA), a kernel-based unsupervised domain adaptation method, into our preprocessing pipeline (Figure~\ref{fig:feature_selection_uda}b).
+
+TCA projects both the Development Cohort (Cohort A without label) and the Validation Cohort (Cohort B without label) into a shared latent subspace in which their marginal distributions are statistically aligned. This process produces the Adapted Cohort (Cohort B' without label), which preserves essential clinical characteristics while reducing institution-specific biases and improving cross-domain compatibility. By learning a distribution-invariant representation without relying on labels, TCA provides a principled way to leverage all available data for model adaptation, a particularly valuable property for medical datasets where labeled data is scarce.
+
+This unsupervised alignment directly addresses one of the most persistent challenges in medical AI—distribution drift across hospitals—ensuring that the predictive model can generalize robustly while maintaining clinical interpretability and consistency across heterogeneous healthcare settings.
+
+\paragraph{Objective and Kernel Construction.}
+Let $X_s \in \mathbb{R}^{n \times d}$ and $X_t \in \mathbb{R}^{m \times d}$ denote the source and target domain feature matrices, with $n + m$ total samples and $d$-dimensional features. TCA constructs a combined kernel matrix $K \in \mathbb{R}^{(n+m) \times (n+m)}$ using a linear kernel:
+\[
+K(x_i, x_j) = x_i^\top x_j.
+\]
+The composite kernel $K$ is partitioned as:
+\[
+K = 
+\begin{bmatrix}
+K_{ss} & K_{st} \\
+K_{ts} & K_{tt}
+\end{bmatrix},
+\]
+where $K_{ss} = X_s X_s^\top$, $K_{tt} = X_t X_t^\top$, and $K_{st} = X_s X_t^\top$. A projection matrix $W \in \mathbb{R}^{(n+m) \times k}$ is then learned by solving:
+\[
+\min_W \; \mathrm{tr}(W^\top K L K^\top W) + \mu \cdot \mathrm{tr}(W^\top K H K^\top W),
+\]
+where $L$ is a domain alignment matrix based on maximum mean discrepancy (MMD), $H$ is a centering matrix, and $\mu > 0$ is a regularization coefficient.
+
+The alignment matrix $L$ is constructed as:
+\[
+L = 
+\begin{bmatrix}
+\frac{1}{n^2} \mathbf{1}_{n \times n} & -\frac{1}{nm} \mathbf{1}_{n \times m} \\
+-\frac{1}{nm} \mathbf{1}_{m \times n} & \frac{1}{m^2} \mathbf{1}_{m \times m}
+\end{bmatrix},
+\]
+which encourages samples from different domains to align while preserving within-domain relationships. The centering matrix is defined as:
+\[
+H = I - \frac{1}{n+m} \mathbf{1} \mathbf{1}^\top,
+\]
+ensuring that the projected features are zero-centered in the kernel space.
+
+\paragraph{Projection and Prediction.}
+The optimization problem is solved via eigen-decomposition. Specifically, the generalized eigensystem:
+\[
+(I + \mu K L K) S = K H K S
+\]
+is decomposed into eigenvectors $S = U \Lambda U^\top$, and the top-$k$ eigenvectors are used to construct the projection matrix $W = U_{[:,1:k]}$.
+
+Source and target samples are then projected via:
+\[
+Z_s = K_s W, \quad Z_t = K_t W,
+\]
+where $K_s$ and $K_t$ are kernel submatrices corresponding to $X_s$ and $X_t$. A logistic regression classifier is trained on $(Z_s, y_s)$ and applied to $Z_t$ for prediction. This subspace alignment significantly improves performance under covariate shift, particularly in cross-institutional settings where the label space remains shared but marginal distributions differ.
+
+
+
+\subsection{Evaluation Metrics}
+
+To comprehensively evaluate the effectiveness of the proposed Pre-trained Tabular Foundation Model with TCA-based domain adaptation, we constructed a multidimensional assessment framework covering classification metrics, statistical confidence intervals, visualization-based analysis, and domain discrepancy measures.
+
+\subsubsection*{1. Classification Performance Metrics}
+
+Five widely used metrics were adopted to assess classification accuracy: AUC, accuracy, F1 score, sensitivity, and specificity. All results were averaged over 10-fold stratified cross-validation to ensure robustness against label imbalance. Let $TP$, $TN$, $FP$, and $FN$ denote the number of true positives, true negatives, false positives, and false negatives, respectively. The metrics are defined as:
+
+\[
+\begin{aligned}
+&\text{True Positive Rate:} && TPR(\tau) = \frac{TP(\tau)}{TP(\tau) + FN(\tau)} \\
+&\text{False Positive Rate:} && FPR(\tau) = \frac{FP(\tau)}{FP(\tau) + TN(\tau)} \\
+&\text{AUC:} && AUC = \int_0^1 TPR(\tau)\, d(FPR(\tau)) \\
+&\text{Accuracy:} && \frac{TP + TN}{TP + TN + FP + FN} \\
+&\text{Precision:} && \frac{TP}{TP + FP} \\
+&\text{Recall:} && \frac{TP}{TP + FN} \\
+&\text{F1 Score:} && \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2TP}{2TP + FP + FN} \\
+&\text{Specificity:} && \frac{TN}{TN + FP}
+\end{aligned}
+\]
+
+Let $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n$ denote the full dataset, and $\mathcal{D}_k$ be the $k$-th fold. For metric $M$, the mean and standard deviation over $K=10$ folds are:
+
+\[
+\bar{M} = \frac{1}{K}\sum_{k=1}^K M_k, \quad \sigma_M = \sqrt{\frac{1}{K-1} \sum_{k=1}^K (M_k - \bar{M})^2}
+\]
+
+\subsubsection*{2. Confidence Interval Estimation}
+
+To quantify uncertainty in AUC, we employed non-parametric bootstrap resampling ($B=1000$). For each bootstrap iteration $b$, a dataset $\mathcal{D}_b^*$ was sampled with replacement:
+
+\[
+\mathcal{D}_b^* = \{(\mathbf{x}_{i_j}^*, y_{i_j}^*)\}_{j=1}^n, \quad i_j \sim \text{Uniform}(1, \dots, n)
+\]
+
+The model was retrained on each $\mathcal{D}_b^*$ to compute $\text{AUC}_b^*$, forming an empirical distribution $\{\text{AUC}_1^*, \dots, \text{AUC}_B^*\}$. The 95\% confidence interval was then defined as:
+
+\[
+CI_{95\%} = \left[ Q_{2.5\%},\, Q_{97.5\%} \right]
+\quad \text{where} \quad Q_\alpha := \text{quantile at } \alpha
+\]
+
+\subsubsection*{3. Visualization-Based Evaluation}
+
+\begin{itemize}
+    \item \textbf{ROC Curves:} Plot $TPR(\tau)$ versus $FPR(\tau)$ for $\tau \in [0,1]$ to visualize sensitivity-specificity trade-off. An ideal curve approaches the point $(0,1)$, while a random model lies along the diagonal $TPR = FPR$.
+
+    \item \textbf{Calibration Curves:} Assess the agreement between predicted probability $\hat{p}_i$ and observed frequency $y_i$. For $K$ equal-width bins $B_k = [k/K, (k+1)/K)$:
+
+    \[
+    \bar{p}_k = \frac{1}{|B_k|} \sum_{i \in B_k} \hat{p}_i, \quad \bar{y}_k = \frac{1}{|B_k|} \sum_{i \in B_k} y_i
+    \]
+
+    \item \textbf{Decision Curve Analysis (DCA):} Evaluate net benefit $NB(p_t)$ under clinical cost-benefit assumptions:
+
+    \[
+    NB(p_t) = \frac{TP(p_t)}{n} - \frac{FP(p_t)}{n} \cdot \frac{p_t}{1 - p_t}
+    \]
+
+    With benchmark strategies:
+    \[
+    NB_{all}(p_t) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{p_t}{1 - p_t}, \quad NB_{none} = 0
+    \]
+    where $\text{Prevalence} = \frac{1}{n} \sum_{i=1}^n y_i$
+\end{itemize}
+
+\subsubsection*{4. Domain Adaptation Evaluation}
+
+To assess the effectiveness of TCA in aligning source and target distributions, we used both qualitative and quantitative tools:
+
+\paragraph{(a) Dimensionality Reduction.}
+PCA and t-SNE were applied to visualize domain overlap before and after adaptation.
+
+\paragraph{(b) Normalized Domain Distance Metrics.}
+Let $\mu(\cdot)$ and $\sigma(\cdot)$ denote feature-wise mean and std. The standardized features are:
+
+\[
+\hat{\mu} = \frac{\mu(\mathbf{X}_s) + \mu(\mathbf{X}_t)}{2}, \quad
+\hat{\sigma} = \frac{\sigma(\mathbf{X}_s) + \sigma(\mathbf{X}_t)}{2}
+\]
+\[
+\mathbf{X}_s^{\text{norm}} = \frac{\mathbf{X}_s - \hat{\mu}}{\hat{\sigma}}, \quad \mathbf{X}_t^{\text{norm}} = \frac{\mathbf{X}_t - \hat{\mu}}{\hat{\sigma}}
+\]
+
+Then, compute the following:
+
+\begin{itemize}
+    \item \textbf{Wasserstein Distance:}
+    \[
+    W_{\text{norm}}(\mathbf{X}_s, \mathbf{X}_t) = \frac{1}{d} \sum_{i=1}^d W_1(X_{s,i}^{\text{norm}}, X_{t,i}^{\text{norm}})
+    \]
+
+    \item \textbf{Symmetric KL Divergence:}
+    \[
+    KL_{\text{norm}}(\mathbf{X}_s, \mathbf{X}_t) = \frac{1}{d} \sum_{i=1}^d \frac{KL(P_{s,i}^{\text{norm}} || P_{t,i}^{\text{norm}}) + KL(P_{t,i}^{\text{norm}} || P_{s,i}^{\text{norm}})}{2}
+    \]
+
+    \item \textbf{MMD with RBF Kernel:}
+    \[
+    \text{MMD}^2(\mathbf{X}_s, \mathbf{X}_t) =
+    \frac{1}{n_s(n_s-1)} \sum_{i \neq j} k(x_i^s, x_j^s)
+    + \frac{1}{n_t(n_t-1)} \sum_{i \neq j} k(x_i^t, x_j^t)
+    - \frac{2}{n_s n_t} \sum_{i,j} k(x_i^s, x_j^t)
+    \]
+    where $k(\mathbf{x}, \mathbf{y}) = \exp(-\gamma ||\mathbf{x} - \mathbf{y}||^2)$
+\end{itemize}
+
+Notably, while TCA uses a linear kernel for domain projection, RBF-kernel MMD offers a nonlinear complementary perspective.
+
+\vspace{1em}
+This comprehensive evaluation protocol enables rigorous, multidimensional validation of the proposed domain-adaptive foundation model across both predictive accuracy and cross-domain generalization.
+
+
+
+\subsection{Baseline Methods}
+
+To evaluate the effectiveness of the proposed Pre-trained Tabular Foundation Model with TCA-based domain adaptation, we designed a series of comparative experiments involving the following baseline groups:
+
+\paragraph{(1) Foundation Model without Domain Adaptation.}  
+This baseline directly applied the Pre-trained Tabular Foundation Model trained on the source domain to the target domain, without any domain alignment. It served as a foundation-only benchmark to isolate the contribution of domain adaptation.
+
+\paragraph{(2) Conventional Clinical Risk Models.}  
+We included several widely used rule-based clinical scoring systems for comparison, including the PKUPH model, the Mayo Clinic score, and a previously published logistic regression model (Paper\_LR). These methods reflect existing clinical heuristics based on handcrafted variables and were implemented following their original published formulas. Since these models do not involve data-driven training, their generalization relies solely on the stability of clinical rule transfer.
+
+\paragraph{(3) Classical Machine Learning Algorithms.}  
+To assess the generalization of standard supervised learners, we implemented several representative classifiers:
+\begin{itemize}
+    \item \textbf{Support Vector Machine (SVM)} using an RBF kernel, with hyperparameters tuned via grid search on the source domain.
+    \item \textbf{Decision Tree (DT)} and \textbf{Random Forest (RF)} models using Gini impurity for splitting and evaluated under varying maximum depths and tree counts.
+    \item \textbf{Gradient Boosted Decision Tree (GBDT)} and \textbf{XGBoost}, optimized with respect to learning rate, number of estimators, maximum tree depth, and subsample ratio. All models were trained on the source domain and tested directly on the target domain.
+\end{itemize}
+
+\paragraph{(4) Proposed Domain Adaptation Method: Pre-trained Tabular Foundation Model + TCA.}  
+Our proposed method integrates the Pre-trained Tabular Foundation Model with Transfer Component Analysis (TCA) to mitigate domain shift. Specifically, TCA projects both source and target data into a shared latent space, after which predictions are made using the ensemble inference structure of the pre-trained model. This approach enables cross-domain generalization by aligning marginal distributions while retaining the rich semantic representations learned during pretraining.
+
+\paragraph{Hyperparameter Tuning and Evaluation Protocol.}  
+For all trainable baselines, hyperparameters were optimized using 10-fold stratified cross-validation within the source domain to avoid data leakage. Final model performance was assessed on the target domain using the same metrics and evaluation procedures as applied to our proposed method.
+
+This comprehensive set of baselines enables a rigorous comparative analysis, revealing the relative contributions of domain alignment and model architecture to cross-institutional performance in medical tabular data.
+
+
+\subsection{Computational resource}
+
+\subsection{Reporting summary}

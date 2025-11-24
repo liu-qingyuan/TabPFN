@@ -61,21 +61,25 @@ pandoc-crossref --version
 **方法二：分步执行**
 
 ```bash
-# 1. 切换到LaTeX源目录
-cd /Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025
-
-# 2. 运行转换命令
-pandoc main.tex \
+cd /Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025 && \
+/opt/homebrew/bin/pandoc main.tex \
+  -s \
   --from=latex \
   --to=docx \
-  --output=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/AI_Healthcare_Analytics_2025_with_template.docx \
+  --output=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/AI_Healthcare_Analytics_2025.docx \
   --reference-doc=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/reference.docx \
+  --lua-filter=fix_latex_tables.lua \
   --filter=pandoc-crossref \
+  --lua-filter=latex_toc_to_word.lua \
+  --metadata-file=crossref.yaml \
   --citeproc \
   --bibliography=refs.bib \
   --csl=numeric.csl \
   --metadata link-citations=true \
-  --metadata link-bibliography=true
+  --metadata link-bibliography=true \
+  --list-of-figures \
+  --list-of-tables
+
 ```
 
 **说明**：
@@ -234,17 +238,25 @@ pandoc main.tex \
 ### 完整转换（带模板）
 
 ```bash
-pandoc main.tex \
+cd /Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025 && \
+/opt/homebrew/bin/pandoc main.tex \
+  -s \
   --from=latex \
   --to=docx \
-  --output=paper.docx \
-  --reference-doc=reference.docx \
+  --output=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/AI_Healthcare_Analytics_2025.docx \
+  --reference-doc=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/reference.docx \
+  --lua-filter=fix_latex_tables.lua \
   --filter=pandoc-crossref \
+  --lua-filter=latex_toc_to_word.lua \
+  --metadata-file=crossref.yaml \
   --citeproc \
   --bibliography=refs.bib \
   --csl=numeric.csl \
   --metadata link-citations=true \
-  --metadata link-bibliography=true
+  --metadata link-bibliography=true \
+  --list-of-figures \
+  --list-of-tables
+
 ```
 
 ### 不同引用格式

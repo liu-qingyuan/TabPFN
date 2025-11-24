@@ -481,7 +481,7 @@ class CompleteAnalysisRunner:
             
             # 存储基线结果
             baseline_results = {
-                'method_name': 'TabPFN_NoUDA',
+                'method_name': 'PANDA_NoUDA',
                 'accuracy': float(accuracy),
                 'auc': float(auc) if not np.isnan(auc) else None,
                 'f1': float(f1),
@@ -492,7 +492,7 @@ class CompleteAnalysisRunner:
                 'y_pred_proba': y_proba_for_roc.tolist() if y_proba_for_roc is not None else None
             }
             
-            uda_results['TabPFN_NoUDA'] = baseline_results
+            uda_results['PANDA_NoUDA'] = baseline_results
             
             if self.verbose:
                 print(f"✅ TabPFN基线 完成:")
@@ -504,7 +504,7 @@ class CompleteAnalysisRunner:
         except Exception as e:
             if self.verbose:
                 print(f"❌ TabPFN基线 失败: {e}")
-            uda_results['TabPFN_NoUDA'] = {'error': str(e), 'is_baseline': True}
+            uda_results['PANDA_NoUDA'] = {'error': str(e), 'is_baseline': True}
         
         # 2. 测试传统基线模型（PKUPH、Mayo、Paper_LR）- 只在目标域B上测试
         baseline_models = ['PKUPH', 'Mayo', 'Paper_LR']
@@ -1074,7 +1074,7 @@ class CompleteAnalysisRunner:
                 
                 for method, result in successful_methods.items():
                     if result.get('is_baseline', False):
-                        if method == 'TabPFN_NoUDA':
+                        if method == 'PANDA_NoUDA':
                             tabpfn_baseline[method] = result
                         elif result.get('baseline_category') == 'ml_baseline':
                             ml_baselines[method] = result
@@ -1164,14 +1164,14 @@ class CompleteAnalysisRunner:
         if self.results['uda_methods']:
             successful_uda = {k: v for k, v in self.results['uda_methods'].items() if 'error' not in v}
             
-            # 获取TabPFN_NoUDA基线结果
-            if 'TabPFN_NoUDA' in successful_uda:
-                baseline_result = successful_uda['TabPFN_NoUDA']
+            # 获取PANDA_NoUDA基线结果
+            if 'PANDA_NoUDA' in successful_uda:
+                baseline_result = successful_uda['PANDA_NoUDA']
                 baseline_auc = baseline_result.get('auc', 0) if baseline_result.get('auc') is not None else 0
             
             # 找出最佳UDA方法（排除基线）
             for method, result in successful_uda.items():
-                if method != 'TabPFN_NoUDA':  # 排除基线
+                if method != 'PANDA_NoUDA':  # 排除基线
                     auc = result.get('auc', 0) if result.get('auc') is not None else 0
                     if auc > best_uda_auc:
                         best_uda_auc = auc
@@ -1181,7 +1181,7 @@ class CompleteAnalysisRunner:
             report_content.append(f"- **最佳源域方法**: {best_source_method} (AUC: {best_source_auc:.4f})")
         
         if baseline_auc > 0:
-            report_content.append(f"- **TabPFN无UDA基线**: TabPFN_NoUDA (AUC: {baseline_auc:.4f})")
+            report_content.append(f"- **TabPFN无UDA基线**: PANDA_NoUDA (AUC: {baseline_auc:.4f})")
         
         if best_uda_method:
             report_content.append(f"- **最佳UDA方法**: {best_uda_method} (AUC: {best_uda_auc:.4f})")

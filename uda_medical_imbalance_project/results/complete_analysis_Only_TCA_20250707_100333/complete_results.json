@@ -9162,8 +9162,8 @@
     }
   },
   "uda_methods": {
-    "TabPFN_NoUDA": {
-      "method_name": "TabPFN_NoUDA",
+    "PANDA_NoUDA": {
+      "method_name": "PANDA_NoUDA",
       "accuracy": 0.6631578947368421,
       "auc": 0.6982153846153846,
       "f1": 0.7762237762237763,

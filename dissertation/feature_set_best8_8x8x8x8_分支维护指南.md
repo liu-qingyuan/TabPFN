@@ -10,7 +10,7 @@
 - **用途**: 复现原始8:8:8:8配置的结果，与main分支的`feature_type`格式区分
 
 ### 性能基准
-- **TabPFN_NoUDA AUC**: ~0.698
+- **PANDA_NoUDA AUC**: ~0.698
 - **TCA AUC**: ~0.71
 - **期望结果**: 应与 `complete_analysis_20250904_222331_8:8:8:8` 目录中的结果一致
 
@@ -186,7 +186,7 @@ python scripts/run_complete_analysis.py --help  # 应该有 --feature_set 选项
 ```
 
 ### 结果验证
-- TabPFN_NoUDA AUC 应在 0.69-0.70 范围内
+- PANDA_NoUDA AUC 应在 0.69-0.70 范围内
 - TCA AUC 应在 0.70-0.72 范围内
 - 结果应与 `complete_analysis_20250904_222331_8:8:8:8` 一致
 

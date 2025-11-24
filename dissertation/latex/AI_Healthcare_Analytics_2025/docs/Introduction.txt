@@ -1,0 +1,292 @@
+Introduction
+
+Cross-hospital variability poses a well-recognized challenge for medical
+AI models, as differences in data distributions often cause models
+trained at one site to fail at another[1][2]. These distribution shifts
+arise from many factors: variations in imaging or measurement devices
+and protocols[1], differences in patient demographics and disease
+prevalence across populations[3], and even inconsistencies in how
+clinical features are recorded at different centers[4]. Domain
+adaptation techniques have therefore become a pivotal research area.
+Unsupervised domain adaptation (UDA) methods seek to learn
+domain-invariant representations so that a model trained on a source
+hospital’s data remains effective on a target hospital’s data[5].
+Approaches range from adversarial training – e.g. adding a discriminator
+to encourage indistinguishable feature distributions between
+hospitals[6] – to distribution alignment via optimal transport[7] or
+correlation alignment. Multi-site data harmonization strategies also aim
+to mitigate inter-hospital heterogeneity, for instance by mapping
+site-specific laboratory codes to a common ontology (LOINC) or
+statistically adjusting batch effects in measurements[4]. Nonetheless,
+traditional clinical risk models for pulmonary nodules illustrate the
+pitfalls of ignoring domain differences: the Mayo Clinic (MC) and
+Veterans Affairs (VA) logistic scores, while popular, achieve only
+modest AUCs around 0.62–0.63 on external cohorts[8] and often require
+recalibration for new populations (the MC model showed significant
+validation issues when applied in Asian hospitals)[9]. These failures
+underscore that without explicit adaptation, a model’s performance can
+deteriorate substantially once it encounters data from a different
+hospital environment, due to shifts in the feature distribution P(X)
+(covariate shift), class prevalence P(Y) (prior/label shift), or the
+relationship P(Y|X) (concept shift).
+
+In response, researchers have explored new AI techniques to improve
+cross-domain robustness, especially for structured tabular medical data
+(e.g. electronic health records and clinical variables). Recently,
+foundation models for tabular/EHR data have emerged as a promising
+paradigm[10]. Foundation models are large-scale models pre-trained
+(often self-supervised) on vast heterogeneous data, then adapted to
+specific tasks[11]. For example, an EHR foundation model trained on
+millions of patient records can be fine-tuned for a local hospital’s
+tasks and has demonstrated state-of-the-art accuracy with far fewer
+labels, as well as improved robustness to temporal and population
+shifts[10]. In parallel, a number of transformer-based architectures
+have been proposed to better capture tabular data structure.
+TabTransformer applies self-attention to learn contextual embeddings for
+categorical features, matching ensemble tree performance and proving
+more robust to missing or noisy inputs[12]. SAINT (Self-Attention and
+Intersample Transformer) leverages attention across both features and
+data instances, and uses contrastive pre-training to boost performance
+when labels are scarce; it has outperformed gradient boosting (XGBoost,
+LightGBM, etc.) on average across benchmark tasks[13]. The
+FT-Transformer, a simplified transformer adaptation for tables, was
+found to achieve top results on many tasks and generalize across a wider
+range of tabular problems than MLPs or other deep models[14][15]. Most
+recently, the Tabular Prior-Data Fitted Network (TabPFN) was introduced
+as a generative transformer-based foundation model for small tabular
+datasets. TabPFN is meta-trained on millions of synthetic tabular tasks
+and can make instant predictions on new datasets; remarkably, in just a
+single forward pass (≪3 seconds) it outperformed highly tuned
+gradient-boosted tree ensembles on datasets with up to 10k samples[16].
+These advances illustrate the push toward small-sample learning and
+meta-learning in medicine – using knowledge learned from many tasks or
+simulations to inform predictions on new, limited data[17][18]. Such
+techniques are crucial because the majority of clinical tabular datasets
+are relatively small (e.g. ~76% of OpenML tabular datasets have <10k
+samples)[19], and deep models trained from scratch often overfit in this
+regime. Nonetheless, large pre-trained models are not a panacea for
+tabular healthcare data: unlike text or images, each tabular dataset can
+have entirely different feature semantics and scales, so a model
+pre-trained on one collection of hospitals or synthetic data may still
+struggle without further alignment to a new hospital’s feature
+space[20][21]. In practice, even foundation models require continued
+pre-training or fine-tuning on local data to fully capture site-specific
+patterns[22], and their performance can degrade if the target domain
+contains novel variables or missing data patterns not seen during
+pre-training.
+
+Several real-world challenges help explain why a model trained in one
+hospital often fails in another. Institutional variability in data
+acquisition is a key factor: hospitals use different imaging scanners,
+lab assay kits, or EHR software, leading to systematic differences in
+the data. For example, an AI algorithm developed on multi-center data
+may still falter when deployed at a site with lower-quality imaging or a
+unique protocol because the input distribution shifts in subtle ways[1].
+Likewise, population heterogeneity between hospitals induces shift – one
+center may serve an older or sicker population, or a specific ethnic
+group, altering both the feature distribution and the outcome
+prevalence[3]. This can violate a model’s assumptions; indeed, a recent
+study found that if an algorithm trained on diverse data is applied in a
+setting where certain ethnicities are over-represented, its performance
+can drop markedly[1]. Compounding this, hospitals often have
+inconsistent feature definitions and availability. Important clinical
+variables might be recorded using incompatible coding systems or units
+(e.g. a lab test identified by a standard LOINC code at one site versus
+a custom code at another)[23]. Some features present in one hospital’s
+database could be entirely missing in another’s[24], or reference ranges
+for “normal” values may differ, causing feature shift. Class imbalance
+and prior probability shift are also common: the prevalence of the
+target condition can vary drastically across institutions. Zech et al.
+famously demonstrated this in a three-hospital study of a pneumonia
+detection model – pneumonia prevalence was ~34% at one hospital vs ~1%
+at others, such that a trivial predictor using hospital identity as a
+proxy for the label achieved an AUC of 0.86[25]. This highlights the
+risk of “shortcut learning”: models may latch onto spurious
+site-specific correlates of the outcome (like inferring diagnosis from
+the hospital origin of an X-ray) instead of true pathological
+features[26]. Indeed, the CNN in that study effectively learned to
+recognize which hospital produced an image with >99% accuracy[26] – a
+useless ability for generalization, but one that improved apparent
+performance on internal data by exploiting the imbalance between sites.
+Such shortcuts make the model brittle when deployed elsewhere. Moreover,
+small sample sizes in many medical studies amplify these problems: with
+limited data, models can more easily overfit to idiosyncrasies of the
+training hospital. Poor calibration across domains is another concern –
+a model’s predicted risk scores may not translate to the same real
+probability of disease in a different setting. For instance, one group
+observed that a deep learning system for diabetic retinopathy had
+sensitivity ranging from 79% in one ethnic subgroup down to 50% in
+another, despite no change in the algorithm[27]. This inconsistency in
+operating thresholds and calibration across institutions further erodes
+clinicians’ trust in AI predictions[28]. In summary, differences in data
+collection, patient mix, feature availability, sample size, and spurious
+correlations all contribute to significant domain shifts between
+hospitals, undercutting the stability of traditional medical AI models.
+
+These challenges elucidate why many existing AI methods struggle under
+cross-hospital or other out-of-distribution (OOD) settings. Classical
+machine learning models like logistic regression or gradient-boosted
+trees, while powerful on IID (in-distribution) data, lack mechanisms to
+handle domain shift. Without special adaptation, their learned decision
+rules are tied to the training distribution, yielding “poor
+out-of-distribution predictions and poor transfer of knowledge” when
+applied to a new dataset[29]. In effect, a conventional model assumes
+P<sub>train</sub>(X, Y) ≈ P<sub>test</sub>(X, Y); when this is false, as
+is common between hospitals, performance plummets. For instance, an
+XGBoost model trained on one hospital’s cohort may badly mispredict risk
+at another hospital if key lab values have different typical ranges
+(covariate shift) or if the baseline disease rate differs (label shift).
+Similarly, the handcrafted clinical risk scores (e.g. Mayo, VA, PKUPH)
+have shown poor generalizability across countries and centers – they
+often underperform in external validations without recalibration[9].
+This is because their simple logistic formulas (derived from one
+cohort’s statistics) do not account for population differences; a
+feature like “family cancer history” might carry different weight in a
+high-smoking vs. low-smoking population, for example. Deep learning
+models on tabular medical data are also prone to overfitting and
+instability in small, heterogeneous cohorts. Standard feed-forward
+neural networks can memorize quirks of the training site (especially if
+sample size is limited) and are known to struggle with the mixed data
+types, missing values, and outlier-prone distributions typical of
+clinical tables[30]. Without careful regularization or huge data, a deep
+model might perform worse than simpler models on an unseen domain, or
+might learn a shortcut like hospital ID as seen in the pneumonia CNN
+example[26]. Even modern deep tabular architectures that showed promise
+(TabTransformer, SAINT, FT-Transformer) do not inherently solve the
+domain shift problem – they still need the training and test data to be
+drawn from similar distributions. A TabTransformer pre-trained on one
+hospital’s EHR may not automatically handle another hospital that has
+entirely new categorical codes or different missingness patterns; in
+fact, studies indicate that pre-trained tabular models still benefit
+from domain-specific alignment. For example, an EHR foundation model
+from Stanford had to be further pre-trained on local data from a
+different hospital to achieve optimal performance, underscoring that
+pre-training alone cannot capture all local idiosyncrasies[21][31].
+Simple unsupervised adaptation techniques have so far provided only
+limited gains in the medical context as well. A recent benchmark found
+that neither standard domain generalization algorithms nor UDA (e.g.
+CORAL, feature alignment methods) produced robust improvements over
+empirical risk minimization on clinical time-series tasks under temporal
+shift[32]. Shallow transfer-learning methods like TCA (Transfer
+Component Analysis)[33] or re-weighting schemes (e.g. KMM for covariate
+shift) often fail to capture the complex shifts in clinical data,
+because they align marginal distributions but do not guarantee the model
+is focusing on causal or biologically relevant features. In other words,
+without learning truly domain-invariant factors, the classifier’s latent
+space remains entangled with site-specific noise. Moreover, many methods
+assume the feature set is identical across domains; they struggle when
+some labs or variables are completely absent in the target domain, a
+frequent scenario in multi-center data. All these limitations mean that
+conventional ML and straightforward adaptations can fall short – the
+model might appear accurate on the source hospital but yields unreliable
+and unpredictable outputs on new hospital data, threatening patient
+safety if left unaddressed[34].
+
+Given this context, there is a clear need for a new integrated framework
+to achieve robust cross-hospital generalization in medical AI. Promising
+directions point toward hybrid approaches that combine the strengths of
+foundation models, domain adaptation, and feature-efficient learning.
+Foundation models provide a strong prior, having learned broad patterns
+from large-scale data, and have demonstrated superior label-efficiency
+and baseline stability[31]. By incorporating an explicit domain
+adaptation module, such a model can adjust its representations to
+minimize inter-hospital discrepancies – for example, adversarially
+training the feature encoder to remove hospital-specific signals while
+preserving predictive signal[6], or using optimal transport to realign
+the feature distributions[7]. Additionally, a feature-efficient design
+that accounts for heterogeneity (such as flexible handling of missing
+features or use of only the overlapping feature subset across sites) can
+ensure the model doesn’t rely on site-specific variables. In essence,
+the solution likely lies in unifying these ideas: a model that is
+pre-trained on diverse data (to capture general medical knowledge),
+adapted to the target domain’s data (to mitigate dataset shift), and
+regularized to focus on stable, causal features rather than spurious
+shortcuts. Recent studies support this multifaceted approach – for
+instance, adapting a large EHR foundation model across hospitals yielded
+comparable performance to locally trained models with a fraction of the
+data, and was far more sample-efficient than training separate models
+from scratch[31]. Ultimately, addressing cross-hospital generalization
+will require bridging the gap between general-purpose learned
+representations and site-specific calibration. By integrating foundation
+model pre-training with domain adaptation techniques and careful
+handling of feature shifts, we can move toward clinically reliable AI
+systems that maintain high performance and safety when deployed in new
+hospitals and diverse patient populations[35][10]. The present work is
+motivated by this need – we propose a unified framework that leverages
+these advances to achieve robust pulmonary nodule malignancy prediction
+across international institutions, aiming to overcome the generalization
+barriers that have limited prior models.
+
+------------------------------------------------------------------------
+
+[1] [3] [27] [28] [34] Distribution shift detection for the postmarket
+surveillance of medical AI algorithms: a retrospective simulation study
+| npj Digital Medicine
+
+https://www.nature.com/articles/s41746-024-01085-w?error=cookies_not_supported&code=3fbfd139-e4dd-469b-a1bf-3afaa1df4ceb
+
+[2] [6] AdaDiag: Adversarial Domain Adaptation of Diagnostic Prediction
+with Clinical Event Sequences - PubMed
+
+https://pubmed.ncbi.nlm.nih.gov/35987449/
+
+[4] [23] [24] Representation Learning to Advance Multi-institutional
+Studies with Electronic Health Record Data
+
+https://arxiv.org/html/2502.08547v1
+
+[5] [32] [33] [35] Evaluation of domain generalization and adaptation on
+improving model robustness to temporal dataset shift in clinical
+medicine | Scientific Reports
+
+https://www.nature.com/articles/s41598-022-06484-1?error=cookies_not_supported&code=b2a1cfb2-4262-4dfe-aeed-b670aab4fe6a
+
+[7] Transport-based transfer learning on Electronic Health Records
+
+https://www.medrxiv.org/content/10.1101/2024.03.27.24304781v1.full-text
+
+[8] Evaluation of models for predicting the probability of malignancy in
+...
+
+https://portlandpress.com/bioscirep/article/40/2/BSR20193875/222159/Evaluation-of-models-for-predicting-the
+
+[9] [PDF] Pulmonary nodule malignancy probability: a meta-analysis of
+the ...
+
+https://www.binasss.sa.cr/mar25/17.pdf
+
+[10] [11] [21] [22] [31] A multi-center study on the adaptability of a
+shared foundation model for electronic health records | npj Digital
+Medicine
+
+https://www.nature.com/articles/s41746-024-01166-w?error=cookies_not_supported&code=bb39d30a-f375-4d92-962c-471bbe06868b
+
+[12] [2012.06678] TabTransformer: Tabular Data Modeling Using Contextual
+Embeddings
+
+https://arxiv.org/abs/2012.06678
+
+[13] [2106.01342] SAINT: Improved Neural Networks for Tabular Data via
+Row Attention and Contrastive Pre-Training
+
+https://arxiv.org/abs/2106.01342
+
+[14] [15] arxiv.org
+
+https://arxiv.org/pdf/2106.11959
+
+[16] [17] [19] [20] [29] [30] Accurate predictions on small data with a
+tabular foundation model | Nature
+
+https://www.nature.com/articles/s41586-024-08328-6?error=cookies_not_supported&code=43a75f52-7071-4e27-83d5-d6a5fdd0d2a5
+
+[18] MetaPred: Meta-Learning for Clinical Risk Prediction with Limited
+...
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC8046258/
+
+[25] [26] Variable generalization performance of a deep learning model
+to detect pneumonia in chest radiographs: A cross-sectional study | PLOS
+Medicine
+
+https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1002683

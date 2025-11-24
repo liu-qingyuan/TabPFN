@@ -436,7 +436,7 @@ results/complete_analysis_YYYYMMDD_HHMMSS/
 ✅ PKUPH 完成: AUC: 0.8012, Accuracy: 0.7423
 
 🔄 UDA方法对比分析
-✅ TabPFN_NoUDA 完成: AUC: 0.7892, Accuracy: 0.7234
+✅ PANDA_NoUDA 完成: AUC: 0.7892, Accuracy: 0.7234
 ✅ TCA 完成: AUC: 0.8123, Accuracy: 0.7456
 ✅ CORAL 完成: AUC: 0.8045, Accuracy: 0.7389
 

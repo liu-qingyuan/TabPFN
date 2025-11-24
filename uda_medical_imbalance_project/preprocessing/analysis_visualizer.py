@@ -181,7 +181,7 @@ class AnalysisVisualizer:
         
         for method_name, result in successful_methods.items():
             if result.get('is_baseline', False):
-                if method_name == 'TabPFN_NoUDA':
+                if method_name == 'PANDA_NoUDA':
                     display_name = 'PANDA\n(No UDA)'
                     tabpfn_baseline.append((method_name, display_name))
                     method_colors.append('#F0CFEA')  # 科研配色4 - PANDA基线
@@ -499,7 +499,7 @@ class AnalysisVisualizer:
             if 'error' not in result:
                 # 统一显示名称逻辑，与对比图保持一致
                 if result.get('is_baseline', False):
-                    if method_name == 'TabPFN_NoUDA':
+                    if method_name == 'PANDA_NoUDA':
                         display_name = f"PANDA\n(No UDA)"
                     elif result.get('baseline_category') == 'ml_baseline':
                         display_name = f"{method_name}"
@@ -637,7 +637,7 @@ class AnalysisVisualizer:
         for method_name, result in uda_results.items():
             if 'error' not in result:
                 if result.get('is_baseline', False):
-                    if method_name == 'TabPFN_NoUDA':
+                    if method_name == 'PANDA_NoUDA':
                         display_name = "PANDA (no UDA)"
                     elif method_name in ['SVM', 'RF', 'GBDT', 'XGBoost', 'DT']:
                         # 保持标准的机器学习方法大写命名
@@ -986,7 +986,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
@@ -1026,7 +1026,7 @@ class AnalysisVisualizer:
                         if result.get('baseline_category') == 'ml_baseline':
                             display_name = f"{method_name} (ML Baseline)"
                             linestyle = ':'
-                        elif method_name == 'TabPFN_NoUDA':
+                        elif method_name == 'PANDA_NoUDA':
                             display_name = f"PANDA_NoUDA (PANDA Baseline)"
                             linestyle = '-.'
                         else:
@@ -1241,7 +1241,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name}"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
@@ -1476,7 +1476,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
@@ -1652,7 +1652,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA_NoUDA (PANDA Baseline)"
                                 linestyle = '-.'
                             else:
@@ -1776,7 +1776,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name}"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:
@@ -1927,7 +1927,7 @@ class AnalysisVisualizer:
                             if pred_data.get('baseline_category') == 'ml_baseline':
                                 display_name = f"{method_name} (ML Baseline)"
                                 linestyle = ':'
-                            elif method_name == 'TabPFN_NoUDA':
+                            elif method_name == 'PANDA_NoUDA':
                                 display_name = f"PANDA (No UDA)"
                                 linestyle = '-.'
                             else:

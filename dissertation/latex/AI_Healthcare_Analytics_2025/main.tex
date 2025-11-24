@@ -1,0 +1,119 @@
+\documentclass{article} 
+% ✅ Standard class file (article.cls) --- conforms to: 
+% ``Please use any of the standard class files such as article.cls, revtex.cls or amsart.cls.''
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel} 
+% ✅ Standard language package --- allowed
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+% ✅ Geometry used to control margins --- acceptable since visual formatting is not essential
+% ``There is no need to spend time visually formatting the manuscript...''
+
+% Useful packages
+\usepackage{amsmath, amssymb}
+% ✅ Standard math support --- allowed
+
+\usepackage{amsthm}
+% ✅ Required for theorem-like environments (proposition, lemma, etc.)
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}{Definition}
+
+% List of Figures and Tables formatting
+\usepackage{tocloft}
+\renewcommand{\cftfigpresnum}{Figure~}
+\setlength{\cftfignumwidth}{4em}
+
+\renewcommand{\cfttabpresnum}{Table~}
+\setlength{\cfttabnumwidth}{4em}
+
+
+\usepackage{graphicx} 
+% ✅ Required for figures --- conforms to:
+% ``For graphics, we recommend graphicx.sty.''
+% ⚠️ Submit a single .tex file only --- all figures should be referenced using \includegraphics,
+% and all content must reside in this file or included in-line.
+% → ``All textual material should be provided as a single file...''
+
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+% ✅ Optional, allowed if needed; bookmarks or PDF styling is not required
+
+% ⚠️ Do NOT use any custom macros or commands
+% → “Remove all personal macros before submitting.”
+
+% ⚠️ Do NOT use non-standard fonts (e.g., \usepackage{times}, \usepackage{helvet}, etc.)
+% → “All textual material should be provided as a single file in default Computer Modern fonts.”
+
+% ✅ Ensure this file compiles without errors or warnings before submission
+% → “Please ensure that the complete .tex file compiles successfully on your own system...”
+
+\usepackage{xcolor}
+\newcommand{\red}[1]{{\color{red}#1}} % comments
+\definecolor{lbcolor}{RGB}{13, 151, 175}
+\newcommand{\lb}[1]{{\color{lbcolor}#1}} % comments
+
+\title{Transforming Diagnosis through Advanced Machine Learning and Data Analytics}
+
+\author{
+    Qingyuan Liu\textsuperscript{1}
+}
+
+\date{
+    \textsuperscript{1}Department of Computing, The Hong Kong Polytechnic University, Hong Kong SAR, China
+}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Fragmented hospital silos and strict privacy rules often leave medical AI models staring at small, uneven, mismatched tabular cohorts, so anything trained straight on those data tends to wobble once it crosses sites. Here we sketch \emph{PANDA} (Pretrained Adaptation Network with Domain Alignment)—a cross-hospital setup that leans on a pre-trained tabular foundation model, keeps the feature budget lean, and folds in unsupervised domain adaptation, even if calling it a "framework" may be a stretch. PANDA uses a TabPFN-style Transformer encoder meta-trained on millions of synthetic tables; that pretraining appears to capture higher-order interactions that tuned gradient-boosting ensembles often miss when samples are scarce. A cross-cohort RFE step uses the foundation model to identify eight biomarkers that stay predictive across both hospitals, cutting data-collection demands and stabilizing interpretation. To ease distribution gaps, we add TCA to the training loop so source and target cohorts land in a shared latent space. This mix—foundation-model representations, RFE-filtered features, and TCA—seems to reduce covariate shift and keep those eight variables useful even when each site ranks them differently. On two lung-nodule cohorts (295 training, 190 external), PANDA lifts AUC and sensitivity over supervised and non-adaptive baselines, hinting that pairing foundation-model priors with statistical alignment may improve generalization in small, cross-domain medical tasks.
+\end{abstract}
+
+\clearpage
+
+INSERT_TOC_HERE
+
+\clearpage
+
+
+\clearpage
+
+\input{Section/Introduction}
+
+\input{Section/Related_Work}
+
+\input{Section/Problem_Formulation}
+
+\input{Section/Solution}
+
+\input{Section/Methods}
+
+\input{Section/Analysis}
+
+\input{Section/Evaluation}
+
+\input{Section/Conclusion}
+
+\input{Section/Acknowledgements}
+
+% References section
+
+\bibliographystyle{unsrt}       % ✅ Use numerical references only --- conforms to:
+                                % ``Please use numerical references only for citations''
+
+\bibliography{refs}             % ⚠️ For writing convenience only.
+                                % Before submission, you must:
+                                % 1. Run BibTeX to generate a `.bbl` file.
+                                % 2. Copy the contents of the `.bbl` file into this .tex file.
+                                % 3. Delete both `\bibliography{}` and `\bibliographystyle{}`.
+                                % → As per: ``If you wish to use BibTeX, please copy the reference list from the .bbl file...''
+
+
+\end{document}

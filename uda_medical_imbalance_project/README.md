@@ -161,7 +161,7 @@ python scripts/visualize_results.py            # 仅结果可视化
 ✅ PKUPH 完成: AUC: 0.8012, Accuracy: 0.7423
 
 🔄 UDA方法对比分析
-✅ TabPFN_NoUDA 完成: AUC: 0.7892, Accuracy: 0.7234
+✅ PANDA_NoUDA 完成: AUC: 0.7892, Accuracy: 0.7234
 ✅ TCA 完成: AUC: 0.8123, Accuracy: 0.7456
 ✅ CORAL 完成: AUC: 0.8045, Accuracy: 0.7389
 
@@ -789,13 +789,13 @@ results/complete_analysis_YYYYMMDD_HHMMSS/
 ## UDA方法对比结果
 | 方法 | AUC | Accuracy | F1 | Precision | Recall | 类型 |
 |------|-----|----------|----|-----------| -------|------|
-| TabPFN_NoUDA | 0.7892 | 0.7234 | 0.6987 | 0.7123 | 0.6854 | TabPFN基线 |
+| PANDA_NoUDA | 0.7892 | 0.7234 | 0.6987 | 0.7123 | 0.6854 | TabPFN基线 |
 | TCA | 0.8123 | 0.7456 | 0.7234 | 0.7345 | 0.7125 | UDA方法 |
 | CORAL | 0.8045 | 0.7389 | 0.7156 | 0.7267 | 0.7048 | UDA方法 |
 
 ## 结论和建议
 - **最佳源域方法**: TabPFN (AUC: 0.8456)
-- **TabPFN无UDA基线**: TabPFN_NoUDA (AUC: 0.7892)
+- **TabPFN无UDA基线**: PANDA_NoUDA (AUC: 0.7892)
 - **最佳UDA方法**: TCA (AUC: 0.8123)
 - **域适应效果**: TCA相比TabPFN无UDA基线提升了 0.0231 AUC
 ```

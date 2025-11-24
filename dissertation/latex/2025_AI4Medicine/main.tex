@@ -1,0 +1,89 @@
+\documentclass{article} 
+% ✅ Standard class file (article.cls) — conforms to: 
+% “Please use any of the standard class files such as article.cls, revtex.cls or amsart.cls.”
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel} 
+% ✅ Standard language package — allowed
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+% ✅ Geometry used to control margins — acceptable since visual formatting is not essential
+% “There is no need to spend time visually formatting the manuscript...”
+
+% Useful packages
+\usepackage{amsmath, amssymb} 
+% ✅ Standard math support — allowed
+
+\usepackage{graphicx} 
+% ✅ Required for figures — conforms to:
+% “For graphics, we recommend graphicx.sty.”
+% ⚠️ Submit a single .tex file only — all figures should be referenced using \includegraphics,
+% and all content must reside in this file or included in-line.
+% → “All textual material should be provided as a single file...”
+
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+% ✅ Optional, allowed if needed; bookmarks or PDF styling is not required
+
+% ⚠️ Do NOT use any custom macros or commands
+% → “Remove all personal macros before submitting.”
+
+% ⚠️ Do NOT use non-standard fonts (e.g., \usepackage{times}, \usepackage{helvet}, etc.)
+% → “All textual material should be provided as a single file in default Computer Modern fonts.”
+
+% ✅ Ensure this file compiles without errors or warnings before submission
+% → “Please ensure that the complete .tex file compiles successfully on your own system...”
+
+\usepackage{xcolor}
+\newcommand{\red}[1]{{\color{red}#1}} % comments
+\definecolor{lbcolor}{RGB}{13, 151, 175}
+\newcommand{\lb}[1]{{\color{lbcolor}#1}} % comments
+
+\title{Predicting Malignancy of Pulmonary Nodules Across Hospitals Using Transferable Machine Learning on Small and Imbalanced Datasets}
+
+\author{
+    First Author\textsuperscript{1},\quad
+    Qingyuan Liu\textsuperscript{2},\quad
+    Wenqi Fan\textsuperscript{2,}\thanks{Corresponding author: wenqi.fan@polyu.edu.hk}
+}
+
+\date{
+    \textsuperscript{1}Department of XYZ, University A, City, Country\\
+    \textsuperscript{2}Department of Computing, The Hong Kong Polytechnic University, Hong Kong SAR, China
+}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Medical AI systems face persistent challenges due to limited data, class imbalance, and inter-institutional heterogeneity. In particular, small sample sizes and skewed class distributions are common in clinical datasets, often introducing biases and undermining model reliability. Furthermore, models trained in one hospital or cohort frequently underperform when deployed at a different site, as differences in equipment, protocols, and patient demographics lead to domain shift. To address these issues, we propose a novel cross-domain adaptation framework that integrates a pre-trained Transformer-based foundation model with a classic domain alignment technique, Transfer Component Analysis (TCA). This approach leverages the rich representational power of Transformer models (pre-trained on large tabular data) and the distribution-matching capability of TCA to improve generalization under small-sample conditions. We validated our method on structured clinical datasets from two independent hospitals (295 patients in Hospital A for training, 190 patients in Hospital B for testing), focusing on malignant vs. benign pulmonary nodule classification. Our model achieved high area under the ROC curve (AUC) along with improved sensitivity and specificity on the external test set, outperforming several conventional domain adaptation baselines. These results demonstrate that the proposed framework achieves robust cross-domain prediction by aligning feature distributions and learning generalizable classification functions over structured clinical data. Interpretation: By effectively combating data scarcity and shift, the model exhibits strong generalizability and shows potential for reliable deployment in multi-center medical settings.
+\end{abstract}
+
+\input{Section/Introduction}
+
+\input{Section/Results}
+
+\input{Section/Methods}
+
+\input{Section/Discussion}
+
+
+\input{Section/Data availability}
+
+\input{Section/Code availability}
+
+\bibliographystyle{unsrt}       % ✅ Use numerical references only — conforms to: 
+                                % “Please use numerical references only for citations”
+
+\bibliography{refs}             % ⚠️ For writing convenience only.
+                                % Before submission, you must:
+                                % 1. Run BibTeX to generate a `.bbl` file.
+                                % 2. Copy the contents of the `.bbl` file into this .tex file.
+                                % 3. Delete both `\bibliography{}` and `\bibliographystyle{}`.
+                                % → As per: “If you wish to use BibTeX, please copy the reference list from the .bbl file...”
+
+
+\end{document}
