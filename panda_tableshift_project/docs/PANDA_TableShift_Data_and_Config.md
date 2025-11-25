@@ -30,11 +30,15 @@
 Sample size (full split) & 969{,}229 (train) + 121{,}154 (val) + 121{,}154 (test) & 23{,}264 (val) + 209{,}375 (test) \\
 Diabetes positive rate & 12.5\% (train) & 17.4\% (ood\_test) \\
 Years (top four) & 2015: 245{,}675; 2017: 244{,}996; 2019: 221{,}847; 2021: 223{,}088 & 2015: 49{,}216; 2017: 52{,}150; 2019: 48{,}012; 2021: 50{,}595 \\
+Years (others) & 2016: 5{,}789; 2018: 6{,}403; 2020: 9{,}630; 2022: 11{,}801 & 2016: 1{,}507; 2018: 1{,}424; 2020: 3{,}147; 2022: 3{,}324 \\
 Domain shift variable & PRACE1 = 1 (non-Hispanic White) & PRACE1 in \{2,3,4,5,6\} (other races) \\
 Label definition & \multicolumn{2}{c}{DIABETES coded 1 (Yes) vs 0 (No/Prediabetes/Borderline); NA rows dropped} \\
 Feature summary & \multicolumn{2}{c}{142 numerical features after preprocessing; cross-year aligned, underscores removed; IYEAR retained} \\
 Preprocessing notes & \multicolumn{2}{c}{DRNK\_PER\_WEEK=99900 dropped; SEX->\{0,1\}; health-day 88->0; TOLDHI/SMOKDAY2 fill NOTASKED\_MISSING} \\
-Sampling for modeling & 1{,}024 sampled for training (seed 42) & 2{,}048 sampled for evaluation (seed 42) \\\hline
+Sampling for modeling & 1{,}024 sampled for training (seed 42) & 2{,}048 sampled for evaluation (seed 42) \\
+Sampled diabetes rate (seed 42) & 13.2\% & 17.3\% \\
+Sampled positive / negative counts & 135 / 889 & 355 / 1,693 \\
+Sampled years (seed 42) & 2015:245; 2017:278; 2019:232; 2021:241; others (2016:8, 2018:2, 2020:7, 2022:11) & 2015:497; 2017:488; 2019:445; 2021:525; others (2016:17, 2018:17, 2020:30, 2022:29) \\\hline
 \end{tabular}
 \end{table}
 ```

@@ -1,4 +1,5 @@
 \section{Evaluation}
+\label{sec:eval-start}
 \label{sec:evaluation}
 
 We assess PANDA across cross-institutional performance, domain adaptation, interpretability, and clinical utility, using a protocol meant to resemble what deployment would actually look like.
@@ -110,46 +111,114 @@ Feature-space checks (Fig.~\ref{fig:tca-visualization}) suggest TCA is doing its
 
 \subsection{Additional Cross-Domain Validation on a Public Benchmark}
 
-We added a public benchmark to stress-test PANDA under a race shift: the TableShift BRFSS
-Diabetes task, which trains on primarily White respondents and evaluates on non-White
-respondents. Table~\ref{tab:brfss_cohort_summary} summarizes the full cohorts before subsampling,
-highlighting the massive data scale, the imbalance in diabetes prevalence (12.5\% vs.\ 17.4\%), and
-the precise definition of the domain variable (PRACE1). For reproducible experiments we draw
-$n_{\text{train}}=1024$ and $n_{\text{test}}=2048$ records while keeping the same label distribution, mirroring
-the small-sample constraints studied in the hospital setting.
+Beyond the private cross-hospital evaluation, we stress-test PANDA on a public benchmark with an
+explicit domain shift: the TableShift BRFSS Diabetes task (race shift: White $\rightarrow$ non-White). All
+plots were re-rendered with high-DPI fonts for print clarity. Table~\ref{tab:brfss_cohort_summary}
+summarizes the full cohorts prior to subsampling, highlighting the large scale, the difference in
+diabetes prevalence (12.5\% vs.\ 17.4\%), and the definition of the shift variable (PRACE1). For a
+like-for-like comparison with our small-sample hospital setting, we sample $n_{\text{train}}=1024$ and
+$n_{\text{test}}=2048$ while maintaining the source/target label balance.
 
 \begin{table}[htbp]
 \centering
-\caption{Source (ID) vs Target (OOD) cohorts for BRFSS Diabetes (race shift).}
+\caption{In-distribution (ID) versus out-of-distribution (OOD) BRFSS Diabetes cohorts under race shift.}
 \label{tab:brfss_cohort_summary}
-\begin{tabular}{lcc}
+
+\begin{tabular}{p{3cm}p{5cm}p{5cm}}
 \hline
-\textbf{Characteristic} & \textbf{Source / ID (PRACE1=1)} & \textbf{Target / OOD (PRACE1 in $\{2..6\}$)} \\\hline
-Sample size (full split) & 969{,}229 (train) + 121{,}154 (val) + 121{,}154 (test) & 23{,}264 (val) + 209{,}375 (test) \\
-Diabetes positive rate & 12.5\% (train) & 17.4\% (ood\_test) \\
-Years (top four) & 2015: 245{,}675; 2017: 244{,}996; 2019: 221{,}847; 2021: 223{,}088 & 2015: 49{,}216; 2017: 52{,}150; 2019: 48{,}012; 2021: 50{,}595 \\
-Domain shift variable & PRACE1 = 1 (non-Hispanic White) & PRACE1 in $\{2,3,4,5,6\}$ (other races) \\
-Label definition & \multicolumn{2}{c}{DIABETES coded 1 (Yes) vs 0 (No/Prediabetes/Borderline); NA rows dropped} \\
-Feature summary & \multicolumn{2}{c}{142 numerical features; cross-year aligned; underscores removed; IYEAR retained} \\
-Preprocessing notes & \multicolumn{2}{c}{DRNK\_PER\_WEEK=99900 dropped; SEX$\rightarrow\{0,1\}$; health-day 88$\rightarrow$0; TOLDHI/SMOKDAY2 fill NOTASKED\_MISSING} \\
-Sampling for modeling & 1{,}024 sampled for training (seed 42) & 2{,}048 sampled for evaluation (seed 42) \\\hline
+\textbf{Characteristic} &
+\textbf{Source / ID (\texttt{PRACE1} = 1)} &
+\textbf{Target / OOD (\texttt{PRACE1} $\in \{2,3,4,5,6\}$)} \\
+\hline
+
+Sample size &
+Train: 969{,}229 &
+Val: 23{,}264 \\
+& Val: 121{,}154 &
+Test: 209{,}375 \\
+& Test: 121{,}154 & \\
+
+Diabetes positive rate &
+12.5\% (train) &
+17.4\% (OOD test) \\
+
+Survey years &
+2015: 245{,}675 &
+2015: 49{,}216 \\
+& 2016: 5{,}789 &
+2016: 1{,}507 \\
+& 2017: 244{,}996 &
+2017: 52{,}150 \\
+& 2018: 6{,}403 &
+2018: 1{,}424 \\
+& 2019: 221{,}847 &
+2019: 48{,}012 \\
+& 2020: 9{,}630 &
+2020: 3{,}147 \\
+& 2021: 223{,}088 &
+2021: 50{,}595 \\
+& 2022: 11{,}801 &
+2022: 3{,}324 \\
+
+Domain shift variable &
+\texttt{PRACE1}=1 (non-Hispanic White) &
+\texttt{PRACE1}$\in\{2,3,4,5,6\}$ (other races) \\
+
+Label definition &
+\texttt{DIABETES}=1 (Yes) &
+\texttt{DIABETES}=0 (No / Prediabetes / Borderline) \\
+
+Modelling sample &
+1{,}024 training samples &
+2{,}048 evaluation samples \\
+
+Sampled diabetes rate &
+13.2\% (train subset) &
+17.3\% (OOD subset) \\
+
+Diabetes outcome & & \\
+\quad Positive & 135 (13.2\%) & 355 (17.3\%) \\
+\quad Negative & 889 (86.8\%) & 1{,}693 (82.7\%) \\
+
+Sampled years &
+2015: 245 &
+2015: 497 \\
+& 2016: 8 &
+2016: 17 \\
+& 2017: 278 &
+2017: 488 \\
+& 2018: 2 &
+2018: 17 \\
+& 2019: 232 &
+2019: 445 \\
+& 2020: 7 &
+2020: 30 \\
+& 2021: 241 &
+2021: 525 \\
+& 2022: 11 &
+2022: 29 \\
+
+\hline
 \end{tabular}
 \end{table}
 
-Because the evaluation uses the native 0.5 threshold on a 17\% positive cohort without class weighting,
-the classifiers lean toward the majority (negative) class. As a result, the TableShift panels in
-Fig.~\ref{fig:brfss-roc} and Fig.~\ref{fig:brfss-heatmap} show high accuracy yet visibly low precision/recall/F1:
-the models rarely fire on positives, so recall collapses while precision spikes only on the few true
-positives. We keep these raw values to reflect the default-deployment setting; more aggressive
-threshold tuning or balanced loss functions could raise the recall if needed.
+The dataset contains 142 numerical features with cross-year alignment. Feature names have underscores removed for consistency, while the \texttt{IYEAR} variable is retained to preserve temporal information. Preprocessing steps include removing NA rows and outliers (\texttt{DRNK\_PER\_WEEK}=99900), recoding health-day responses from 88 to 0, mapping \texttt{SEX} to binary 0/1 values, and imputing missing values for \texttt{TOLDHI} and \texttt{SMOKDAY2} as \texttt{NOTASKED\_MISSING}.
 
-Across seven baselines and variants, PANDA with TCA achieved the highest OOD AUC (0.804) and
-accuracy (0.848), edging out the non-adaptive TabPFN variant (AUC 0.796, accuracy 0.847) and
-tree ensembles (best GBDT AUC 0.783). Using the source cross-validation tuning run
-(AUC 0.809, accuracy 0.848) as a reference, the race-shift performance drop is mild
-($\Delta$AUC $\approx$ 0.005; $\Delta$Accuracy $<0.001$), while adaptation provides a small but consistent
-gain over PANDA\_NoUDA ($+0.008$ AUC). Classic SVM and decision trees degraded more sharply under
-the race shift, reinforcing the need for explicit alignment even on large public datasets.
+Because we keep the native 0.5 threshold and do not apply class weighting on a 17\% positive cohort,
+classifiers lean toward the majority (negative) class. The calibration and decision-curve panels in
+Fig.~\ref{fig:brfss-roc} therefore pair high accuracy with low recall and F1: the default threshold misses
+many positives, while precision is moderate but not enough to lift the harmonic mean. We retain these
+raw numbers to reflect the default-deployment setting; threshold tuning or balanced losses could raise
+recall if desired. Fig.~\ref{fig:brfss-heatmap} contrasts the source and race-shift OOD metrics,
+showing how PANDA\_TCA holds the smallest deltas while tree models drop sharply under the shift.
+
+Across seven baselines and variants, PANDA with TCA attained the highest OOD AUC (0.804) and
+accuracy (0.848), edging the non-adaptive TabPFN variant (AUC 0.796, accuracy 0.847) and tree
+ensembles (best GBDT AUC 0.783). Using the source cross-validation tuning run
+(AUC 0.809, accuracy 0.848) as a reference, the race-shift drop is mild ($\Delta$AUC $\approx$ 0.005;
+$\Delta$Accuracy $<0.001$), while adaptation provides a small but consistent gain over PANDA\_NoUDA
+(+$0.008$ AUC). Classic SVM (AUC 0.646) and decision trees (AUC 0.566) degrade far more under the
+race shift, underscoring the value of explicit alignment even on large public data.
 
 \begin{figure}[htbp]
     \centering
@@ -197,3 +266,4 @@ RFE with the pre-trained model kept interpretation manageable, and performance a
     deployment.}
     \label{fig:combined_analysis}
 \end{figure}
+\label{sec:eval-end}

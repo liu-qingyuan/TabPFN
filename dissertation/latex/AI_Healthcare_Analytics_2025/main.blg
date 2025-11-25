@@ -1,0 +1,109 @@
+This is BibTeX, Version 0.99d (TeX Live 2025/Homebrew)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: unsrt.bst
+Database file #1: refs.bib
+Warning--entry type for "noauthor_prior_nodate" isn't style-file defined
+--line 1038 of file refs.bib
+Warning--entry type for "noauthor_closer_nodate" isn't style-file defined
+--line 1059 of file refs.bib
+Warning--entry type for "noauthor_realistic_nodate" isn't style-file defined
+--line 1066 of file refs.bib
+Warning--entry type for "noauthor_automldrift-resilient_tabpfn_2025" isn't style-file defined
+--line 1072 of file refs.bib
+Warning--entry type for "noauthor_mlfoundationstableshift_nodate" isn't style-file defined
+--line 1157 of file refs.bib
+Warning--entry type for "bytezcom_tabicl_2025" isn't style-file defined
+--line 1377 of file refs.bib
+Warning--entry type for "gardner_tableshift_nodate" isn't style-file defined
+--line 2030 of file refs.bib
+Warning--entry type for "khoeini_fttransformer_2024" isn't style-file defined
+--line 2075 of file refs.bib
+Warning--empty journal in garau_external_2020
+Warning--empty year in garau_external_2020
+Warning--empty journal in zhang_comprehensive_2022
+Warning--empty year in zhang_comprehensive_2022
+Warning--empty journal in liu_establishment_2024
+Warning--empty year in liu_establishment_2024
+Warning--can't use both volume and number fields in arik2021tabnet
+Warning--empty journal in guo_evaluation_2022
+Warning--empty year in guo_evaluation_2022
+Warning--empty journal in orouji_domain_nodate
+Warning--empty year in orouji_domain_nodate
+Warning--empty journal in ahn_unsupervised_2023
+Warning--empty year in ahn_unsupervised_2023
+Warning--empty journal in ardila_end--end_2019
+Warning--empty year in ardila_end--end_2019
+Warning--empty journal in zech_variable_2018
+Warning--empty year in zech_variable_2018
+Warning--empty journal in fan_tabular_2024
+Warning--empty year in fan_tabular_2024
+Warning--empty journal in borisov_deep_2024
+Warning--empty year in borisov_deep_2024
+Warning--can't use both volume and number fields in margeloiu2023weight
+Warning--empty journal in hollmann_accurate_2025
+Warning--empty year in hollmann_accurate_2025
+Warning--empty journal in liu_tabular_2025
+Warning--empty year in liu_tabular_2025
+Warning--empty author in noauthor_pdf_nodate
+Warning--empty year in noauthor_pdf_nodate
+Warning--empty journal in zhang_adadiag_2022
+Warning--empty year in zhang_adadiag_2022
+Warning--empty journal in pham_open-set_2025
+Warning--empty year in pham_open-set_2025
+Warning--empty journal in guan_domainatm_2023
+Warning--empty year in guan_domainatm_2023
+Warning--empty journal in guan_domain_2022
+Warning--empty year in guan_domain_2022
+Warning--empty journal in he_multi-attention_2022
+Warning--empty year in he_multi-attention_2022
+Warning--empty journal in chen_pulmonary_2025
+Warning--empty year in chen_pulmonary_2025
+Warning--empty journal in li_predicting_2019
+Warning--empty year in li_predicting_2019
+Warning--empty journal in lin_combined_2024
+Warning--empty year in lin_combined_2024
+Warning--empty journal in perandini_solid_2016
+Warning--empty year in perandini_solid_2016
+You've used 81 entries,
+            1791 wiz_defined-function locations,
+            849 strings with 19646 characters,
+and the built_in function-call counts, 19369 in all, are:
+= -- 1442
+> -- 1249
+< -- 9
++ -- 447
+- -- 366
+* -- 1505
+:= -- 3063
+add.period$ -- 222
+call.type$ -- 81
+change.case$ -- 81
+chr.to.int$ -- 0
+cite$ -- 127
+duplicate$ -- 702
+empty$ -- 1819
+format.name$ -- 366
+if$ -- 4147
+int.to.chr$ -- 0
+int.to.str$ -- 81
+missing$ -- 55
+newline$ -- 386
+num.names$ -- 75
+pop$ -- 320
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 415
+stack$ -- 0
+substring$ -- 1223
+swap$ -- 134
+text.length$ -- 9
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 46
+while$ -- 161
+width$ -- 83
+write$ -- 754
+(There were 54 warnings)

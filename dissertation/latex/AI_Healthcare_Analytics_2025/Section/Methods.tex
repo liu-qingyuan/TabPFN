@@ -1,18 +1,40 @@
 \section{Methods}
 \label{sec:methods}
+\label{sec:meth-start}
 
 \subsection{Motivating Challenges and Methodological Response}
-Cross-hospital malignancy prediction poses interdependent obstacles that destabilize standard pipelines, and PANDA is shaped around those pain points. Small cohorts mean most hospitals contribute only a few hundred annotated patients, leaving deep networks hypersensitive to randomness and prone to overfitting. PANDA leans on a pre-trained tabular foundation model that performs in-context learning, reusing inductive biases from millions of synthetic tasks instead of trying to learn everything from scratch in a tiny clinical cohort.
+Cross-hospital malignancy prediction and public-health surveillance generate intertwined constraints: tiny labeled cohorts, label imbalance, feature mismatch, and multiple forms of distribution shift. PANDA is organized around these constraints rather than around model novelty. Table~\ref{tab:challenge_mapping} distills the major obstacles and the mechanisms assigned to them.
 
-Pronounced distributional differences between hospitals sit on the next rung: divergent CT scanners, laboratory ranges, and demographics nudge covariates far enough to erode boundaries learned at one site. PANDA embeds Transfer Component Analysis (TCA) inside the latent space produced by the foundation model so alignment happens before classification, which seems to soften the covariate shift without discarding signal.
+\begin{table}[htbp]
+  \centering
+  \caption{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is reused for pulmonary nodules and the TableShift BRFSS race-shift task.}
+  \label{tab:challenge_mapping}
+  \begin{tabular}{p{0.22\textwidth}p{0.32\textwidth}p{0.33\textwidth}}
+    \toprule
+    Challenge & Mechanism & Expected benefit \\ \midrule
+    Small $n$ with high-dimensional covariates & TabPFN prior-data fitted network performs in-context learning with frozen weights & Transfers structural priors from millions of synthetic tasks, reducing estimation variance without local fine-tuning \\ 
+    Feature heterogeneity across institutions/demographics & Cross-domain RFE surfaces stable subsets (``best7'', ``best8'') definable in every site, plus schema alignment utilities & Removes site-specific artefacts before adaptation and guarantees that downstream models only consume shared attributes \\ 
+    Covariate shift and mixed acquisition protocols & TCA applied to TabPFN embeddings realigns marginal distributions before the classifier head & Shrinks the $d_{\mathcal{H}\Delta\mathcal{H}}$ divergence so that context examples remain relevant to target queries \\ 
+    Label prevalence drift and class imbalance & Class-balanced sampling, calibrated decision thresholds, and ensemble temperature scaling & Maintains sensitivity for malignant/SPN-positive cohorts and accounts for higher diabetes rates in non-White BRFSS respondents \\ 
+    Variance from preprocessing choices & Multi-branch preprocessing (ordering, quantile transforms, ordinal encoding) with ensemble averaging & Injects diversity without retraining new weights and stabilizes predictions under minor data perturbations \\ \bottomrule
+  \end{tabular}
+\end{table}
 
-Feature heterogeneity complicates things further. Institutions disagree on which variables they collect and how they encode them; missingness patterns differ as well. Training on every available variable bakes in site-specific artifacts, while tightening to the intersection risks losing signal. PANDA applies cross-domain recursive feature elimination to keep a compact subset of variables that stay predictive in both hospitals, making sure the downstream adaptation actually operates on features the sites share in practice.
+This architecture ensures that every component answers a crisp question: why do small-sample medical deployments fail, and what prior or alignment tool counters that failure?
 
-Class imbalance becomes especially visible in small datasets, where the number of malignant cases can differ sharply by hospital. Naive models tend to collapse onto the majority class, a pattern we've seen more than once. Using class-balanced sampling and calibrated loss terms helps the minority signals stay present enough to maintain the sensitivity that screening workflows typically expect.
+\subsection{Training and Inference Pipeline}
+The full workflow treats both pulmonary nodules and BRFSS as unlabeled-target problems. The steps below summarize the data dependencies and the order in which components are invoked.
 
-Small samples also inflate variance: minor tweaks in preprocessing, feature ordering, or even the random seed can shift predictions more than one might like to admit. A multi-branch ensemble counters this by viewing each patient through several slightly different representations--shuffled feature orders, alternate encodings, and varied distribution transforms--and then pooling the results. The averaged probabilities, once temperature-scaled, tend to stay calibrated enough to support clinical thresholds rather than forcing everything into brittle hard labels.
-
-The pieces fit together as a challenge-driven architecture: each module targets a known failure mode in cross-hospital prediction instead of being bolted on for novelty.
+\noindent\textbf{PANDA cross-domain pipeline.}
+\begin{enumerate}
+  \item \textbf{Schema harmonization:} compute the shared index set $\mathcal{F}_{\cap}$ between $\mathcal{D}_s$ and $\mathcal{D}_t$; align categorical codes and clinical units, producing matrices $X_s^{\cap}, X_t^{\cap}$.
+  \item \textbf{Cross-domain RFE:} run recursive feature elimination with permutation-based importances on $\mathcal{D}_s$ while constraining candidates to $\mathcal{F}_{\cap}$. Record stable subsets (best7/best8) for downstream use.
+  \item \textbf{Multi-branch preprocessing:} for each retained subset, construct four preprocessing branches (raw order, rotated order, quantile transform, ordinal encoding). Each branch yields context matrices and associated metadata.
+  \item \textbf{TabPFN context construction:} concatenate support (training) samples and target queries per branch, tokenize as sequences, and feed to the frozen TabPFN backbone to obtain contextual embeddings.
+  \item \textbf{Transfer Component Analysis:} solve the TCA objective on each branch's embeddings using both $X_s^{\cap}$ and $X_t^{\cap}$ to obtain projection $\mathbf{W}$; project embeddings into an aligned latent space.
+  \item \textbf{Prediction and aggregation:} pass aligned embeddings through the foundation-model classifier head to get probabilities; apply class-balanced calibration/temperature scaling; average across 32 branch-seed combinations to form the final risk score.
+  \item \textbf{Thresholding and reporting:} select operating points (e.g., 0.5 default or clinically mandated net-benefit thresholds) separately for each cohort, but keep the classifier weights fixed.
+\end{enumerate}
 
 \subsection{Foundation Model Architecture}
 
@@ -33,7 +55,7 @@ We recursively eliminate features based on domain-invariant importance scores:
 \text{Importance}(\mathbf{x}_j) = \frac{1}{M}\sum_{m=1}^{M} \left| \mathcal{R}_s^{(m)}(\mathcal{F} \setminus \{\mathbf{x}_j\}) - \mathcal{R}_s^{(m)}(\mathcal{F}) \right|
 \]
 
-where $M = 5$ permutation repeats evaluate feature stability. The RFE procedure first surfaced nine highly discriminative features. To enforce cross-institutional availability, one feature absent from the target domain (Dataset B) was removed, yielding a final set of $|\mathcal{F}^*| = 8$ clinical variables that both hospitals record.
+where $M = 5$ permutation repeats evaluate feature stability. At each iteration the least important element within $\mathcal{F}_{\cap}$ is dropped, producing nested subsets. Clinical input from collaborators constrains the search to candidates physically measurable at every institution, so the procedure naturally returns compact sets (best7, best8) that survive both availability and robustness checks.
 
 \subsubsection{Multi-Branch Preprocessing Pipeline}
 The 32-model ensemble comes from four simple branches: two keep the original or rotated feature order with plain numerical encodings, and two pair those orders with a quantile transform plus ordinal encoding. Each branch spits out eight runs with seeds 1--8, and a majority vote settles the label. Balanced-accuracy weights keep the malignant class from getting drowned out.
@@ -52,6 +74,27 @@ The alignment step preserves discriminative information while reducing domain di
 \mathbf{z} = \mathbf{W}^\top \phi(\mathbf{x}), \quad \phi: \mathbb{R}^d \rightarrow \mathbb{R}^h
 \]
 where latent dimensionality $h = 15$ balances information preservation with alignment effectiveness.
+
+\subsubsection{Label Prevalence Handling}
+Unsupervised deployment cannot rely on target labels to recalibrate prevalence. PANDA therefore performs class-balanced sampling on the source cohort so that minority cases remain visible during TabPFN context construction. During inference we maintain cohort-specific threshold tables: pulmonary nodule deployments retain clinically validated malignancy cutoffs, whereas BRFSS experiments default to 0.5 for AUC computation and adapt thresholds only when policy guidance requires specific sensitivity ranges. Temperature scaling is applied using a held-out source fold to avoid leaking target information.
+
+\subsection{Assumptions and Mitigation Strategies}
+The pipeline rests on several operational assumptions. Table~\ref{tab:assumption_table} lists the most salient ones, describes the failure mode if they are violated, and notes the mitigation built into PANDA. This keeps the discussion in the methods section distinct from later empirical performance claims.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Key assumptions behind PANDA and the mitigation strategies employed when deployments deviate from them.}
+  \label{tab:assumption_table}
+  \begin{tabular}{p{0.28\textwidth}p{0.30\textwidth}p{0.30\textwidth}}
+    \toprule
+    Assumption & Failure mode if violated & Mitigation in PANDA \\ \midrule
+    Shared schema retains predictive signals & Missing biomarkers or survey items make $\mathcal{F}_{\cap}$ too small, degrading TabPFN context quality & Cross-domain RFE enforces minimum-cardinality subsets (best7/best8) vetted by clinicians; fallback to manual feature engineering when subset shrinks below safety threshold \\ 
+    Covariate shift is smooth enough for kernel alignment & Abrupt scanner or questionnaire shifts push samples outside the kernel bandwidth, leading to large $d_{\mathcal{H}\Delta\mathcal{H}}$ & Online statistics monitor MMD and trigger retraining/alignment updates; kernel bandwidth adapts via median heuristic recalculated per batch \\ 
+    Label prevalence drift is moderate & Thresholds calibrated on $P_s(y)$ misclassify minority cohorts & Maintain cohort-specific threshold dictionaries and class-balanced sampling; clinicians can override cutoffs per site \\ 
+    TabPFN context window covers source+target batches & Excessively large batches overflow the Transformer input, forcing truncation & Use stratified subsampling (1k context rows default) with deterministic seeds; for BRFSS we slice the unlabeled pool before feeding TabPFN \\ 
+    Independence of samples within context & Correlated patients (e.g., repeat visits) bias in-context learning & Deduplicate patient identifiers and enforce visit-level sampling prior to TabPFN ingestion \\ \bottomrule
+  \end{tabular}
+\end{table}
 
 \subsection{Ethics Statement and Data Collection}
 This study received Institutional Review Board approval from two participating hospitals in China and followed the Declaration of Helsinki. Patient data were retrospectively extracted from electronic medical records and fully de-identified before analysis. Written informed consent for research use of clinical information was obtained from all patients with solitary pulmonary nodules (SPNs) at admission, and no identifiable personal data were retained.
@@ -88,3 +131,4 @@ For comparison, we included a few familiar baselines:
 \item Clinical scores (Mayo Clinic, PKUPH)~\cite{swensen1997chest,perandini_solid_2016}
 
 \end{itemize}
+\label{sec:meth-end}

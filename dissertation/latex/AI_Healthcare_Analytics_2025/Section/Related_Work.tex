@@ -1,306 +1,507 @@
 \section{Related Work}
+\label{sec:rw-start}
 \label{sec:related-work}
 
-\subsection{Tabular foundation models}
+\subsection{Tabular learning for medical data: tree ensembles, deep tabular networks, and tabular foundation models}
 
-Tabular foundation models have shifted small-sample learning by pairing large-scale
-pre-training with meta-learning. Gradient-boosted trees remain the workhorse for
-heterogeneous clinical data because they tolerate missingness, handle multimodal
-ranges, and are simple to interpret, yet they typically degrade once $N<1{,}000$
-and overfit the noise that dominates specialized hospitals~\cite{chen2016xgboost,
-borisov2022deep,grinsztajn_why_2022,borisov_deep_2024}. Benchmark suites covering
-hundreds of tabular tasks show that tree ensembles still outperform most neural
-architectures unless the dataset grows very large, and recent deep-tabular surveys
-document that transformers demand careful tuning and often lose to trees when data
-are scarce~\cite{shmuel_comprehensive_2024,somvanshi2024survey,fan_tabular_2024,
-ren_deep_2025}. LightGBM and CatBoost remain competitive for EHR-style noise
-because they exploit sparsity-aware splits and categorical handling, but their
-non-differentiable nature blocks end-to-end adaptation across hospitals and
-prevents seamless multimodal fusion~\cite{chen2016xgboost,shmuel_comprehensive_2024}.
-Tree-specific inductive biases (monotone constraints, custom loss shaping) help
-respect clinical priors, yet they do not solve feature mismatch or label drift; as
-a result, these ensembles often serve as calibrated baselines or components inside
-larger, two-stage pipelines rather than as fully adaptive models in isolation.
-The closed-form residual fitting that makes GBDTs strong on mixed feature types
-also means they cannot be fine-tuned across domains without full retraining or
-distillation, a bottleneck for cross-hospital deployment.
-Sequential residual fitting gives GBDTs low bias with modest variance when data
-are abundant, but in the $N<1{,}000$ regime typical of rare-disease cohorts they
-memorize stochastic noise and lose calibration. Their non-differentiable splits also
-block gradient-based multimodal training (e.g., joint tabular–CT pipelines) and
-prevent plug-in domain alignment without rebuilding the ensemble from scratch.
+The literature on structured-data learning has progressed from classical ensembles
+to deep tabular networks and, most recently, to tabular foundation models that
+mirror the trends in NLP and computer vision~\cite{bommasani2021opportunities,
+schneider2024foundation}. We separate the discussion into tree ensembles, deep
+tabular architectures, and tabular foundation models to highlight where each excels
+and why none alone solves cross-hospital robustness. In medical settings, the same
+patient cohort may be modeled by tree ensembles, deep tabular networks, or
+foundation models depending on sample size and operational constraints; understanding
+their respective failure modes under domain shift is crucial for positioning PANDA.
 
-The ``deep tabular'' wave seeks to combine differentiability with structured
-inductive bias. TabNet introduced sequential feature-masking to mimic tree paths,
-TabTransformer contextualized categorical embeddings, FT-Transformer tokenized all
-features, and SAINT added intersample attention to borrow signal across similar
-patients~\cite{arik2021tabnet,huang_tabtransformer_2020,gorishniy_revisiting_2021,
-somepalli2021saint}. Weight-tying, basis-function decompositions, and extensive
-regularization further narrow the gap, yet survey and benchmark papers repeatedly
-find that these architectures remain data-hungry and unstable in the small-cohort
-regime typical of tertiary hospitals~\cite{margeloiu2023weight,somvanshi2024survey,
-fan_tabular_2024,noauthor_comparative_nodate}. Basis Transformers,
-FT-Transformer variants, and TabICL prompt-serialization approaches highlight the
-trade-off: richer interactions vs.\ higher compute and tuning costs, with limited
-evidence that they close the gap to tuned GBDTs under label scarcity~\cite{loh_basis_2025,
-khoeini_fttransformer_2024,bytezcom_tabicl_2025}.
-Several works reframe tabular learning as sequence or graph modeling (e.g., row
-serialization or similarity graphs) to inject relational bias, but systematic
-assessments report mixed benefits and high engineering overhead for clinical
-deployment~\cite{liu_tabpfn_2025,margeloiu2023weight}.
-In practice, these models often need exhaustive hyperparameter search, label
-smoothing, and regularization to avoid memorizing noise on small cohorts—constraints
-rarely satisfied in niche clinical registries.
+\subsubsection{Tree ensembles for clinical tabular data}
 
-TabPFN and its successors are explicitly designed to fill that gap. The transformer
-is pretrained on millions of synthetic datasets, so inference consists of a single
-forward pass that matches tuned ensembles while avoiding the unstable gradient
-updates that plague small cohorts~\cite{hollmann2025accurate,hollmann_accurate_2025}.
-TabPFN-2.5 widens the context window to tens of thousands of rows; TabPFN v2 has
-been dissected to expose overconfident patterns, and the ``TabPFN Unleashed'' work
-adds bias/variance control through lightweight encoders~\cite{noauthor_pdf_2025,
-noauthor_closer_nodate,noauthor_realistic_nodate,liu_tabpfn_2025}. Drift-resilient
-variants inject a secondary structural causal model to track temporal shifts, while
-drug-discovery and CT radiomics applications demonstrate that the synthetic priors
-generalize to biomedical modalities with stable feature sets~\cite{helli_drift-resilient_2024,
-noauthor_automldrift-resilient_tabpfn_2025,chen_tabpfn_2025,liu_tabular_2025}.
-External essays on the limits of TabPFN for high-dimensional omics reinforce the
-closed-world assumption: as dimensionality grows, the model relies on aggressive
-feature selection or prior-guided embeddings to stay calibrated~\cite{noauthor_pdf_nodate,
-zhou_limitations_2025}. Tabular Large Language Models that serialize tables into
-prompts aim to import general reasoning from foundation LLMs, but they remain
-expensive and numerically brittle for high-throughput risk prediction~\cite{brown2020language,
-eremeev_turning_2025,jayawardhana_transformers_2025}. Distribution-shift benchmarks
-such as Wild-Tab remind us that even foundation models overfit to training-domain
-quirks unless explicit alignment is layered on top~\cite{kolesnikov_wild-tab_2023}.
-That fragility echoes the TabPFN closed-world assumption: aligned feature sets,
-moderate dimensionality, and $P_{\text{train}}(X,Y)\approx P_{\text{test}}(X,Y)$.
-When hospital protocols or data schemas diverge, upstream compression (RFE) and
-alignment (TCA) become necessary companions to preserve calibration.
+Gradient-boosted decision trees (GBDTs) such as XGBoost, LightGBM, and CatBoost
+remain the workhorses for EHR-style tables because they tolerate heterogeneous
+scales, missing values, and noisy categorical codes while supporting monotone
+constraints and other clinical priors~\cite{chen2016xgboost,grinsztajn_why_2022,
+borisov2022deep}. Benchmarking studies covering hundreds of OpenML tasks show that
+GBDTs still beat most neural baselines whenever training samples exceed a few
+thousand, yet they overfit rapidly when $N<1{,}000$, cannot be fine-tuned
+incrementally, and require full retraining when hospitals change their feature
+schemas~\cite{gorishniy2021revisiting,shmuel_comprehensive_2024,fan_tabular_2024}.
+Case reports on cross-institutional readmission and mortality prediction show that
+tree models memorize acquisition artifacts (assay vendors, coding practices) and
+lose 10--20 AUC points when transferred without recalibration, illustrating their
+non-differentiable structure blocks end-to-end multimodal training and plug-and-play
+domain adaptation~\cite{borisov_deep_2024,liu_tabpfn_2025}. This rigidity motivates
+attempts to distill tree priors into differentiable encoders so that adaptation can
+occur without rebuilding the model for each site.
+These same inductive biases explain why trees dominate mid-scale public benchmarks
+yet struggle in small, imbalanced medical cohorts: sparsity-aware splits handle
+missing labs gracefully, but boosting magnifies noise when positive classes are rare
+and hospital-specific priors leak into leaf structure. Because gradients stop at
+each split, trees cannot share representations with image encoders or participate
+in gradient-based domain adaptation, forcing manual feature harmonization whenever
+schemas or prevalence shift.
 
-Partial alignments of transformers with classical models—such as PFN-Boost or
-LLM-Boost—highlight that generalizable tabular modeling often requires blending
-strengths rather than picking one architecture~\cite{liu_tabpfn_2025,loh_basis_2025}.
-These hybrids foreshadow the PANDA recipe: retain the foundation prior for
-sample-efficiency, but expose hooks for domain adaptation, feature selection,
-and calibration before in-context prediction.
+\subsubsection{Deep tabular networks}
+
+Deep tabular architectures import attention and representation learning from
+sequence models to overcome the adaptation gap. TabNet uses sequential feature masks
+to mimic decision paths, TabTransformer contextualizes categorical embeddings,
+FT-Transformer tokenizes all features, and SAINT introduces intersample attention
+plus contrastive pre-training to borrow signal across patients~\cite{arik2021tabnet,
+huang_tabtransformer_2020,gorishniy_revisiting_2021,somepalli2021saint}. Basis
+Transformers, NODE variants, TabICL prompt-serialization, weight-prediction, and
+regularization schemes further explore the space between neural and symbolic
+models~\cite{margeloiu2023weight,loh_basis_2025,khoeini_fttransformer_2024,
+bytezcom_tabicl_2025,somvanshi2024survey}. However, comprehensive surveys and
+multiple leaderboard studies report that these models remain data-hungry,
+sensitive to hyperparameters, and often trail tuned tree ensembles on small,
+heterogeneous cohorts typical of tertiary hospitals~\cite{fan_tabular_2024,
+shmuel_comprehensive_2024,ren_deep_2025}. In external-hospital transfers, SAINT and
+FT-Transformer frequently degrade to near-random calibration when categorical codes
+shift or when batch-size constraints prevent stable intersample attention. The
+computational footprint (long training times, GPU memory pressure) further limits
+adoption in clinical IT stacks, where inference latency and cost dominate.
+Empirical comparisons on clinical risk prediction echo this pattern: TabNet often
+needs extensive learning-rate scheduling and sparsity penalties to match GBDT, and
+TabTransformer under-utilizes numerical biomarkers unless carefully normalized.
+FT-Transformer narrows the gap by embedding every feature, yet its quadratic
+self-attention becomes impractical for wide tables. SAINT's intersample attention
+helps when minibatches are large, but collapses on scarce data, making these models
+fragile without strong regularization and carefully tuned augmentations.
+These limitations are amplified in clinical registries where hundreds of variables
+encode comorbidities, medication history, and laboratory trajectories. Studies on
+ICU mortality, sepsis, and readmission prediction report that deep tabular networks
+match or slightly exceed tuned GBDTs on in-distribution test sets but lose their
+advantage when evaluated on later time periods or new hospitals, especially when
+categorical vocabularies change or when privacy constraints cap batch sizes~\cite{gorishniy2021revisiting,
+guo_evaluation_2022,ren_deep_2025}. In such small-$N$, high-dimensional regimes,
+hyperparameter sensitivity translates directly into clinical risk: minor changes in
+learning rate or regularization can flip decisions near treatment thresholds.
+
+\subsubsection{Tabular foundation models}
+
+Tabular foundation models push self-supervised pre-training and in-context learning
+into structured data. TabPFN meta-trains a transformer on millions of synthetic
+datasets sampled from diverse structural-causal priors, learns to approximate
+posterior predictive distributions, and performs inference via a single forward
+pass without gradient updates~\cite{hollmann2025accurate,hollmann_accurate_2025}.
+Follow-up work expands its reach without breaking the closed-world assumption:
+TabPFN-2.5 relaxes quadratic attention to accommodate tens of thousands of context
+rows and documents an augmented pre-training suite; diagnostics such as ``A Closer
+Look at TabPFN v2'' show that the model remains overconfident under covariate shift,
+prompting wrappers that adjust representations before prediction~\cite{noauthor_prior_nodate,
+noauthor_closer_nodate,noauthor_realistic_nodate}. Drift-resilient variants model
+temporal shift with secondary structural-causal modules and record measurable gains
+when patient mixes evolve~\cite{helli_drift-resilient_2024,noauthor_automldrift-resilient_tabpfn_2025}.
+Other studies adapt the same prior-learning paradigm to drug discovery, radiomics,
+and graph embeddings, highlighting both the portability and fragility of tabular
+foundation models beyond flat tables~\cite{chen_tabpfn_2025,eremeev_turning_2025,
+liu_tabular_2025}. Tabular Large Language Models (TabLLMs) serialize rows or mini
+tables into prompts so that general-purpose LLMs can reason over discrete entries,
+but they remain computationally prohibitive for high-throughput risk prediction and
+struggle with precise numeric calibration~\cite{brown2020language,eremeev_turning_2025,
+jayawardhana_transformers_2025}. Recent analyses of high-dimensional omics
+applications reinforce that even TabPFN requires aggressive feature selection or
+prior-guided embeddings to stay calibrated, underscoring its closed-world
+assumption~\cite{zhou_limitations_2025,noauthor_pdf_nodate}. PFN-Boost, LLM-Boost,
+and hybrid residual schemes blend foundation backbones with tree-style updates or
+prompts, but benchmark reports such as Wild-Tab still find overfitting to
+training-domain quirks unless explicit alignment and calibration are layered
+on~\cite{kolesnikov_wild-tab_2023,liu_tabpfn_2025,loh_basis_2025}.
+Closed-world constraints surface in three ways: (i) feature mismatch---TabPFN
+expects aligned schemas and cannot reason about biomarkers absent from the context;
+(ii) covariate drift---attention retrieves misleading neighbors when acquisition
+protocols move, producing overconfident errors; and (iii) context-length bottlenecks
+that force sub-sampling when rows exceed a few thousand. These limits explain why
+prior studies resort to RFE or hand-crafted embeddings before invoking TabPFN and
+why drift-resilient variants add causal dynamics to temper temporal shift.
+
+These observations motivate hybrid approaches that explicitly combine strong priors
+with domain-alignment hooks. Table~\ref{tab:model_summary} summarizes the comparative
+strengths and weaknesses of these model families for medical tabular tasks,
+highlighting why PANDA fuses TabPFN with feature selection and unsupervised alignment
+instead of relying on any single paradigm.
 
 \begin{table}[htbp]
 \centering
 \caption{Comparative strengths and weaknesses of tabular model families in medical AI.}
 \label{tab:model_summary}
-\begin{tabular}{p{2.6cm}p{3.4cm}p{4.5cm}p{4.5cm}}
+\begin{tabular}{p{2.7cm}p{3.4cm}p{4.4cm}p{4.4cm}}
 \hline
 \textbf{Model Class} & \textbf{Representative Algorithms} & \textbf{Strengths in Medical AI} & \textbf{Limitations in Cross-Hospital Tasks} \\
 \hline
-Tree Ensembles & XGBoost & Interpretable & Overfits small cohorts \\
-& LightGBM & Handles missing data & Non-differentiable \\
-& Random Forest & Robust to outliers & No transfer learning \\
-& & Supports clinical constraints & Lacks feature alignment \\
-
-Deep Tabular & TabNet & Differentiable & Data hungry \\
-& FT-Transformer & Captures feature interactions & Requires tuning \\
-& SAINT & Supports multimodal integration & High compute cost; fails without alignment \\
-
-Foundation Models & TabPFN & Strong on small samples & Sensitive to distribution shift \\
-& TabLLM & Hyperparameter-free & Limited context \\
-& & Probabilistic outputs & Assumes aligned schemas \\
+Tree Ensembles & XGBoost, LightGBM, CatBoost & Interpretable, robust to missingness/outliers, encode clinical constraints & Overfit small cohorts, non-differentiable, no inherent transfer learning, require full retraining per site \\
+Deep Tabular & TabNet, TabTransformer, FT-Transformer, SAINT, NODE & Differentiable, capture complex interactions, allow multimodal fusion & Data hungry, extensive tuning, high compute cost, brittle without alignment \\
+Foundation Models & TabPFN, TabPFN-2.5, TabLLM & Hyperparameter-free inference, strong small-$N$ priors, probabilistic outputs & Sensitive to distribution/feature shift, limited context length, assume aligned schemas \\
 \hline
 \end{tabular}
 \end{table}
 
-\paragraph{Foundation models under shift.}
-The same TabPFN lineage resurfaces when we focus on cross-hospital deployment. The
-transformer is pretrained on millions of synthetic datasets, so inference remains a
-single forward pass that matches tuned ensembles while avoiding unstable gradient
-updates~\cite{hollmann2025accurate,hollmann_accurate_2025}. TabPFN-2.5 widens the
-context window to tens of thousands of rows; TabPFN v2 has been dissected to expose
-overconfident patterns, and the ``TabPFN Unleashed'' work adds bias/variance control
-through lightweight encoders~\cite{noauthor_pdf_2025,noauthor_closer_nodate,noauthor_realistic_nodate,liu_tabpfn_2025}.
-Drift-resilient variants inject a secondary structural causal model to track temporal
-shifts, while drug-discovery and CT radiomics studies confirm that the synthetic
-priors carry over to biomedical modalities with stable feature sets~\cite{helli_drift-resilient_2024,
-noauthor_automldrift-resilient_tabpfn_2025,chen_tabpfn_2025,liu_tabular_2025}. External
-essays on the limits of TabPFN for high-dimensional omics reinforce the closed-world
-assumption: as dimensionality grows, the model leans on aggressive feature selection
-or prior-guided embeddings to stay calibrated~\cite{noauthor_pdf_nodate,zhou_limitations_2025}.
-Tabular Large Language Models that serialize tables into prompts aim to import general
-reasoning from LLMs, but they remain expensive and numerically brittle for
-high-throughput risk prediction~\cite{brown2020language,eremeev_turning_2025,jayawardhana_transformers_2025}.
-Distribution-shift benchmarks such as Wild-Tab remind us that even these foundation
-models overfit to training-domain quirks unless explicit alignment is layered on
-top~\cite{kolesnikov_wild-tab_2023}. When hospital protocols or data schemas diverge,
-upstream compression (RFE) and alignment (TCA) become necessary companions to preserve
-calibration, highlighting why PANDA binds TabPFN to domain-adaptation mechanisms.
+\subsection{Domain shift and domain adaptation in medical AI}
 
-\subsection{Domain adaptation in medical AI}
+Domain adaptation (DA) provides the vocabulary for managing the covariate, label,
+and concept shifts that materialize when AI crosses hospital boundaries. Classical
+analysis decomposes target error into source error plus a divergence term, motivating
+alignments and invariance objectives. In practice, medical deployments encounter
+overlapping types of shift: changes in patient mix and ordering policies alter
+$P(X)$, new screening programs or diagnostic criteria perturb $P(Y)$, and evolving
+clinical practice modifies $P(Y\mid X)$~\cite{koch2024distribution,guo_evaluation_2022}.
+Pulmonary nodule malignancy prediction is particularly exposed to this triad of
+shifts because granulomatous disease burden, scanner protocols, and radiologist
+thresholds vary sharply across regions.
 
-Domain adaptation provides the mechanistic vocabulary for addressing covariate and
-concept shift. A standard taxonomy separates marginal shift ($P_s(X)\neq P_t(X)$),
-label shift ($P_s(Y)\neq P_t(Y)$), and conditional shift ($P_s(Y|X)\neq P_t(Y|X)$),
-with medical datasets often exhibiting all three because scanners, protocols, and
-prevalence differ across hospitals. Theoretical bounds trace target error to source
-error plus a divergence, justifying alignment strategies such as CORAL, MMD,
-adversarial discriminators, and TCA that have been widely studied in medical imaging
-and tabular settings~\cite{pan2010domain,sun2016correlationalignmentunsuperviseddomain,
-grubinger2015domain,zhang_adadiag_2022,guo_evaluation_2022}. Benchmarks like
-TableShift and Wild-Tab quantify how far models fall when distributions move, while
-Wild-Time-style evaluations stress that temporal drift compounds over deployment~\cite{gardner_benchmarking_2024,
-noauthor_mlfoundationstableshift_nodate,gardner_tableshift_nodate,kolesnikov_wild-tab_2023,
-koch2024distribution}.
-TableShift also reports a near-linear relationship between in-distribution and
-out-of-distribution accuracy—good ID representations help OOD—yet severe shifts
-still demand explicit adaptation; label-shift components often dominate the gap,
-so prevalence-aware calibration is as important as feature alignment~\cite{gardner_benchmarking_2024,
-noauthor_mlfoundationstableshift_nodate}. Wild-Time-style splits underline that
-drift accumulates, so adaptation must be continuous rather than a single train/test
-event.
-The benchmark analysis further shows that sophisticated domain-generalization
-objectives such as GroupDRO or IRM rarely beat simple ERM or strong GBDT baselines
-on tabular data, underscoring that robustness gains often arise from better
-representations rather than invariant-risk penalties~\cite{gardner_benchmarking_2024}.
-Label shift emerges as a dominant driver of degradation; feature alignment alone
-cannot fix prevalence mismatches, motivating the class-balanced sampling and
-temperature-recalibration steps we employ. Together, these findings justify PANDA's
-division of labor: leverage foundation priors for sample efficiency, then add
-explicit alignment and prevalence-aware adjustment to counter the shifts quantified
-by TableShift and Wild-Time.
+\subsubsection{Statistical alignment vs. adversarial objectives}
 
-Feature-space and transport-based adaptation (FSDA, CORAL, Wasserstein/TCA) remain
-core tools for cross-hospital shifts~\cite{luo2021fsda,li_transport-based_2024,
-grubinger2015domain}. Open-set and heterogeneous DA methods further contend with
-mismatched feature sets and variable label spaces that are common in EHRs~\cite{noauthor_domain_nodate,
-noauthor_domain_nodate-1,pham_open-set_2025}. Label-shift-aware recalibration and
-temperature scaling complement these methods when disease prevalence changes but
-feature relationships remain stable, a common scenario when moving from tertiary to
-community hospitals.
-Adversarial adaptation (e.g., DANN-style discriminators) and style-transfer methods
-are popular in imaging, but they often destabilize on small tabular cohorts because
-the discriminator collapses quickly; clinical DA work thus leans toward statistical
-alignment and causal priors rather than pure adversarial games~\cite{zhang_adadiag_2022,
-guo_evaluation_2022}.
-Measurement heterogeneity compounds the problem: labs change units, scanners change
-reconstruction kernels, and schemas evolve over time. Tools such as DomainATM or
-feature-aware PCA first identify shared, stable dimensions before alignment~\cite{guan_domainatm_2023,
-guan2021domain}. Missingness-shift studies show that when ordering policies change,
-standard covariate-shift assumptions break and MNAR-aware adjustments become
-necessary~\cite{zhou_domain_2023,stokes_domain_2025}.
+Maximum Mean Discrepancy (as in TCA), correlation alignment (CORAL), and
+transport-based projections minimize moment discrepancies in a latent
+space~\cite{pan2010domain,sun2016correlationalignmentunsuperviseddomain,
+grubinger2015domain,zhang_adadiag_2022,li_transport-based_2024}. They are attractive
+for medical tables because they offer closed-form or deterministic solutions and
+remain stable when labeled target data are absent. Adversarial approaches (DANN,
+cycle-consistent style transfer) attempt to erase domain cues via discriminators,
+but surveys show they destabilize when cohorts are tiny, leading to mode collapse or
+erasure of clinically salient signals~\cite{guo_evaluation_2022,zhang_adadiag_2022,
+guan2021domain}. In ICU mortality and readmission tasks, DANN can underperform ERM
+by wide margins because the discriminator trivially detects domain cues from missing
+patterns, causing the encoder to discard predictive features. In contrast, MMD- or
+CORAL-style alignment improves calibration modestly and avoids catastrophic
+degradation, motivating our reliance on TCA for small-sample settings.
+Classic error decompositions also separate covariate shift ($P_s(X)\neq P_t(X)$)
+from label shift ($P_s(Y)\neq P_t(Y)$) and concept shift ($P_s(Y|X)\neq P_t(Y|X)$);
+only the first benefits cleanly from moment matching, while the second demands
+prevalence-aware calibration and the third often needs feature auditing or human
+review~\cite{pan2010domain,gardner_benchmarking_2024,koch2024distribution}. These
+regimes frequently co-occur in multi-hospital deployments, explaining why single
+DA objectives show mixed results.
 
-Practical medical adaptation must also account for missingness mechanisms and partial
-labels. DomainATM and Domain PCA surface which features are safe to align before
-harmonization, while MNAR-aware methods and missingness-shift adjustments stabilize
-models when hospitals drop or add lab tests~\cite{guan2021domain,guan_domainatm_2023,
-zhou_domain_2023,stokes_domain_2025}. Surveys of non-image transfer learning reiterate
-that these adjustments are mandatory if we want to generalize across hospitals without
-labels~\cite{ebbehoj_transfer_2022,guan_domain_2022}. Medical imaging DA literature
-echoes the same pattern: deterministic alignment without adaptation fails when
-prevalence drifts or scanners change~\cite{eche_toward_2021,chaddad_domain_2025,
-mccarter_towards_2024,zhang_adadiag_2022}. Temporal and partial-domain methods—such
-as multi-attention encoders for COVID-19 diagnostics—showcase recipes for adapting
-under label scarcity and dataset bias~\cite{he_multi-attention_2022}.
+\subsubsection{Heterogeneity, missingness, and temporal drift}
 
-Structured medical workflows also require privacy-preserving federated adaptation,
-stress-tested evaluation, and open-source toolkits. Federated surveys, FedFusion
-variants, and domain-generalization reviews argue for computation stress testing,
-cluster-aware encoders, and longitudinal benchmarks to qualify an AI system before
-deployment~\cite{kahenga_fedfusion_2025,guan_federated_2024,rehman_federated_2023,
-yoon_domain_2024,zhou_domain_2023}. Confounded-domain work highlights
-backward-compatible data curation as another lever to stabilize shifts when labels
-or schemas change between sites~\cite{stokes_domain_2025}. These themes motivate
-PANDA's combination of representation smoothing (foundation prior) with explicit
-alignment (RFE+TCA) and recalibration.
-Recent medical DA surveys further stress evaluation discipline: stress tests,
-temporal holdouts, and prevalence perturbations often overturn optimistic
-in-domain results, so any deployment-grade system must bundle shift diagnostics
-with adaptation rather than treat them as post-hoc fixes~\cite{zhang_adadiag_2022,
-guo_evaluation_2022,eche_toward_2021}.
+Medical DA must grapple with heterogeneous feature sets and evolving acquisition
+policies. Feature-space DA (FSDA) and transport-based alignment project source and
+target into shared latent spaces, while open-set domain adaptation handles mismatched
+label spaces and schema drift that arise when hospitals collect different labs~\cite{luo2021fsda,
+grubinger2015domain,pham_open-set_2025,li_transport-based_2024}. DomainATM,
+feature-aware PCA, and ontological mapping frameworks first identify which
+biomarkers are stable across sites before alignment, reducing negative transfer~\cite{guan2021domain,
+guan_domainatm_2023,guan_domain_2022}. Missingness-shift studies demonstrate that
+when ordering policies change (e.g., different lab panels for triage), standard
+covariate-shift assumptions break; MNAR-aware corrections and explicit missingness
+modeling become mandatory~\cite{zhou_domain_2023,stokes_domain_2025}. Temporal
+adaptation work (Wild-Time, multi-attention encoders for COVID-19) highlights that
+drift accumulates over months, so models require continual recalibration rather than
+one-time transfer~\cite{ahn_unsupervised_2023,he_multi-attention_2022}.
 
-\subsection{Pulmonary nodule risk prediction and cross-hospital generalization}
+\subsubsection{Domain generalization and open-set gaps}
 
-Pulmonary nodule malignancy prediction sharpens the need for these ingredients.
-Classical risk scores—including the Mayo, Veterans Affairs, and Brock/PanCan
-models—were carefully calibrated on single cohorts and use interpretable clinical
-variables (age, nodule size, spiculation, location, smoking history), achieving
-derivation AUCs of 0.83–0.92~\cite{swensen1997chest,gould2007clinical,
-mcwilliams2013probability,herder_clinical_2005}. Yet multi-center validations and
-meta-analyses show that these same models collapse to 0.60–0.80 when transported to
-new hospitals or demographics: Asian cohorts with endemic tuberculosis see dramatic
-false positives when “upper-lobe” is treated as a malignancy proxy; solitary nodules,
-women, and never-smokers are routinely misclassified because prevalence assumptions
-shift~\cite{al-ameri_risk_2015,deppen_predicting_2014,cui_comparison_2019,
-li_evaluation_2020,winter_external_2019,garau_external_2020,zhang_comprehensive_2022}.
-Comparative studies between logistic scores, clinician gestalt, and ML surrogates
-confirm the same pattern—calibration and sensitivity erode whenever covariates or
-label priors deviate from the original training site~\cite{cui_comparison_2019,
-garau_external_2020}. These failures stem from label shift (e.g., screening programs
-with 5\% malignancy vs.\ cancer centers with 60\%) and covariate shift (different
-smoking histories, imaging protocols), so the fixed intercepts and coefficients of
-classical scores no longer reflect $P(Y|X)$ once the target changes.
+TableShift, Wild-Tab, and Wild-Time benchmarks quantify how far models fall once
+distributions move: they reveal a near-linear relation between in-distribution and
+out-of-distribution accuracy, but also show that label shift dominates error budgets
+and that prevailing domain-generalization objectives (GroupDRO, IRM, VREx) rarely
+beat strong ERM or GBDT baselines on tabular data~\cite{gardner_benchmarking_2024,
+noauthor_mlfoundationstableshift_nodate,gardner_tableshift_nodate,
+kolesnikov_wild-tab_2023,ahn_unsupervised_2023}. Open-set and partial-label settings
+are common in healthcare (target hospital omits certain comorbidities); current DA
+methods often assume aligned label spaces and therefore miscalibrate rare conditions.
+Regulatory guidance now treats shift detection and recalibration as part of
+post-market surveillance, emphasizing that robustness must be engineered rather than
+assumed~\cite{koch2024distribution}.
 
-Cross-cohort audits from recent studies illustrate similar drifts: external
-validation sites often keep comparable malignancy prevalence yet exhibit substantial
-covariate differences—upper-lobe involvement, ventilatory capacity, creatinine,
-and other biomarkers shift enough to reorder risk groups~\cite{garau_external_2020,
-zhang_comprehensive_2022}. These reports document 10–20 percentage point swings in
-predicted risk bands when lobe location, size, or calcification patterns differ,
-underscoring that seemingly minor anatomic or biochemical changes can upset
-calibration. Such realities motivate foundation-model embeddings plus explicit
-alignment before deployment in new hospitals.
+\subsection{Feature selection and domain-aware stability for small medical cohorts}
 
-Radiomics and deep learning share the same brittleness: reconstruction kernels shift
-textures, and deep nets learn shortcuts unique to an institution, such as acquisition
-markers or kernel noise~\cite{noauthor_reproducibility_nodate,gao_reproducibility_2022,
-stephens_narrative_2023,eche_toward_2021}. External validation of radiomics predictors
-confirms that scanner protocols and demographic shifts alone can erase 0.1–0.2 AUC~\cite{hassani_radiomics_2019,
-perandini_solid_2016,garau_external_2020}. Deep CNNs can beat clinical models in
-internal cohorts, but their external sensitivity often drops below 85\%, pushing newer
-architectures toward explicit fine-tuning and transfer learning to keep AUCs stable~\cite{causey_highly_2018,
-ardila_end--end_2019,massion_assessing_2020,mahajan_novel_2025}. Hybrid
-radiomics–clinical pipelines and adaptive deep models still show performance erosion
-without harmonization~\cite{lin_combined_2024,li_predicting_2019,cai_impact_2023,
-wulaningsih_deep_2024,chen_enhanced_2025,wang_performance_2024}. Stress tests and
-ablation studies repeatedly identify three culprits: tiny labeled cohorts, feature
-heterogeneity across scanners, and temporal drift as screening programs expand.
-Because prevalence can remain stable while covariates drift (as in the cohort
-comparison above), prevalence-only recalibration is insufficient; representation
-smoothing and distribution alignment are necessary to avoid overconfident errors.
+High-dimensional yet small-sample tabular cohorts are ubiquitous in medicine: lung
+screening registries, omics panels, and survey-based risk scores often contain
+hundreds of variables for only a few hundred or thousand patients. Na\"{i}ve
+learning in this regime leads to unstable decision boundaries and non-reproducible
+feature attributions. Feature selection methods aim to reduce dimensionality,
+stabilize inference, and focus clinician attention on biomarkers that are both
+predictive and economical to collect.
 
-Domain-stress tests therefore argue for a ``triple knot'' solution: small sample
-sizes, feature heterogeneity, and distribution shift need to be solved jointly. The
-PANDA concept embodies this synthesis by feeding TabPFN embeddings through RFE and
-TCA before inference, aligning it with benchmarks and domain knowledge instead of
-hoping the base model generalizes by itself~\cite{grubinger2015domain,zhang_comprehensive_2022}.
-The same recipe naturally extends to other low-data, high-stakes tasks (e.g., renal
-tumor radiomics or drug-discovery assays), underscoring that foundation priors plus
-explicit alignment is a general pattern rather than a one-off trick~\cite{chaddad_domain_2025,
-chen_tabpfn_2025,liu_tabular_2025}.
+\subsubsection{Small-sample and high-dimensional feature selection}
 
-\subsection{Theoretical Foundation}
+Classical filter and wrapper methods, such as mutual information ranking or
+recursive feature elimination with SVMs, laid the groundwork for identifying
+compact biomarker sets but struggle when features are highly correlated or when
+class imbalance is severe~\cite{guyon2002gene}. More recent approaches explicitly
+target high-dimensional, low-sample-size settings. WPFS-style methods learn
+feature weights jointly with a classifier, GRACES uses graph convolutions to
+propagate importance across correlated features, and DeepFS leverages deep networks
+to screen features via nonlinear embeddings~\cite{chen2023graces,liu2022deepfs,
+li2023deep}. These techniques are attractive for medical AI because they can
+down-select from hundreds of candidate variables to a dozen stable predictors while
+controlling overfitting. Empirical studies on omics and imaging-genomics datasets
+show that such methods can maintain or even improve AUC while halving the number of
+features, directly reducing assay costs and simplifying model interpretation.
+However, most of these works assume a single training domain: the selected subset
+is optimized for internal performance and may not transfer when another hospital
+measures a slightly different panel or when missingness patterns change.
 
-Our approach leans on three theoretical ideas that motivate joining foundation models with domain adaptation; they hold under specific assumptions and should be read with that caveat.
+\subsubsection{Feature selection with transformers and foundation models}
 
-The smooth representation benefit notes that foundation model representations can contract domain discrepancies. Let $\Phi_{\mathrm{FM}} : \mathcal{X} \to \mathcal{Z}$ be $L$-Lipschitz. Let $P_s, P_t$ be source and target distributions on $\mathcal{X}$ and $P_{\Phi,s}, P_{\Phi,t}$ their pushforwards on $\mathcal{Z}$. For an RKHS $\mathcal{H}$ with a Lipschitz-bounded feature map, the induced MMD admits the bound
-\[
-d_{\mathcal{H}}(P_{\Phi,s}, P_{\Phi,t}) \;\le\; L \cdot d_{\mathcal{H}}(P_s, P_t),
-\]
-where $d_{\mathcal{H}}$ denotes maximum mean discrepancy. Under suitable kernel assumptions, smoother representations may contract domain discrepancies.
+Attention-based models provide an alternative route to feature selection by
+interpreting attention weights, learned masks, or perturbation scores as measures of
+importance. TabNet learns sparse feature masks that indicate which variables are
+consulted at each decision step, while transformer-based architectures expose
+token-level attention maps that can be aggregated across layers and heads~\cite{arik2021tabnet,
+huang2020tabtransformer,somepalli2021saint,somvanshi2024survey}. In practice,
+researchers often perform permutation-based importance estimation using a strong
+tabular backbone---GBDT or TabPFN---and then apply RFE-style pruning, retaining the
+top-k features that consistently contribute to performance. This paradigm is
+well-suited to small medical cohorts because it leverages the inductive biases of
+powerful models while regularizing the input space. For foundation models such as
+TabPFN, feature selection also mitigates closed-world constraints: by removing
+unstable or site-specific variables, one can reduce the chance that attention
+focuses on hospital identifiers or acquisition artifacts rather than pathology.
 
-Feature selection and domain adaptation interact. Let $\mathcal{F}^\star$ be the subset of shared features minimizing cross-domain variance, i.e.
-\[
-\mathcal{F}^\star = \arg\min_{\mathcal{F}' \subseteq \mathcal{F}} \operatorname{Var}_{\text{domain}}(x_{\mathcal{F}'}),
-\]
-where $\operatorname{Var}_{\text{domain}}(\cdot)$ denotes the pooled covariance across source and target domains. Assuming the TCA operator $A_{\mathrm{TCA}}$ is linear with bounded operator norm and letting $\Sigma_{\mathcal{F}}, \Sigma_{\mathcal{F}^\star}$ denote the corresponding covariance matrices in the encoded space, we have
-\[
-\operatorname{Var}\!\big(A_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(x_{\mathcal{F}^\star}))\big)
-= \operatorname{tr}\!\big(A_{\mathrm{TCA}} \Sigma_{\mathcal{F}^\star} A_{\mathrm{TCA}}^\top\big)
-\;\le\;
-\operatorname{tr}\!\big(A_{\mathrm{TCA}} \Sigma_{\mathcal{F}} A_{\mathrm{TCA}}^\top\big)
-= \operatorname{Var}\!\big(A_{\mathrm{TCA}}(\Phi_{\mathrm{FM}}(x_{\mathcal{F}}))\big),
-\]
-which indicates that selecting low-variance features can reduce alignment complexity.
+\subsubsection{Domain-aware and cross-site feature selection}
 
-Finally, sample complexity reduction motivates the use of pre-training. Standard generalization bounds for classification in a hypothesis class of effective dimension $d_{\mathrm{eff}}$ yield
-\[
-n_{\mathrm{eff}} = O\!\left(\frac{d_{\mathrm{eff}}}{\varepsilon^2}\right).
-\]
-Mapping inputs into a pretrained representation $\Phi_{\mathrm{FM}}$ shapes a lower-dimensional, more structured hypothesis space than the raw $d'$-dimensional space, effectively reducing $d_{\mathrm{eff}}$ to roughly $\sqrt{d'}$ in our setting. The sample size then scales as $O(\sqrt{d'}/\varepsilon^2)$ instead of $O(d'/\varepsilon^2)$, reflecting transferred sample efficiency~\cite{bommasani2021opportunities,hollmann2025accurate}.
+Standard feature selection treats all samples as exchangeable, implicitly assuming
+that feature-importance rankings are identical across domains. Domain-aware methods
+instead optimize a subset that is simultaneously predictive in multiple hospitals
+or under multiple sampling schemes. FSDA and related frameworks extend DA
+objectives with feature-level penalties, rewarding variables whose contributions
+remain stable after alignment~\cite{luo2021fsda,sun2019informative}. Multi-site
+studies on EHR and imaging data show that such cross-domain criteria can discard
+site-specific surrogates (e.g., local procedure codes) while preserving clinically
+meaningful biomarkers. PANDA adopts this philosophy in a pragmatic way: TabPFN is
+used as a strong scoring model, but feature elimination is guided jointly by
+source-site performance and cross-site stability, leading to compact ``best7'' and
+``best8'' subsets that are consistently informative in both hospitals. These
+domain-aware subsets provide low-dimensional, harmonized inputs to TCA, reducing
+the risk of negative transfer and making the subsequent alignment problem better
+posed.
+
+\subsection{Pulmonary nodule malignancy prediction: from clinical scores to multi-modal AI}
+
+\subsubsection{Clinical risk scores and logistic models}
+
+Pulmonary nodule malignancy prediction is a canonical testbed for cross-domain
+robustness. Classical logistic scores---Mayo Clinic, Veterans Affairs, Brock
+(PanCan), PKUPH, Li, and derivatives---achieve internal AUCs above 0.85 but
+regularly drop to 0.60--0.80 in external validations, especially in Asian or
+community-screening cohorts where prevalence and granulomatous disease burdens
+diverge~\cite{swensen1997chest,swensen1997archives,mcwilliams2013probability,
+li2011development,he2021novel,garau_external_2020,zhang_comprehensive_2022,
+liu_establishment_2024}. These scores typically combine age, smoking history,
+nodule size, location, and morphology into a logit-based risk function. Meta-analyses
+covering tens of thousands of nodules confirm that calibration deteriorates most
+severely in subgroups such as solitary upper-lobe nodules and specific ethnic
+groups, reflecting both label-shift and covariate-shift mechanisms~\cite{garau_external_2020,
+zhang_comprehensive_2022,liu_establishment_2024,chen_pulmonary_2025}. While
+recalibration or re-estimation of coefficients can partially restore performance,
+these fixes require local labels and do not address feature-mismatch: new hospitals
+may lack some variables (e.g., emphysema grading) or measure them differently.
+
+Each classical score carries its own design trade-offs. The Mayo Clinic model was
+derived from several hundred clinic-referred patients with indeterminate nodules,
+emphasizing age, smoking, nodule diameter, spiculation, and upper-lobe location,
+whereas the Veterans Affairs model targeted high-risk, predominantly male veterans
+with larger lesions~\cite{swensen1997chest,swensen1997archives}. The Brock (PanCan)
+model was trained in a screening cohort enriched for small nodules and incorporates
+emphysema, family history, and more granular morphology descriptors, while the
+PKUPH and Li scores adapt similar feature sets to Chinese tertiary-hospital and
+screening populations~\cite{mcwilliams2013probability,li2011development,he2021novel,
+liu_establishment_2024}. A recent meta-analysis focused on the Brock model reports
+pooled AUC $\approx 0.80$ across $>80{,}000$ patients but highlights substantially
+lower performance in Asian cohorts, solitary nodules, subsolid nodules, and larger
+lesions (AUC often $\approx 0.74$ or below), underscoring that apparent
+``universality'' in development data masks sizeable domain-specific errors~\cite{chen_pulmonary_2025}.
+Across Mayo, VA, Brock, and PKUPH, external validations repeatedly document drops
+from internal c-statistics in the high-0.80s to 0.60--0.75 when applied to community
+screening or granulomatous-disease–endemic regions~\cite{garau_external_2020,
+zhang_comprehensive_2022,liu_establishment_2024}.
+
+These patterns can be summarized along three axes: development cohorts are often
+single-center and demographically narrow; variables focus on easily collected
+clinical and simple CT descriptors; and the underlying model is a logistic
+regression that assumes a linear log-odds relationship between covariates and
+malignancy. Table~\ref{tab:nodule_scores} sketches representative scores along
+these dimensions. In development, all achieve reasonable discrimination and are
+simple enough to implement as bedside calculators, but the same simplicity makes
+them brittle under shift: logistic coefficients absorb local prevalence, imaging
+protocols, and referral patterns, so external use without recalibration results in
+systematic underestimation or overestimation of risk in particular subgroups.
+
+\begin{table}[htbp]
+\centering
+\caption{Representative pulmonary nodule malignancy scores and common external-validation issues.}
+\label{tab:nodule_scores}
+\begin{tabular}{p{2.7cm}p{3.6cm}p{4.2cm}p{4.4cm}}
+\hline
+\textbf{Score} & \textbf{Development cohort} & \textbf{Key variables} & \textbf{External-validation observations} \\
+\hline
+Mayo Clinic & Clinic-referred indeterminate nodules in smokers & Age, smoking history, nodule size, spiculation, upper-lobe location & Internal AUC in the high-0.80s; frequent overestimation of risk and AUC drops to $\approx$0.6--0.7 in screening and non-U.S. cohorts \\
+Veterans Affairs & Predominantly male veterans with larger nodules & Age, smoking, nodule diameter, location & Good performance in veterans; miscalibration when transported to mixed-gender or lower-risk populations \\
+Brock (PanCan) & CT screening cohort with many small nodules & Age, sex, family history, emphysema, size, type, location & Meta-analytic pooled AUC $\approx 0.80$; markedly lower AUC in Asian, solitary, and subsolid nodules~\cite{chen_pulmonary_2025} \\
+PKUPH / Li & Chinese tertiary-hospital and screening cohorts & Age, smoking, nodule size and type, lobulation, spiculation & High internal AUC but drops in external series; performance depends strongly on CT protocol and case mix~\cite{li2011development,he2021novel,liu_establishment_2024} \\
+\hline
+\end{tabular}
+\end{table}
+
+From the perspective of this thesis, these scores provide clinically interpretable
+baselines and useful prior knowledge about which coarse-grained descriptors matter,
+but they do not solve cross-hospital robustness. Their small development cohorts
+and rigid functional form make it difficult to incorporate new biomarkers or adapt
+to feature-mismatch without re-estimating the entire model, motivating more flexible
+tabular approaches that can share information across hospitals while respecting
+regulatory demands for calibration and subgroup transparency.
+
+\subsubsection{Radiomics pipelines with traditional machine learning}
+
+Radiomics pipelines extract hundreds to thousands of hand-crafted features from CT
+volumes, offering richer representations than clinical risk scores but introducing
+major reproducibility hazards. Texture and wavelet descriptors vary with voxel
+spacing, reconstruction kernel, and segmentation protocol; ComBat-style harmonization
+reduces scanner effects yet requires batch labels and can blur subtle lesions~\cite{hellin2024unraveling,
+garau_external_2020}. External validations on LIDC-IDRI, LUNA16, and NLST repeatedly
+report double-digit AUC drops when deployed to scanners with different kernels or
+patient mixes, while shortcut-learning analyses show that models sometimes rely on
+grid artifacts or reconstruction noise rather than morphology~\cite{ardila_end--end_2019,
+zech_variable_2018,koch2024distribution}. These failures illustrate that radiomics
+alone cannot guarantee transportability and that alignment plus feature vetting are
+required before cross-hospital use.
+Published inter-scanner analyses often report intraclass correlation coefficients
+below 0.5 for entropy and run-length features, indicating poor reliability even
+before model fitting~\cite{hellin2024unraveling}. ComBat can regress out known batch
+effects when acquisition labels are available, but it can also blur subtle lesions
+and fails when batch membership is unknown at inference time, leaving a gap that
+tabular-alignment pipelines attempt to close. Beyond handcrafted features, many
+radiomics pipelines incorporate LASSO, elastic-net logistic regression, or
+stability-selection frameworks to shrink coefficients and stabilize feature sets
+before training SVM, random forest, or GBDT classifiers. Although these strategies
+help curb overfitting in small cohorts, they do not eliminate sensitivity to
+acquisition protocols: the same feature may be retained in one scanner configuration
+and discarded in another because its estimated importance changes with kernel or
+slice thickness. Multi-center studies frequently report 10--20 percentage-point AUC
+drops when models are transported without revisiting segmentation, feature
+extraction, and harmonization choices~\cite{garau_external_2020,hellin2024unraveling}.
+As a result, radiomics pipelines tend to behave like carefully tuned, center-specific
+instruments rather than plug-and-play risk predictors, and their complexity makes it
+hard for clinicians to trace failure modes back to specific preprocessing or
+feature-engineering steps.
+
+\subsubsection{Deep-learning CAD systems}
+
+End-to-end deep-learning computer-aided diagnosis (CAD) systems extend the radiomics
+pipeline by learning 3D convolutional representations directly from CT volumes or
+multi-view patches. Large-scale screening trials such as NLST have enabled
+3D CNNs to achieve AUCs in the mid-0.90s on internal validation, sometimes
+matching or surpassing expert radiologists~\cite{ardila_end--end_2019}. Subsequent
+works combine deep features with handcrafted radiomics or clinical covariates,
+showing further gains on curated datasets~\cite{li_predicting_2019,lin_combined_2024}.
+However, these successes often rely on tightly controlled acquisition protocols and
+substantial annotation effort. External validations reveal double-digit AUC drops
+when voxel spacing, reconstruction kernels, or vendor mix shift, and shortcut-learning
+analyses demonstrate that CNNs may rely on markers, reconstruction noise, or scanner
+metadata rather than nodule morphology~\cite{zech_variable_2018,hellin2024unraveling,
+koch2024distribution}. Moreover, most deep CAD systems treat imaging in isolation or
+only append a handful of clinical variables, limiting their ability to reason over
+complex comorbidity profiles or laboratory trajectories. Multi-view and multi-scale
+architectures that process cropped nodules, surrounding parenchyma, and whole-lung
+context can mitigate some of these issues, but they further increase computational
+cost and annotation effort. Multi-task variants that jointly predict malignancy,
+growth, or histological subtype promise richer supervision but require large,
+carefully curated datasets that few hospitals possess. In practice, many published
+CAD systems are trained and tuned on a single trial or institution, with limited
+reporting on cross-hospital generalization or calibration.
+
+\subsubsection{Tabular and multi-modal nodule models}
+
+Later machine-learning models---LASSO, random forests, GBDTs, Bayesian networks, and
+hybrid radiomics-clinical models---attempt to combine the strengths of scores and
+imaging~\cite{he2021novel,garau_external_2020,li_predicting_2019,lin_combined_2024}.
+GBDTs and random forests improve internal calibration and handle nonlinear
+interactions but still require site-specific recalibration or feature mapping before
+deployment because their learned weights implicitly encode scanner kernels and local
+smoking histories. Multi-modal models that fuse deep image features with clinical
+covariates via late fusion or stacking demonstrate promising gains on LIDC-IDRI and
+NLST, yet most studies remain single-center or rely on random train--test splits
+that do not reflect real cross-hospital deployment. Only a handful of works evaluate
+performance when training on one hospital and testing on another, and these typically
+report substantial AUC drops and unstable decision thresholds~\cite{garau_external_2020,
+hellin2024unraveling}. These observations motivate a shift toward tabular-centric
+models that can incorporate imaging-derived biomarkers while explicitly handling
+feature mismatch and domain shift rather than assuming homogeneous acquisition.
+Within the tabular family, two broad patterns emerge. Purely clinical models use
+logistic regression or tree ensembles on demographics, smoking history, and simple
+CT descriptors, sometimes enriched with laboratory indices or comorbidity scores.
+These models are attractive for deployment because all inputs are routinely
+available in electronic health records, yet they inherit the limitations of
+classical scores: most are developed and validated in a single institution, assume
+aligned features across sites, and rarely report behavior under explicit domain
+shift. Hybrid models instead treat radiomics signatures or deep image embeddings as
+additional covariates in a tabular classifier, enabling richer decision boundaries
+while retaining some interpretability via variable-importance analyses. However,
+their feature spaces are even more brittle across scanners and hospitals, as both
+image-derived and clinical variables can change distributions or go missing.
+
+Existing works seldom implement formal domain-adaptation strategies for these
+tabular or multi-modal models. External evaluations, when present, typically test a
+fixed model on a new hospital without feature re-alignment or recalibration,
+documenting sizable performance degradation but not offering systematic remedies.
+Only a few studies experiment with simple recalibration or refitting on a small
+local sample, and virtually none explore cross-domain feature selection or latent
+alignment tailored to nodule malignancy prediction~\cite{garau_external_2020,
+hellin2024unraveling}. Consequently, the literature lacks robust, tabular-centric
+frameworks that (i) start from strong small-sample priors, (ii) identify a compact
+set of biomarkers stable across hospitals, and (iii) explicitly align feature
+distributions without assuming access to large labeled target cohorts. Addressing
+these gaps is a central motivation for the PANDA framework developed in this thesis.
+
+\subsection{Benchmarks and open problems for cross-domain tabular learning}
+
+Beyond single-institution case studies, public benchmarks now stress-test shift
+robustness. TableShift curates 15 binary tasks across healthcare, finance, and public
+policy, with explicit temporal, geographic, and demographic shifts to measure
+out-of-distribution accuracy drops and calibration drift~\cite{gardner_benchmarking_2024,
+gardner_tableshift_nodate}. Wild-Tab extends this idea to few-shot, structure-aware
+adaptation, showing that even tabular foundation models lose 5--15 AUC points under
+schema-preserving shifts~\cite{kolesnikov_wild-tab_2023}. Wild-Time focuses purely on
+temporal drift, revealing that performance decays monotonically unless models refresh
+their priors~\cite{ahn_unsupervised_2023}. These resources contrast with medical
+imaging benchmarks, where the input grid is fixed; in tabular settings, feature
+heterogeneity and missingness add extra axes of mismatch. Our inclusion of the
+TableShift BRFSS Diabetes race-shift task aligns the pulmonary nodule study with a
+large-scale public benchmark, demonstrating that the proposed alignment strategy is
+not confined to proprietary cohorts.
+TableShift also surfaces common failure modes: GroupDRO and IRM rarely beat ERM on
+tabular tasks, label shift explains much of the OOD loss, and high ID accuracy is
+necessary but insufficient for shift robustness~\cite{gardner_benchmarking_2024,
+noauthor_mlfoundationstableshift_nodate}. Wild-Time isolates temporal drift,
+showing monotonic degradation without continual recalibration~\cite{ahn_unsupervised_2023};
+these findings mirror hospital deployments where assay updates or policy changes
+quietly reshape feature distributions.
+
+\subsubsection{Gap analysis and positioning of PANDA}
+
+Across model families and adaptation techniques, several open issues persist. First,
+closed-world assumptions in tabular foundation models preclude feature-mismatched
+deployment: TabPFN and its variants require aligned schemas and struggle when target
+hospitals omit or redefine biomarkers. Second, most DA methods presume access to
+abundant labeled or schema-aligned target data, which is unrealistic in
+privacy-constrained hospitals and incompatible with regulatory expectations that
+models remain stable under silent drift~\cite{koch2024distribution,guo_evaluation_2022}.
+Third, missingness shift and label shift remain underexplored despite being dominant
+drivers of clinical miscalibration in TableShift and Wild-Time; simply matching
+latent distributions cannot fix changes in prevalence or ordering policies~\cite{gardner_benchmarking_2024,
+ahn_unsupervised_2023}. Finally, reproducibility crises in radiomics and deep imaging
+models show that aggressive priors or harmonization cannot replace explicit
+alignment and feature governance~\cite{hellin2024unraveling,koch2024distribution}.
+
+PANDA is designed to address a specific intersection of these gaps rather than
+compete with every prior line of work. By treating a tabular foundation model as a
+plug-in prior, PANDA inherits strong small-sample performance without hand-tuning
+but augments it with cross-domain RFE that explicitly searches for a compact subset
+of biomarkers stable across hospitals. This step operationalizes domain-aware
+feature selection, yielding shared feature sets (``best7'', ``best8'') that remain
+predictive in both institutions and provide harmonized inputs for subsequent
+alignment. TCA is then applied in the latent space induced by TabPFN, combining the
+representation power of foundation models with the stability of kernel-based
+alignment to handle unlabeled target data. The same pipeline is evaluated both on a
+private cross-hospital pulmonary nodule cohort and on the public TableShift BRFSS
+Diabetes race-shift task, demonstrating that the ingredients are not handcrafted for
+a single dataset but generalize across tabular shift scenarios~\cite{gardner_benchmarking_2024,
+noauthor_mlfoundationstableshift_nodate}. In this sense, PANDA fills the gap between
+single-domain tabular FMs, imaging-focused DA, and benchmark-driven tabular DA by
+providing an end-to-end, alignment-aware framework tailored to small, imbalanced,
+and feature-mismatched medical cohorts.
+
+\label{sec:rw-end}

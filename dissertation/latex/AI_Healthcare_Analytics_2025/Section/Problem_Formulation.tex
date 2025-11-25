@@ -1,38 +1,49 @@
 \section{Problem Formulation}
+\label{sec:pf-start}
 \label{sec:problem-formulation}
 
 Cross-hospital medical classification mixes distribution shift, sample scarcity, and feature heterogeneity. We cast it as an unsupervised domain adaptation (UDA) problem on structured clinical data: the goal is reliable prediction in a target hospital without target labels. The framing mirrors common deployment constraints in medical AI.
 
 \subsection*{Cross-Domain Learning Setup}
 
-We consider two cohorts from different institutions. The source domain is 
-$\mathcal{D}_s=\{(\mathbf{x}_i^s, y_i^s)\}_{i=1}^{n_s}$ with labels; the target domain 
-$\mathcal{D}_t=\{\mathbf{x}_j^t\}_{j=1}^{n_t}$ has only unlabeled records. Each sample $\mathbf{x}\in\mathbb{R}^d$ is a tabular feature vector and $y\in\{0,1\}$ denotes malignancy.
+Let the labeled source cohort be $\mathcal{D}_s=(X_s,Y_s)=\{(\mathbf{x}_i^s,y_i^s)\}_{i=1}^{n_s}$ and the unlabeled target cohort be $\mathcal{D}_t=(X_t,\varnothing)=\{\mathbf{x}_j^t\}_{j=1}^{n_t}$. Each instance $\mathbf{x}\in\mathbb{R}^d$ collects structured clinical variables and $y\in\{0,1\}$ encodes malignancy for nodules or diabetes status for TableShift. Domains expose imperfectly overlapped feature sets: $\mathcal{F}_s$ and $\mathcal{F}_t$ denote the recorded indices, $\mathcal{F}_{\cap}=\mathcal{F}_s\cap\mathcal{F}_t$ the shared subset used for modeling, and $\mathcal{F}_{\setminus}=\mathcal{F}_s \triangle \mathcal{F}_t$ the features seen in only one hospital or demographic group. We write $d_{\cap}=|\mathcal{F}_{\cap}|$ for the dimensionality after intersection.
 
-Institutional differences in populations and measurement protocols create both marginal and conditional shifts:
-\[
-P_s(\mathbf{x}) \neq P_t(\mathbf{x}), \qquad 
-P_s(y|\mathbf{x}) \neq P_t(y|\mathbf{x}).
-\]
-Hospitals usually record only partially overlapping feature sets. Let 
-$\mathcal{F}_s$ and $\mathcal{F}_t$ be the available indices, and 
-$\mathcal{F}=\mathcal{F}_s\cap\mathcal{F}_t$ the shared subset with dimension $d'<d$. We assume the shared features hold enough discriminative information for prediction in the reduced space.
-
-The aim is to learn a classifier $f:\mathcal{X}_{\mathcal{F}}\rightarrow\mathcal{Y}$ using 
-$\mathcal{D}_s$ and unlabeled target samples so that the target risk
+Admissible models operate on $\mathcal{X}_{\cap}=\mathbb{R}^{d_{\cap}}$. The objective is to learn $f: \mathcal{X}_{\cap} \rightarrow \mathcal{Y}$ that minimizes the target risk
 \[
 \mathcal{R}_t(f)=\mathbb{E}_{(\mathbf{x},y)\sim P_t}[\ell(f(\mathbf{x}),y)]
 \]
-is minimized. This mirrors deployment settings where target labels cannot be shared because of privacy constraints.
+subject to the constraint that $Y_t$ remains unobserved during training. Privacy policies (HIPAA, GDPR) render this unsupervised domain adaptation framing the only feasible option in many multi-institution collaborations.
+
+The two tasks tackled in this dissertation differ strongly in their feature vocabularies yet share the notation above. Table~\ref{tab:feature_partitions} summarizes the recorded variables, the overlapping subsets, and the information discarded when aligning hospitals or demographic splits.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Feature partitioning for the two cross-domain tasks. $\mathcal{F}_{\cap}$ contains the variables usable across domains; $\mathcal{F}_{\setminus}$ collects site- or demographic-specific factors excluded from modeling.}
+  \label{tab:feature_partitions}
+  \begin{tabular}{p{0.23\textwidth}p{0.32\textwidth}p{0.32\textwidth}}
+    \toprule
+    Task & Shared feature families ($\mathcal{F}_{\cap}$) & Site-/group-specific factors ($\mathcal{F}_{\setminus}$) \\ \midrule
+    Cross-hospital pulmonary nodules & Age, sex, smoking indicators, upper-lobe flags, diameter, calcification, spiculation, tumor biomarkers (CEA, NSE, Cyfra21-1), ventilatory metrics (VC, DLCO) & CT reconstruction kernel IDs, segmentation quality scores, rare lab assays, hospital-specific comorbidities, imaging vendor tags \\ 
+    TableShift BRFSS race split & Demographics (age, sex, education), chronic-disease history, lifestyle (smoking, alcohol, physical activity), metabolic labs (BMI proxies, hypertension indicators), survey year & State-specific policy items, optional socioeconomic questions only asked in some years, race-restricted modules, state sampling weights \\ \bottomrule
+  \end{tabular}
+\end{table}
 
 \subsection*{Challenges in Cross-Institutional Learning}
 
-Clinical tabular cohorts usually include only a few hundred labeled patients. For hypothesis classes on $d'$ shared features, estimation error scales as $\widetilde{O}(\sqrt{d'/n_s})$, making high-capacity models unreliable once $n_s \le 500$. Many UDA techniques implicitly bank on larger sample sizes than most hospitals can release.
+Clinical tabular cohorts usually include only a few hundred labeled patients. For hypothesis classes on $d_{\cap}$ shared features, estimation error scales as $\widetilde{O}(\sqrt{d_{\cap}/n_s})$, making high-capacity models unreliable once $n_s \le 500$. Many UDA techniques implicitly bank on larger sample sizes than most hospitals can release.
 
-Distributional mismatch compounds the limits. Under the standard domain adaptation bound
+Distributional mismatch compounds the limits. Under the standard adaptation bound
 \[
-\mathcal{R}_t(f) \le \mathcal{R}_s(f) + \frac{1}{2} d_{\mathcal{H}\Delta\mathcal{H}}(P_s,P_t) + \lambda,
+\mathcal{R}_t(f) \le \mathcal{R}_s(f) + \tfrac{1}{2} d_{\mathcal{H}\Delta\mathcal{H}}(P_s,P_t) + \lambda,
 \]
-the divergence term dominates when variability is substantial--differences in CT scanners, assays, and patient populations. Partial feature overlap means source and target supports only partly coincide, straining assumptions behind kernel alignment and adversarial methods.
+the divergence term $d_{\mathcal{H}\Delta\mathcal{H}}$ dominates when variability is substantial---differences in CT scanners, assay calibrations, demographics, or survey wording. Partial feature overlap means source and target supports only partly coincide, straining assumptions behind kernel alignment and adversarial methods.
 
-Deep neural networks face the same hurdle: effective dimension $d_{\mathrm{eff}}$ yields sample complexity $n_s = \Omega(d_{\mathrm{eff}}/\epsilon^2)$, leaving conventional representation learning under-specified in medical tabular contexts where $d'$ is modest but $n_s$ is tiny.
+Shift types manifest differently across the two tasks but lead to the same failure mode of inflated $\lambda$:
+\begin{itemize}
+    \item \textbf{Covariate shift:} $P_s(\mathbf{x})\neq P_t(\mathbf{x})$ emerges when Hospital B observes higher upper-lobe prevalence or when BRFSS non-White respondents show distinct BMI and lifestyle distributions. Without alignment, the similarity kernel inside TabPFN attends to mismatched neighbors and the risk bound loosens.
+    \item \textbf{Label shift:} $P_s(y)\neq P_t(y)$ appears in lung nodules when malignancy prevalence changes from tertiary centers to community hospitals, and in BRFSS when diabetes rates vary by race. Thresholds tuned on $P_s$ miscalibrate decision curves once applied to $P_t$.
+    \item \textbf{Concept shift:} $P_s(y|\mathbf{x})\neq P_t(y|\mathbf{x})$ captures definition drift, such as tuberculosis confounding upper-lobe malignancy cues in some regions or policy changes altering how survey responses map to the DIABETES label.
+\end{itemize}
+
+The combination of $d_{\mathcal{H}\Delta\mathcal{H}}$ growth and concept shift means that even small empirical risk on Cohort~A or the White BRFSS split does not guarantee acceptable target risk. Explicit alignment and feature harmonization are therefore prerequisites for any foundation-model method deployed in these settings.
+\label{sec:pf-end}
