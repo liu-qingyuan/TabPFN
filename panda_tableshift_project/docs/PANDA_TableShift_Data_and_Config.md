@@ -68,6 +68,8 @@ Sampling for modeling & 1{,}024 sampled for training (seed 42) & 2{,}048 sampled
 | PANDA\_NoUDA | 0.7960 | 0.8472 | 0.1954 | 0.5672 | 0.1180 | PANDA Baseline (n\_estimators=1) |
 | PANDA\_TCA | **0.8038** | **0.8481** | 0.1662 | **0.6078** | 0.0963 | UDA<br/>(n\_estimators=32) |
 
+- 提醒：目标域子样本的阳性率仅约 17%，且所有模型均沿用默认的 0.5 判别阈值（未调整类权重或重新校准）。因此模型偏向预测阴性，Accuracy 仍高，但 Precision／Recall／F1 会显著偏低。这不是指标计算错误，而是数据分布与阈值设定的直接结果；若需要更平衡的召回，可在 TableShift 任务上额外做阈值搜索或引入 `class_weight='balanced'` 等策略。
+
 - 关键图表：`combined_analysis_figure.pdf`, `combined_heatmaps_nature.pdf`, `roc_comparison.pdf`, `calibration_curves.pdf`, `decision_curve_analysis.pdf`（路径详见同目录 `visualizations.json`）。
 
 ## 复现步骤（简述）

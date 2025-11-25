@@ -832,3 +832,1255 @@ The Mayo and Brock models showed good accuracy for determining likelihood of mal
 	keywords = {Molecular diagnostics, Pulmonary nodules, Risk stratification, Medicare coverage, Bronchoscopy},
 }
 
+
+@misc{helli_drift-resilient_2024,
+	title = {Drift-Resilient {TabPFN}: In-Context Learning Temporal Distribution Shifts on Tabular Data},
+	url = {http://arxiv.org/abs/2411.10634},
+	doi = {10.48550/arXiv.2411.10634},
+	shorttitle = {Drift-Resilient {TabPFN}},
+	abstract = {While most {ML} models expect independent and identically distributed data, this assumption is often violated in real-world scenarios due to distribution shifts, resulting in the degradation of machine learning model performance. Until now, no tabular method has consistently outperformed classical supervised learning, which ignores these shifts. To address temporal distribution shifts, we present Drift-Resilient {TabPFN}, a fresh approach based on In-Context Learning with a Prior-Data Fitted Network that learns the learning algorithm itself: it accepts the entire training dataset as input and makes predictions on the test set in a single forward pass. Specifically, it learns to approximate Bayesian inference on synthetic datasets drawn from a prior that specifies the model's inductive bias. This prior is based on structural causal models ({SCM}), which gradually shift over time. To model shifts of these causal models, we use a secondary {SCM}, that specifies changes in the primary model parameters. The resulting Drift-Resilient {TabPFN} can be applied to unseen data, runs in seconds on small to moderately sized datasets and needs no hyperparameter tuning. Comprehensive evaluations across 18 synthetic and real-world datasets demonstrate large performance improvements over a wide range of baselines, such as {XGB}, {CatBoost}, {TabPFN}, and applicable methods featured in the Wild-Time benchmark. Compared to the strongest baselines, it improves accuracy from 0.688 to 0.744 and {ROC} {AUC} from 0.786 to 0.832 while maintaining stronger calibration. This approach could serve as significant groundwork for further research on out-of-distribution prediction.},
+	number = {{arXiv}:2411.10634},
+	publisher = {{arXiv}},
+	author = {Helli, Kai and Schnurr, David and Hollmann, Noah and Müller, Samuel and Hutter, Frank},
+	urldate = {2025-11-24},
+	date = {2024-11-15},
+	eprinttype = {arxiv},
+	eprint = {2411.10634 [cs]},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/WWKTEIWM/Helli 等 - 2024 - Drift-Resilient TabPFN In-Context Learning Temporal Distribution Shifts on Tabular Data.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/DME27MPW/2411.html:text/html},
+}
+
+@misc{wang_towards_2025,
+	title = {Towards Data-Centric {AI}: A Comprehensive Survey of Traditional, Reinforcement, and Generative Approaches for Tabular Data Transformation},
+	url = {http://arxiv.org/abs/2501.10555},
+	doi = {10.48550/arXiv.2501.10555},
+	shorttitle = {Towards Data-Centric {AI}},
+	abstract = {Tabular data is one of the most widely used formats across industries, driving critical applications in areas such as finance, healthcare, and marketing. In the era of data-centric {AI}, improving data quality and representation has become essential for enhancing model performance, particularly in applications centered around tabular data. This survey examines the key aspects of tabular data-centric {AI}, emphasizing feature selection and feature generation as essential techniques for data space refinement. We provide a systematic review of feature selection methods, which identify and retain the most relevant data attributes, and feature generation approaches, which create new features to simplify the capture of complex data patterns. This survey offers a comprehensive overview of current methodologies through an analysis of recent advancements, practical applications, and the strengths and limitations of these techniques. Finally, we outline open challenges and suggest future perspectives to inspire continued innovation in this field.},
+	number = {{arXiv}:2501.10555},
+	publisher = {{arXiv}},
+	author = {Wang, Dongjie and Huang, Yanyong and Ying, Wangyang and Bai, Haoyue and Gong, Nanxu and Wang, Xinyuan and Dong, Sixun and Zhe, Tao and Liu, Kunpeng and Xiao, Meng and Wang, Pengfei and Wang, Pengyang and Xiong, Hui and Fu, Yanjie},
+	urldate = {2025-11-24},
+	date = {2025-01-17},
+	eprinttype = {arxiv},
+	eprint = {2501.10555 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/83AU4P6W/Wang 等 - 2025 - Towards Data-Centric AI A Comprehensive Survey of Traditional, Reinforcement, and Generative Approa.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/7W4988VJ/2501.html:text/html},
+}
+
+@article{liu_establishment_2024,
+	title = {Establishment and validation of multiclassification prediction models for pulmonary nodules based on machine learning},
+	volume = {18},
+	issn = {1752-6981},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC11089274/},
+	doi = {10.1111/crj.13769},
+	abstract = {The {RF} model based on machine learning ({ML}) performed best, and its predictive performance was better than that of the three published models include Mayo model, Peking University People's Hospital ({PKUPH}) model and Brock model, which may provide a new noninvasive method for the risk assessment of {PNs}.},
+	pages = {e13769},
+	number = {5},
+	journaltitle = {The Clinical Respiratory Journal},
+	shortjournal = {Clin Respir J},
+	author = {Liu, Qiao and Lv, Xue and Zhou, Daiquan and Yu, Na and Hong, Yuqin and Zeng, Yan},
+	urldate = {2025-11-24},
+	date = {2024-05-12},
+	pmid = {38736274},
+	pmcid = {PMC11089274},
+}
+
+@article{garau_external_2020,
+	title = {External validation of radiomics-based predictive models in low-dose {CT} screening for early lung cancer diagnosis},
+	volume = {47},
+	issn = {0094-2405},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC7708421/},
+	doi = {10.1002/mp.14308},
+	abstract = {Purpose:
+Low-dose {CT} screening allows early lung cancer detection, but is
+affected by frequent false positive results, inter/intra observer variation
+and uncertain diagnoses of lung nodules. Radiomics-based models have
+recently been introduced to overcome these issues, but limitations in
+demonstrating their generalizability on independent datasets are slowing
+their introduction to clinic. The aim of this study is to evaluate two
+radiomics-based models to classify malignant pulmonary nodules in low-dose
+{CT} screening, and to externally validate them on an independent cohort. The
+effect of a radiomics-features harmonization technique is also investigated
+to evaluate its impact on the classification of lung nodules from a
+multicenter data.
+
+Methods:
+Pulmonary nodules from two independent cohorts were considered in
+this study; the first cohort (110 subjects, 113 nodules) was used to train
+prediction models, and the second cohort (72 nodules) to externally validate
+them. Literature-based radiomics features were extracted and, after feature
+selection, used as predictive variables in models for malignancy
+identification. An in-house prediction model based on artificial neural
+network ({ANN}) was implemented and evaluated, along with an alternative model
+from the literature, based on a support vector machine ({SVM}) classifier
+coupled with a least absolute shrinkage and selection operator ({LASSO}).
+External validation was performed on the second cohort to evaluate
+models’ generalization ability. Additionally, the impact of the
+Combat harmonization method was investigated to compensate for multicenter
+datasets variabilities. A new training of the models based on harmonized
+features was performed on the first cohort, then tested separately on the
+harmonized and no-harmonized features of the second cohort.
+
+Results:
+Preliminary results showed a good accuracy of the investigated models
+in distinguishing benign from malignant pulmonary nodules with both sets of
+radiomics features (i.e. no-harmonized and harmonized). The performance of
+the models, quantified in terms of Area Under the Curve ({AUC}), was
+{\textgreater}0.89 in the training set and {\textgreater}0.82 in the external-validation
+set for all the investigated scenarios, outperforming the clinical standard
+({AUC} of 0.76). Slightly higher performance was observed for the {SVM}-{LASSO}
+model than the {ANN} in the external dataset, although they did not result
+significantly different. For both harmonized and no-harmonized features, no
+statistical difference was found between Receiver Operating Characteristic
+({ROC}) curves related to training and test set for both models.
+
+Conclusions:
+Although no significant improvements were observed when applying the
+Combat harmonization method, both in-house and literature-based models were
+able to classify lung nodules with good generalization to an independent
+dataset, thus showing their potential as tools for clinical decision-making
+in lung cancer screening.},
+	pages = {4125--4136},
+	number = {9},
+	journaltitle = {Medical physics},
+	shortjournal = {Med Phys},
+	author = {Garau, Noemi and Paganelli, Chiara and Summers, Paul and Choi, Wookjin and Alam, Sadegh and Lu, Wei and Fanciullo, Cristiana and Bellomi, Massimo and Baroni, Guido and Rampinelli, Cristiano},
+	urldate = {2025-11-24},
+	date = {2020-09},
+	pmid = {32488865},
+	pmcid = {PMC7708421},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/DMJE7YTB/Garau 等 - 2020 - External validation of radiomics-based predictive models in low-dose CT screening for early lung can.pdf:application/pdf},
+}
+
+@article{wulaningsih_deep_2024,
+	title = {Deep Learning Models for Predicting Malignancy Risk in {CT}-Detected Pulmonary Nodules: A Systematic Review and Meta-analysis},
+	volume = {202},
+	issn = {0341-2040},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC11427562/},
+	doi = {10.1007/s00408-024-00706-1},
+	shorttitle = {Deep Learning Models for Predicting Malignancy Risk in {CT}-Detected Pulmonary Nodules},
+	abstract = {Background
+There has been growing interest in using artificial intelligence/deep learning ({DL}) to help diagnose prevalent diseases earlier. In this study we sought to survey the landscape of externally validated {DL}-based computer-aided diagnostic ({CADx}) models, and assess their diagnostic performance for predicting the risk of malignancy in computed tomography ({CT})-detected pulmonary nodules.
+
+Methods
+An electronic search was performed in four databases (from inception to 10 August 2023). Studies were eligible if they were peer-reviewed experimental or observational articles comparing the diagnostic performance of externally validated {DL}-based {CADx} models with models widely used in clinical practice to predict the risk of malignancy. A bivariate random-effect approach for the meta-analysis on the included studies was used.
+
+Results
+Seventeen studies were included, comprising 8553 participants and 9884 nodules. Pooled analyses showed {DL}-based {CADx} models were 11.6\% more sensitive than physician judgement alone, and 14.5\% more than clinical risk models alone. They had a similar pooled specificity to physician judgement alone [0.77 (95\% {CI} 0.68–0.84) v 0.81 (95\% {CI} 0.71–0.88)], and were 7.4\% more specific than clinical risk models alone. They had superior pooled areas under the receiver operating curve ({AUC}), with relative pooled {AUCs} of 1.03 (95\% {CI} 1.00–1.07) and 1.10 (95\% {CI} 1.07–1.13) versus physician judgement and clinical risk models alone, respectively.
+
+Conclusion
+{DL}-based models are already used in clinical practice in certain settings for nodule management. Our results show their diagnostic performance potentially justifies wider, more routine deployment alongside experienced physician readers to help inform multidisciplinary team decision-making.
+
+Supplementary Information
+The online version contains supplementary material available at 10.1007/s00408-024-00706-1.},
+	pages = {625--636},
+	number = {5},
+	journaltitle = {Lung},
+	shortjournal = {Lung},
+	author = {Wulaningsih, Wahyu and Villamaria, Carmela and Akram, Abdullah and Benemile, Janella and Croce, Filippo and Watkins, Johnathan},
+	urldate = {2025-11-24},
+	date = {2024},
+	pmid = {38782779},
+	pmcid = {PMC11427562},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/4MZ9FI9A/Wulaningsih 等 - 2024 - Deep Learning Models for Predicting Malignancy Risk in CT-Detected Pulmonary Nodules A Systematic R.pdf:application/pdf},
+}
+
+@misc{aritake_unsupervised_2022,
+	title = {Unsupervised Domain Adaptation for Extra Features in the Target Domain Using Optimal Transport},
+	url = {http://arxiv.org/abs/2209.04594},
+	doi = {10.48550/arXiv.2209.04594},
+	abstract = {Domain adaptation aims to transfer knowledge of labeled instances obtained from a source domain to a target domain to fill the gap between the domains. Most domain adaptation methods assume that the source and target domains have the same dimensionality. Methods that are applicable when the number of features is different in each domain have rarely been studied, especially when no label information is given for the test data obtained from the target domain. In this paper, it is assumed that common features exist in both domains and that extra (new additional) features are observed in the target domain; hence, the dimensionality of the target domain is higher than that of the source domain. To leverage the homogeneity of the common features, the adaptation between these source and target domains is formulated as an optimal transport ({OT}) problem. In addition, a learning bound in the target domain for the proposed {OT}-based method is derived. The proposed algorithm is validated using both simulated and real-world data.},
+	number = {{arXiv}:2209.04594},
+	publisher = {{arXiv}},
+	author = {Aritake, Toshimitsu and Hino, Hideitsu},
+	urldate = {2025-11-24},
+	date = {2022-09-10},
+	eprinttype = {arxiv},
+	eprint = {2209.04594 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/NEUCLXML/Aritake和Hino - 2022 - Unsupervised Domain Adaptation for Extra Features in the Target Domain Using Optimal Transport.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/PGQ8D29Q/2209.html:text/html},
+}
+
+@article{orouji_domain_nodate,
+	title = {Domain adaptation in small-scale and heterogeneous biological datasets},
+	volume = {10},
+	issn = {2375-2548},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC11661433/},
+	doi = {10.1126/sciadv.adp6040},
+	abstract = {Machine-learning models are key to modern biology, yet models trained on one dataset are often not generalizable to other datasets from different cohorts or laboratories due to both technical and biological differences. Domain adaptation, a type of transfer learning, alleviates this problem by aligning different datasets so that models can be applied across them. However, most state-of-the-art domain adaptation methods were designed for large-scale data such as images, whereas biological datasets are smaller and have more features, and these are also complex and heterogeneous. This Review discusses domain adaptation methods in the context of such biological data to inform biologists and guide future domain adaptation research. We describe the benefits and challenges of domain adaptation in biological research and critically explore some of its objectives, strengths, and weaknesses. We argue for the incorporation of domain adaptation techniques to the computational biologist’s toolkit, with further development of customized approaches., Research using biological data can benefit from domain adaptation modeling approaches, but it also carries distinct challenges.},
+	pages = {eadp6040},
+	number = {51},
+	journaltitle = {Science Advances},
+	shortjournal = {Sci Adv},
+	author = {Orouji, Seyedmehdi and Liu, Martin C. and Korem, Tal and Peters, Megan A. K.},
+	urldate = {2025-11-24},
+	pmid = {39705361},
+	pmcid = {PMC11661433},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/LYHMM473/Orouji 等 - Domain adaptation in small-scale and heterogeneous biological datasets.pdf:application/pdf},
+}
+
+@misc{eremeev_turning_2025,
+	title = {Turning Tabular Foundation Models into Graph Foundation Models},
+	url = {http://arxiv.org/abs/2508.20906},
+	doi = {10.48550/arXiv.2508.20906},
+	abstract = {While foundation models have revolutionized such fields as natural language processing and computer vision, their potential in graph machine learning remains largely unexplored. One of the key challenges in designing graph foundation models ({GFMs}) is handling diverse node features that can vary across different graph datasets. While many works on {GFMs} have focused exclusively on text-attributed graphs, the problem of handling arbitrary features of other types in {GFMs} has not been fully addressed. However, this problem is not unique to the graph domain, as it also arises in the field of machine learning for tabular data. In this work, motivated by the recent success of tabular foundation models ({TFMs}) like {TabPFNv}2 or {LimiX}, we propose G2T-{FM}, a simple framework for turning tabular foundation models into graph foundation models. Specifically, G2T-{FM} augments the original node features with neighborhood feature aggregation, adds structural embeddings, and then applies a {TFM} to the constructed node representations. Even in a fully in-context regime, our model achieves strong results, significantly outperforming publicly available {GFMs} and performing competitively with, and often better than, well-tuned {GNNs} trained from scratch. Moreover, after finetuning, G2T-{FM} surpasses well-tuned {GNN} baselines. In particular, when combined with {LimiX}, G2T-{FM} often outperforms the best {GNN} by a significant margin. In summary, our paper reveals the potential of a previously overlooked direction of utilizing tabular foundation models for graph machine learning tasks.},
+	number = {{arXiv}:2508.20906},
+	publisher = {{arXiv}},
+	author = {Eremeev, Dmitry and Bazhenov, Gleb and Platonov, Oleg and Babenko, Artem and Prokhorenkova, Liudmila},
+	urldate = {2025-11-24},
+	date = {2025-09-23},
+	eprinttype = {arxiv},
+	eprint = {2508.20906 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/RTAE8E8A/Eremeev 等 - 2025 - Turning Tabular Foundation Models into Graph Foundation Models.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/KJVVH7KA/2508.html:text/html},
+}
+
+@online{noauthor_prior_nodate,
+	title = {Prior Labs},
+	url = {https://priorlabs.ai/technical-reports/tabpfn-2-5-model-report},
+	urldate = {2025-11-24},
+	langid = {english},
+	file = {Snapshot:/Users/lqy/Zotero/storage/TIW6NW55/tabpfn-2-5-model-report.html:text/html},
+}
+
+@online{noauthor_pdf_2025,
+	title = {({PDF}) {TabPFN}-2.5: Advancing the State of the Art in Tabular Foundation Models},
+	url = {https://www.researchgate.net/publication/397555905_TabPFN-25_Advancing_the_State_of_the_Art_in_Tabular_Foundation_Models},
+	shorttitle = {({PDF}) {TabPFN}-2.5},
+	abstract = {{PDF} {\textbar} The first tabular foundation model, {TabPFN}, and its successor {TabPFNv}2 have impacted tabular {AI} substantially, with dozens of methods building on... {\textbar} Find, read and cite all the research you need on {ResearchGate}},
+	titleaddon = {{ResearchGate}},
+	urldate = {2025-11-24},
+	date = {2025-11-18},
+	langid = {english},
+	doi = {10.48550/arXiv.2511.08667},
+	file = {Snapshot:/Users/lqy/Zotero/storage/Z85MWPGP/397555905_TabPFN-25_Advancing_the_State_of_the_Art_in_Tabular_Foundation_Models.html:text/html},
+}
+
+@online{noauthor_closer_nodate,
+	title = {A Closer Look at {TabPFN} v2: Strength, Limitation, and Extension},
+	url = {https://arxiv.org/html/2502.17361v1},
+	urldate = {2025-11-24},
+	file = {A Closer Look at TabPFN v2\: Strength, Limitation, and Extension:/Users/lqy/Zotero/storage/QG2ZH7EZ/2502.html:text/html},
+}
+
+@online{noauthor_realistic_nodate,
+	title = {Realistic Evaluation of {TabPFN} v2 in Open Environments},
+	url = {https://arxiv.org/html/2505.16226v1},
+	urldate = {2025-11-24},
+}
+
+@software{noauthor_automldrift-resilient_tabpfn_2025,
+	title = {automl/Drift-Resilient\_TabPFN},
+	url = {https://github.com/automl/Drift-Resilient_TabPFN},
+	abstract = {Drift-Resilient {TabPFN} is a method using In-Context Learning via a Prior-Data Fitted Network, to address temporal distribution shifts in tabular data, outperforming existing methods in terms of performance and calibration.},
+	publisher = {{AutoML}-Freiburg-Hannover},
+	urldate = {2025-11-24},
+	date = {2025-11-19},
+	note = {original-date: 2024-10-22T17:32:11Z},
+}
+
+@article{ahn_unsupervised_2023,
+	title = {Unsupervised Domain Adaptation for Mitigating Sensor Variability and Interspecies Heterogeneity in Animal Activity Recognition},
+	volume = {13},
+	issn = {2076-2615},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC10603736/},
+	doi = {10.3390/ani13203276},
+	abstract = {Simple Summary
+This study aimed to improve animal activity recognition ({AAR}) using wearable sensor data, which often faces challenges due to sensor variability and individual variability across species. To address this problem, we adopted unsupervised domain adaptation ({UDA}) techniques to improve the {AAR} performance. The main objective of {UDA} is to enable {AAR} models to perform well on the newly enrolled unlabeled sensor datasets, even when they have different distributions than the pre-trained labeled datasets. The experiments performed with the dog and horse movement sensor datasets demonstrated that {UDA} significantly improved the classification performance by mitigating sensor variability and individual characteristics such as size, gender, and species. These findings highlight that {UDA} has practical applications in real-world scenarios where labeled data is scarce in certain measurement environments.
+
+Abstract
+Animal activity recognition ({AAR}) using wearable sensor data has gained significant attention due to its applications in monitoring and understanding animal behavior. However, two major challenges hinder the development of robust {AAR} models: domain variability and the difficulty of obtaining labeled datasets. To address this issue, this study intensively investigates the impact of unsupervised domain adaptation ({UDA}) for {AAR}. We compared three distinct types of {UDA} techniques: minimizing divergence-based, adversarial-based, and reconstruction-based approaches. By leveraging {UDA}, {AAR} classifiers enable the model to learn domain-invariant features, allowing classifiers trained on the source domain to perform well on the target domain without labels. We evaluated the effectiveness of {UDA} techniques using dog movement sensor data and additional data from horses. The application of {UDA} across sensor positions (neck and back), sizes (middle-sized and large-sized), and gender (female and male) within the dog data, as well as across species (dog and horses), exhibits significant improvements in the classification performance and reduced the domain discrepancy. The results highlight the potential of {UDA} to mitigate the domain shift and enhance {AAR} in various settings and for different animal species, providing valuable insights for practical applications in real-world scenarios where labeled data is scarce.},
+	pages = {3276},
+	number = {20},
+	journaltitle = {Animals : an Open Access Journal from {MDPI}},
+	shortjournal = {Animals (Basel)},
+	author = {Ahn, Seong-Ho and Kim, Seeun and Jeong, Dong-Hwa},
+	urldate = {2025-11-24},
+	date = {2023-10-20},
+	pmid = {37894000},
+	pmcid = {PMC10603736},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/PYWA6ILX/Ahn 等 - 2023 - Unsupervised Domain Adaptation for Mitigating Sensor Variability and Interspecies Heterogeneity in A.pdf:application/pdf},
+}
+
+@misc{kahenga_fedfusion_2025,
+	title = {{FedFusion}: Federated Learning with Diversity- and Cluster-Aware Encoders for Robust Adaptation under Label Scarcity},
+	url = {http://arxiv.org/abs/2509.19220},
+	doi = {10.48550/arXiv.2509.19220},
+	shorttitle = {{FedFusion}},
+	abstract = {Federated learning in practice must contend with heterogeneous feature spaces, severe non-{IID} data, and scarce labels across clients. We present {FedFusion}, a federated transfer-learning framework that unifies domain adaptation and frugal labelling with diversity-/cluster-aware encoders ({DivEn}, {DivEn}-mix, {DivEn}-c). Labelled teacher clients guide learner clients via confidence-filtered pseudo-labels and domain-adaptive transfer, while clients maintain personalised encoders tailored to local data. To preserve global coherence under heterogeneity, {FedFusion} employs similarity-weighted classifier coupling (with optional cluster-wise averaging), mitigating dominance by data-rich sites and improving minority-client performance. The frugal-labelling pipeline combines self-/semi-supervised pretext training with selective fine-tuning, reducing annotation demands without sharing raw data. Across tabular and imaging benchmarks under {IID}, non-{IID}, and label-scarce regimes, {FedFusion} consistently outperforms state-of-the-art baselines in accuracy, robustness, and fairness while maintaining comparable communication and computation budgets. These results show that harmonising personalisation, domain adaptation, and label efficiency is an effective recipe for robust federated learning under real-world constraints.},
+	number = {{arXiv}:2509.19220},
+	publisher = {{arXiv}},
+	author = {Kahenga, Ferdinand and Bagula, Antoine and Sello, Patrick and Das, Sajal K.},
+	urldate = {2025-11-24},
+	date = {2025-09-23},
+	eprinttype = {arxiv},
+	eprint = {2509.19220 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Distributed, Parallel, and Cluster Computing, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/3SLVQDDR/Kahenga 等 - 2025 - FedFusion Federated Learning with Diversity- and Cluster-Aware Encoders for Robust Adaptation under.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/VEH5V795/2509.html:text/html},
+}
+
+@article{rehman_federated_2023,
+	title = {Federated learning for medical imaging radiology},
+	volume = {96},
+	issn = {0007-1285},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC10546441/},
+	doi = {10.1259/bjr.20220890},
+	abstract = {Federated learning ({FL}) is gaining wide acceptance across the medical {AI} domains. {FL} promises to provide a fairly acceptable clinical-grade accuracy, privacy, and generalisability of machine learning models across multiple institutions. However, the research on {FL} for medical imaging {AI} is still in its early stages. This paper presents a review of recent research to outline the difference between state-of-the-art [{SOTA}] (published literature) and state-of-the-practice [{SOTP}] (applied research in realistic clinical environments). Furthermore, the review outlines the future research directions considering various factors such as data, learning models, system design, governance, and human-in-loop to translate the {SOTA} into {SOTP} and effectively collaborate across multiple institutions.},
+	pages = {20220890},
+	number = {1150},
+	journaltitle = {The British Journal of Radiology},
+	shortjournal = {Br J Radiol},
+	author = {Rehman, Muhammad Habib ur and Hugo Lopez Pinaya, Walter and Nachev, Parashkev and Teo, James T. and Ourselin, Sebastin and Cardoso, M. Jorge},
+	urldate = {2025-11-24},
+	date = {2023-10},
+	pmid = {38011227},
+	pmcid = {PMC10546441},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/RHXXUUYQ/Rehman 等 - 2023 - Federated learning for medical imaging radiology.pdf:application/pdf},
+}
+
+@misc{gardner_benchmarking_2024,
+	title = {Benchmarking Distribution Shift in Tabular Data with {TableShift}},
+	url = {http://arxiv.org/abs/2312.07577},
+	doi = {10.48550/arXiv.2312.07577},
+	abstract = {Robustness to distribution shift has become a growing concern for text and image models as they transition from research subjects to deployment in the real world. However, high-quality benchmarks for distribution shift in tabular machine learning tasks are still lacking despite the widespread real-world use of tabular data and differences in the models used for tabular data in comparison to text and images. As a consequence, the robustness of tabular models to distribution shift is poorly understood. To address this issue, we introduce {TableShift}, a distribution shift benchmark for tabular data. {TableShift} contains 15 binary classification tasks in total, each with an associated shift, and includes a diverse set of data sources, prediction targets, and distribution shifts. The benchmark covers domains including finance, education, public policy, healthcare, and civic participation, and is accessible using only a few lines of Python code via the {TableShift} {API}. We conduct a large-scale study comparing several state-of-the-art tabular data models alongside robust learning and domain generalization methods on the benchmark tasks. Our study demonstrates (1) a linear trend between in-distribution ({ID}) and out-of-distribution ({OOD}) accuracy; (2) domain robustness methods can reduce shift gaps but at the cost of reduced {ID} accuracy; (3) a strong relationship between shift gap (difference between {ID} and {OOD} performance) and shifts in the label distribution. The benchmark data, Python package, model implementations, and more information about {TableShift} are available at https://github.com/mlfoundations/tableshift and https://tableshift.org .},
+	number = {{arXiv}:2312.07577},
+	publisher = {{arXiv}},
+	author = {Gardner, Josh and Popovic, Zoran and Schmidt, Ludwig},
+	urldate = {2025-11-24},
+	date = {2024-02-08},
+	eprinttype = {arxiv},
+	eprint = {2312.07577 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/IFQZU5BR/Gardner 等 - 2024 - Benchmarking Distribution Shift in Tabular Data with TableShift.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/WBT525DI/2312.html:text/html},
+}
+
+@online{noauthor_mlfoundationstableshift_nodate,
+	title = {mlfoundations/tableshift: A benchmark for distribution shift in tabular data},
+	url = {https://github.com/mlfoundations/tableshift},
+	urldate = {2025-11-24},
+	file = {mlfoundations/tableshift\: A benchmark for distribution shift in tabular data:/Users/lqy/Zotero/storage/WPUR4U7L/tableshift.html:text/html},
+}
+
+
+@misc{shmuel_comprehensive_2024,
+	title = {A Comprehensive Benchmark of Machine and Deep Learning Across Diverse Tabular Datasets},
+	url = {http://arxiv.org/abs/2408.14817},
+	doi = {10.48550/arXiv.2408.14817},
+	abstract = {The analysis of tabular datasets is highly prevalent both in scientific research and real-world applications of Machine Learning ({ML}). Unlike many other {ML} tasks, Deep Learning ({DL}) models often do not outperform traditional methods in this area. Previous comparative benchmarks have shown that {DL} performance is frequently equivalent or even inferior to models such as Gradient Boosting Machines ({GBMs}). In this study, we introduce a comprehensive benchmark aimed at better characterizing the types of datasets where {DL} models excel. Although several important benchmarks for tabular datasets already exist, our contribution lies in the variety and depth of our comparison: we evaluate 111 datasets with 20 different models, including both regression and classification tasks. These datasets vary in scale and include both those with and without categorical variables. Importantly, our benchmark contains a sufficient number of datasets where {DL} models perform best, allowing for a thorough analysis of the conditions under which {DL} models excel. Building on the results of this benchmark, we train a model that predicts scenarios where {DL} models outperform alternative methods with 86.1\% accuracy ({AUC} 0.78). We present insights derived from this characterization and compare these findings to previous benchmarks.},
+	number = {{arXiv}:2408.14817},
+	publisher = {{arXiv}},
+	author = {Shmuel, Assaf and Glickman, Oren and Lazebnik, Teddy},
+	urldate = {2025-11-25},
+	date = {2024-08-27},
+	eprinttype = {arxiv},
+	eprint = {2408.14817 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/MI6ZX7GR/Shmuel 等 - 2024 - A Comprehensive Benchmark of Machine and Deep Learning Across Diverse Tabular Datasets.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/RFPN23V4/2408.html:text/html},
+}
+
+@misc{somvanshi_survey_2024,
+	title = {A Survey on Deep Tabular Learning},
+	url = {http://arxiv.org/abs/2410.12034},
+	doi = {10.48550/arXiv.2410.12034},
+	abstract = {Tabular data, widely used in industries like healthcare, finance, and transportation, presents unique challenges for deep learning due to its heterogeneous nature and lack of spatial structure. This survey reviews the evolution of deep learning models for tabular data, from early fully connected networks ({FCNs}) to advanced architectures like {TabNet}, {SAINT}, {TabTranSELU}, and {MambaNet}. These models incorporate attention mechanisms, feature embeddings, and hybrid architectures to address tabular data complexities. {TabNet} uses sequential attention for instance-wise feature selection, improving interpretability, while {SAINT} combines self-attention and intersample attention to capture complex interactions across features and data points, both advancing scalability and reducing computational overhead. Hybrid architectures such as {TabTransformer} and {FT}-Transformer integrate attention mechanisms with multi-layer perceptrons ({MLPs}) to handle categorical and numerical data, with {FT}-Transformer adapting transformers for tabular datasets. Research continues to balance performance and efficiency for large datasets. Graph-based models like {GNN}4TDL and {GANDALF} combine neural networks with decision trees or graph structures, enhancing feature representation and mitigating overfitting in small datasets through advanced regularization techniques. Diffusion-based models like the Tabular Denoising Diffusion Probabilistic Model ({TabDDPM}) generate synthetic data to address data scarcity, improving model robustness. Similarly, models like {TabPFN} and Ptab leverage pre-trained language models, incorporating transfer learning and self-supervised techniques into tabular tasks. This survey highlights key advancements and outlines future research directions on scalability, generalization, and interpretability in diverse tabular data applications.},
+	number = {{arXiv}:2410.12034},
+	publisher = {{arXiv}},
+	author = {Somvanshi, Shriyank and Das, Subasish and Javed, Syed Aaqib and Antariksa, Gian and Hossain, Ahmed},
+	urldate = {2025-11-25},
+	date = {2024-10-15},
+	eprinttype = {arxiv},
+	eprint = {2410.12034 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/GQCLZIRI/Somvanshi 等 - 2024 - A Survey on Deep Tabular Learning.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/TI28LW2N/2410.html:text/html},
+}
+
+@misc{grinsztajn_why_2022,
+	title = {Why do tree-based models still outperform deep learning on tabular data?},
+	url = {http://arxiv.org/abs/2207.08815},
+	doi = {10.48550/arXiv.2207.08815},
+	abstract = {While deep learning has enabled tremendous progress on text and image datasets, its superiority on tabular data is not clear. We contribute extensive benchmarks of standard and novel deep learning methods as well as tree-based models such as {XGBoost} and Random Forests, across a large number of datasets and hyperparameter combinations. We define a standard set of 45 datasets from varied domains with clear characteristics of tabular data and a benchmarking methodology accounting for both fitting models and finding good hyperparameters. Results show that tree-based models remain state-of-the-art on medium-sized data (\${\textbackslash}sim\$10K samples) even without accounting for their superior speed. To understand this gap, we conduct an empirical investigation into the differing inductive biases of tree-based models and Neural Networks ({NNs}). This leads to a series of challenges which should guide researchers aiming to build tabular-specific {NNs}: 1. be robust to uninformative features, 2. preserve the orientation of the data, and 3. be able to easily learn irregular functions. To stimulate research on tabular architectures, we contribute a standard benchmark and raw data for baselines: every point of a 20 000 compute hours hyperparameter search for each learner.},
+	number = {{arXiv}:2207.08815},
+	publisher = {{arXiv}},
+	author = {Grinsztajn, Léo and Oyallon, Edouard and Varoquaux, Gaël},
+	urldate = {2025-11-25},
+	date = {2022-07-18},
+	eprinttype = {arxiv},
+	eprint = {2207.08815 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning, Statistics - Machine Learning, Statistics - Methodology},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/UYQWGIIA/Grinsztajn 等 - 2022 - Why do tree-based models still outperform deep learning on tabular data.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/KPEKPXGG/2207.html:text/html},
+}
+
+@article{liu_tabular_2025,
+	title = {Tabular prior-data fitted network in real-world {CT} radiomics: benign vs. malignant renal tumor classification},
+	volume = {15},
+	issn = {2223-4292},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC12591794/},
+	doi = {10.21037/qims-2025-1132},
+	shorttitle = {Tabular prior-data fitted network in real-world {CT} radiomics},
+	abstract = {Background
+Radiomics-based machine learning ({ML}) models can potentially distinguish between benign and malignant renal tumors on computed tomography ({CT}). Traditional algorithms necessitate intensive hyperparameter tuning and large datasets for optimization. This study assessed the novel tabular prior-data fitted network ({TabPFN}), a pre-trained transformer model for tabular data classification, and compared it with conventional algorithms using real-world {CT} radiomics datasets.
+
+Methods
+Two retrospective cohorts were analyzed: datasets A [207 cystic renal masses ({CRMs}): 92 benign, 115 malignant] and B [92 tumors: 41 renal oncocytomas ({ROs}), 51 chromophobe renal cell carcinomas ({CRCCs})]. Radiomic features were extracted from three-phase {CT} images (unenhanced, corticomedullary, and nephrographic) using {PyRadiomics}. Seven algorithms [support vector machine ({SVM}), stochastic gradient descent ({SGD}), k-nearest neighbor ({KNN}), random forest ({RF}), extreme gradient boosting ({XGBoost}), light gradient boosting machine ({LightGBM}), and {TabPFN}] were evaluated via 10-fold cross-validation. Evaluation metrics included area under the curve ({AUC}), accuracy, sensitivity, specificity, and feature importance.
+
+Results
+In dataset A, all models achieved high {AUCs} (training: 0.935–1.000; validation: 0.800–0.946). {TabPFN} showed top-tier performance, particularly in nephrographic-phase analysis (validation {AUC}: 0.946). In dataset B, {TabPFN} demonstrated superior stability (validation {AUC}: 0.700–0.800), outperforming {SVM} and {KNN} while circumventing the convergence failures of {SGD}. On feature importance analysis, its dynamic weight allocation paralleled that of ensemble models ({RF}/{XGBoost}) without explicit hyperparameter optimization.
+
+Conclusions
+{TabPFN} demonstrates robust performance in differentiating renal tumors, particularly in small-scale, high-dimensional datasets. Its transformer-based architecture and pre-training on synthetic data eliminate manual parameter tuning, enhancing clinical applicability over conventional {ML} approaches.},
+	pages = {10847--10861},
+	number = {11},
+	journaltitle = {Quantitative Imaging in Medicine and Surgery},
+	shortjournal = {Quant Imaging Med Surg},
+	author = {Liu, Tianzhu and Wang, Huanjun and Guo, Yan and Ye, Yongsong and Weng, Bei and Li, Xiaodan and Chen, Jun and Xie, Shanghuang and Zhong, Guimian and Song, Zhixuan and Huang, Lesheng},
+	urldate = {2025-11-25},
+	date = {2025-11-01},
+	pmid = {41209261},
+	pmcid = {PMC12591794},
+}
+
+@misc{loh_basis_2025,
+	title = {Basis Transformers for Multi-Task Tabular Regression},
+	url = {http://arxiv.org/abs/2506.06926},
+	doi = {10.48550/arXiv.2506.06926},
+	abstract = {Dealing with tabular data is challenging due to partial information, noise, and heterogeneous structure. Existing techniques often struggle to simultaneously address key aspects of tabular data such as textual information, a variable number of columns, and unseen data without metadata besides column names. We propose a novel architecture, {\textbackslash}textit\{basis transformers\}, specifically designed to tackle these challenges while respecting inherent invariances in tabular data, including hierarchical structure and the representation of numeric values. We evaluate our design on a multi-task tabular regression benchmark, achieving an improvement of 0.338 in the median \$R{\textasciicircum}2\$ score and the lowest standard deviation across 34 tasks from the {OpenML}-{CTR}23 benchmark. Furthermore, our model has five times fewer parameters than the best-performing baseline and surpasses pretrained large language model baselines -- even when initialized from randomized weights.},
+	number = {{arXiv}:2506.06926},
+	publisher = {{arXiv}},
+	author = {Loh, Wei Min and Shang, Jiaqi and Poupart, Pascal},
+	urldate = {2025-11-25},
+	date = {2025-06-07},
+	eprinttype = {arxiv},
+	eprint = {2506.06926 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/4EGN2AKY/Loh 等 - 2025 - Basis Transformers for Multi-Task Tabular Regression.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/QWQXTGUB/2506.html:text/html},
+}
+
+@misc{gorishniy_revisiting_2021,
+	title = {Revisiting Deep Learning Models for Tabular Data},
+	url = {http://arxiv.org/abs/2106.11959},
+	doi = {10.48550/arXiv.2106.11959},
+	abstract = {The existing literature on deep learning for tabular data proposes a wide range of novel architectures and reports competitive results on various datasets. However, the proposed models are usually not properly compared to each other and existing works often use different benchmarks and experiment protocols. As a result, it is unclear for both researchers and practitioners what models perform best. Additionally, the field still lacks effective baselines, that is, the easy-to-use models that provide competitive performance across different problems. In this work, we perform an overview of the main families of {DL} architectures for tabular data and raise the bar of baselines in tabular {DL} by identifying two simple and powerful deep architectures. The first one is a {ResNet}-like architecture which turns out to be a strong baseline that is often missing in prior works. The second model is our simple adaptation of the Transformer architecture for tabular data, which outperforms other solutions on most tasks. Both models are compared to many existing architectures on a diverse set of tasks under the same training and tuning protocols. We also compare the best {DL} models with Gradient Boosted Decision Trees and conclude that there is still no universally superior solution.},
+	number = {{arXiv}:2106.11959},
+	publisher = {{arXiv}},
+	author = {Gorishniy, Yury and Rubachev, Ivan and Khrulkov, Valentin and Babenko, Artem},
+	urldate = {2025-11-25},
+	date = {2021-11-10},
+	eprinttype = {arxiv},
+	eprint = {2106.11959 [cs]},
+	note = {version: 2},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/5JDJ3N66/Gorishniy 等 - 2021 - Revisiting Deep Learning Models for Tabular Data.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/XFDRF8BZ/2106.html:text/html},
+}
+
+@article{fan_tabular_2024,
+	title = {Tabular deep learning: a comparative study applied to multi-task genome-wide prediction},
+	volume = {25},
+	issn = {1471-2105},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC11452967/},
+	doi = {10.1186/s12859-024-05940-1},
+	shorttitle = {Tabular deep learning},
+	abstract = {Purpose
+More accurate prediction of phenotype traits can increase the success of genomic selection in both plant and animal breeding studies and provide more reliable disease risk prediction in humans. Traditional approaches typically use regression models based on linear assumptions between the genetic markers and the traits of interest. Non-linear models have been considered as an alternative tool for modeling genomic interactions (i.e. non-additive effects) and other subtle non-linear patterns between markers and phenotype. Deep learning has become a state-of-the-art non-linear prediction method for sound, image and language data. However, genomic data is better represented in a tabular format. The existing literature on deep learning for tabular data proposes a wide range of novel architectures and reports successful results on various datasets. Tabular deep learning applications in genome-wide prediction ({GWP}) are still rare. In this work, we perform an overview of the main families of recent deep learning architectures for tabular data and apply them to multi-trait regression and multi-class classification for {GWP} on real gene datasets.
+
+Methods
+The study involves an extensive overview of recent deep learning architectures for tabular data learning: {NODE}, {TabNet}, {TabR}, {TabTransformer}, {FT}-Transformer, {AutoInt}, {GANDALF}, {SAINT} and {LassoNet}. These architectures are applied to multi-trait {GWP}. Comprehensive benchmarks of various tabular deep learning methods are conducted to identify best practices and determine their effectiveness compared to traditional methods.
+
+Results
+Extensive experimental results on several genomic datasets (three for multi-trait regression and two for multi-class classification) highlight {LassoNet} as a standout performer, surpassing both other tabular deep learning models and the highly efficient tree based {LightGBM} method in terms of both best prediction accuracy and computing efficiency.
+
+Conclusion
+Through series of evaluations on real-world genomic datasets, the study identifies {LassoNet} as a standout performer, surpassing decision tree methods like {LightGBM} and other tabular deep learning architectures in terms of both predictive accuracy and computing efficiency. Moreover, the inherent variable selection property of {LassoNet} provides a systematic way to find important genetic markers that contribute to phenotype expression.},
+	pages = {322},
+	journaltitle = {{BMC} Bioinformatics},
+	shortjournal = {{BMC} Bioinformatics},
+	author = {Fan, Yuhua and Waldmann, Patrik},
+	urldate = {2025-11-25},
+	date = {2024-10-04},
+	pmid = {39367318},
+	pmcid = {PMC11452967},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/83RSUP7D/Fan和Waldmann - 2024 - Tabular deep learning a comparative study applied to multi-task genome-wide prediction.pdf:application/pdf},
+}
+
+@online{noauthor_comparative_nodate,
+	title = {A Comparative Study of Advanced Transformer Learning Frameworks for Water Potability Analysis Using Physicochemical Parameters {\textbar} {MDPI}},
+	url = {https://www.mdpi.com/2076-3417/15/13/7262},
+	urldate = {2025-11-25},
+	file = {A Comparative Study of Advanced Transformer Learning Frameworks for Water Potability Analysis Using Physicochemical Parameters | MDPI:/Users/lqy/Zotero/storage/8Z9XFYGK/7262.html:text/html},
+}
+
+@misc{zabergja_tabular_2025,
+	title = {Tabular Data: Is Deep Learning all you need?},
+	url = {http://arxiv.org/abs/2402.03970},
+	doi = {10.48550/arXiv.2402.03970},
+	shorttitle = {Tabular Data},
+	abstract = {Tabular data represent one of the most prevalent data formats in applied machine learning, largely because they accommodate a broad spectrum of real-world problems. Existing literature has studied many of the shortcomings of neural architectures on tabular data and has repeatedly confirmed the scalability and robustness of gradient-boosted decision trees across varied datasets. However, recent deep learning models have not been subjected to a comprehensive evaluation under conditions that allow for a fair comparison with existing classical approaches. This situation motivates an investigation into whether recent deep-learning paradigms outperform classical {ML} methods on tabular data. Our survey fills this gap by benchmarking seventeen state-of-the-art methods, spanning neural networks, classical {ML} and {AutoML} techniques. Our empirical results over 68 diverse datasets from a well-established benchmark indicate a paradigm shift, where Deep Learning methods outperform classical approaches.},
+	number = {{arXiv}:2402.03970},
+	publisher = {{arXiv}},
+	author = {Zabërgja, Guri and Kadra, Arlind and Frey, Christian M. M. and Grabocka, Josif},
+	urldate = {2025-11-25},
+	date = {2025-10-05},
+	eprinttype = {arxiv},
+	eprint = {2402.03970 [cs]},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/YY384A9G/Zabërgja 等 - 2025 - Tabular Data Is Deep Learning all you need.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/3MPYCZ3H/2402.html:text/html},
+}
+
+@misc{zhou_limitations_2025,
+	title = {The Limitations of {TabPFN} for High-Dimensional {RNA}-seq Analysis},
+	rights = {© 2025, Posted by Cold Spring Harbor Laboratory. This pre-print is available under a Creative Commons License (Attribution-{NonCommercial} 4.0 International), {CC} {BY}-{NC} 4.0, as described at http://creativecommons.org/licenses/by-nc/4.0/},
+	url = {https://www.biorxiv.org/content/10.1101/2025.08.15.670537v1},
+	doi = {10.1101/2025.08.15.670537},
+	abstract = {Tabular Prior-Data Fitted Networks ({TabPFN}) demonstrate remarkable performance on small-to-medium tabular datasets through in-context learning, but struggle with high-dimensional genomic data such as {RNA}-seq with tens of thousands of features. We investigate multiple approaches to adapt {TabPFN} for transcriptomic analysis using two benchmark datasets: Age-{ARCHS}4, a regression dataset derived from the {ARCHS}4 dataset (57,873 samples, 10,000 genes), and an Inflammatory Bowel Disease ({IBD}) classification dataset encompassing Crohn’s Disease and Ulcerative Colitis samples (2,490 samples, 10,000 genes). Our experimental design proceeds in two phases: first evaluating existing optimization methods, then testing novel adaptations including (1) self-supervised embedding learning and (2) Bulk-Former integration. We demonstrate that when constrained to equal training conditions (500 features, 10,000 samples), {TabPFN} outperforms classical baselines like random forest and {XGBoost}. However, when classical methods utilize full feature sets while {TabPFN} adaptations attempt to handle higher-dimensional data, all {TabPFN} variants consistently underperform the naive baseline. Our findings reveal fundamental limitations in current approaches to adapting {TabPFN} for genomic applications, showing that architectural modifications paradoxically degrade performance, while intelligent metadata-based subgrouping emerges as the most effective strategy for deploying {TabPFN} on biological data.},
+	publisher = {{bioRxiv}},
+	author = {Zhou, Summer and Agarwal, Vinayak and Gopinath, Ashwin and Kassis, Timothy},
+	urldate = {2025-11-25},
+	date = {2025-08-21},
+	langid = {english},
+	note = {{ISSN}: 2692-8205
+Pages: 2025.08.15.670537
+Section: New Results},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/JXP8X2EA/Zhou 等 - 2025 - The Limitations of TabPFN for High-Dimensional RNA-seq Analysis.pdf:application/pdf},
+}
+
+@misc{chen_tabpfn_2025,
+	title = {{TabPFN} Opens New Avenues for Small-Data Tabular Learning in Drug Discovery},
+	url = {https://chemrxiv.org/engage/chemrxiv/article-details/68d29b1cf2aff1677025b18f},
+	doi = {10.26434/chemrxiv-2025-szk5s},
+	abstract = {Early-stage drug discovery often suffers from data scarcity and out-of-distribution ({OOD}) shifts, which constrain the reliability of predictive models. While deep learning has advanced representation learning from molecular and biological data, tabular modeling remains indispensable, particularly in small-sample and {OOD} scenarios. For over a decade, gradient-boosted decision trees ({GBDTs}) such as {XGBoost} have been the dominant choice, yet their robustness is limited under such conditions. {TabPFN}, a recently introduced transformer-based tabular foundation model, enables accurate predictions on small datasets without task-specific retraining. Applying {TabPFN} to a variety of molecular data sets, we find that {TabPFN} performs on par with {XGBoost} in classification, but demonstrates clear and stable advantages in regression, with its strongest gains on small and medium datasets and under {OOD} evaluations. Feature and data ablations (10–90\%) further highlight its robustness, as performance degrades gracefully and exhibits minimal sensitivity compared with tree ensembles. On quantum tasks, {TabPFN} shows competitive accuracy on {QM}7 but is challenged by the larger {QM}8 dataset, where tree ensembles regain strength. Beyond metrics, embedding analyses indicate smoother structure–property relationships of {TabPFN} and enhanced class separability, reflecting beneficial inductive biases rather than overfitting. Collectively, these findings demonstrate that {TabPFN} offers a robust and data-efficient alternative for tabular learning in drug discovery, shedding new light on predictive modeling under   small-data and {OOD} challenges.},
+	publisher = {{ChemRxiv}},
+	author = {Chen, Woruo and Tian, Yao and Deng, Youchao and Jiang, Dejun and Cao, Dongsheng},
+	urldate = {2025-11-25},
+	date = {2025-09-29},
+	langid = {english},
+	keywords = {Molecular property prediction, Out-of-distribution generalization, Tabular Prior-Fitted Network ({TabPFN})},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/ZME57B85/Chen 等 - 2025 - TabPFN Opens New Avenues for Small-Data Tabular Learning in Drug Discovery.pdf:application/pdf},
+}
+
+@misc{ye_closer_2025,
+	title = {A Closer Look at {TabPFN} v2: Strength, Limitation, and Extension},
+	url = {http://arxiv.org/abs/2502.17361},
+	doi = {10.48550/arXiv.2502.17361},
+	shorttitle = {A Closer Look at {TabPFN} v2},
+	abstract = {Tabular datasets are inherently heterogeneous, posing significant challenges for developing pre-trained foundation models. The recently introduced transformer-based Tabular Prior-data Fitted Network v2 ({TabPFN} v2) achieves unprecedented in-context learning accuracy across multiple tabular datasets, marking a pivotal advancement in tabular foundation models. In this paper, we comprehensively evaluate {TabPFN} v2 on over 300 datasets, confirming its exceptional generalization capabilities on small- to medium-scale tasks. Our analysis identifies randomized feature tokens as a key factor behind {TabPFN} v2's success, as they unify heterogeneous datasets into a fixed-dimensional representation, enabling more effective training and inference. To further understand {TabPFN} v2's predictions, we propose a leave-one-fold-out approach, transforming {TabPFN} v2 into a feature extractor and revealing its capability to simplify data distributions and boost accuracy. Lastly, to address {TabPFN} v2's limitations in high-dimensional, large-scale, and many-category tasks, we introduce a divide-and-conquer mechanism inspired by Chain-of-Thought prompting, enabling scalable inference. By uncovering the mechanisms behind {TabPFN} v2's success and introducing strategies to expand its applicability, this study provides key insights into the future of tabular foundation models.},
+	number = {{arXiv}:2502.17361},
+	publisher = {{arXiv}},
+	author = {Ye, Han-Jia and Liu, Si-Yang and Chao, Wei-Lun},
+	urldate = {2025-11-25},
+	date = {2025-02-24},
+	eprinttype = {arxiv},
+	eprint = {2502.17361 [cs]},
+	note = {version: 1},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/QFPGE2BD/Ye 等 - 2025 - A Closer Look at TabPFN v2 Strength, Limitation, and Extension.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/VFW9J6LH/2502.html:text/html},
+}
+
+@online{bytezcom_tabicl_2025,
+	title = {{TabICL}: A Tabular Foundation Model for In-Context Learni...},
+	url = {https://bytez.com/docs/icml/46681/paper},
+	shorttitle = {{TabICL}},
+	abstract = {{TabICL} is a new model designed to analyze tabular data (like spreadsheets) for classification tasks, significantly improving speed and scalability compared to older models. It can handle very larg...},
+	author = {Bytez.com and {QU}, Jingang and Holzmüller, David and Varoquaux, Gaël and Morvan, Marine Le},
+	urldate = {2025-11-25},
+	date = {2025-07-15},
+	langid = {english},
+}
+
+@misc{ren_deep_2025,
+	title = {Deep Learning within Tabular Data: Foundations, Challenges, Advances and Future Directions},
+	url = {http://arxiv.org/abs/2501.03540},
+	doi = {10.48550/arXiv.2501.03540},
+	shorttitle = {Deep Learning within Tabular Data},
+	abstract = {Tabular data remains one of the most prevalent data types across a wide range of real-world applications, yet effective representation learning for this domain poses unique challenges due to its irregular patterns, heterogeneous feature distributions, and complex inter-column dependencies. This survey provides a comprehensive review of state-of-the-art techniques in tabular data representation learning, structured around three foundational design elements: training data, neural architectures, and learning objectives. Unlike prior surveys that focus primarily on either architecture design or learning strategies, we adopt a holistic perspective that emphasizes the universality and robustness of representation learning methods across diverse downstream tasks. We examine recent advances in data augmentation and generation, specialized neural network architectures tailored to tabular data, and innovative learning objectives that enhance representation quality. Additionally, we highlight the growing influence of self-supervised learning and the adaptation of transformer-based foundation models for tabular data. Our review is based on a systematic literature search using rigorous inclusion criteria, encompassing 127 papers published since 2020 in top-tier conferences and journals. Through detailed analysis and comparison, we identify emerging trends, critical gaps, and promising directions for future research, aiming to guide the development of more generalizable and effective tabular data representation methods.},
+	number = {{arXiv}:2501.03540},
+	publisher = {{arXiv}},
+	author = {Ren, Weijieying and Zhao, Tianxiang and Huang, Yuqing and Honavar, Vasant},
+	urldate = {2025-11-25},
+	date = {2025-01-07},
+	eprinttype = {arxiv},
+	eprint = {2501.03540 [cs]},
+	note = {version: 1},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/FEGZBLFY/Ren 等 - 2025 - Deep Learning within Tabular Data Foundations, Challenges, Advances and Future Directions.pdf:application/pdf},
+}
+
+@misc{jayawardhana_transformers_2025,
+	title = {Transformers Boost the Performance of Decision Trees on Tabular Data across Sample Sizes},
+	url = {http://arxiv.org/abs/2502.02672},
+	doi = {10.48550/arXiv.2502.02672},
+	abstract = {Large language models ({LLMs}) perform remarkably well on tabular datasets in zero- and few-shot settings, since they can extract meaning from natural language column headers that describe features and labels. Similarly, {TabPFN}, a recent non-{LLM} transformer pretrained on numerous tables for in-context learning, has demonstrated excellent performance for dataset sizes up to a thousand samples. In contrast, gradient-boosted decision trees ({GBDTs}) are typically trained from scratch on each dataset without benefiting from pretraining data and must learn the relationships between columns from their entries alone since they lack natural language understanding. {LLMs} and {TabPFN} excel on small tabular datasets where a strong prior is essential, yet they are not competitive with {GBDTs} on medium or large datasets, since their context lengths are limited. In this paper, we propose a simple and lightweight approach for fusing large language models and {TabPFN} with gradient-boosted decision trees, which allows scalable {GBDTs} to benefit from the natural language capabilities and pretraining of transformers. We name our fusion methods {LLM}-Boost and {PFN}-Boost, respectively. While matching or surpassing the performance of the transformer at sufficiently small dataset sizes and {GBDTs} at sufficiently large sizes, {LLM}-Boost and {PFN}-Boost outperform both standalone components on a wide range of dataset sizes in between. We demonstrate state-of-the-art performance against numerous baselines and ensembling algorithms. We find that {PFN}-Boost achieves the best average performance among all methods we test for all but very small dataset sizes. We release our code at http://github.com/{MayukaJ}/{LLM}-Boost .},
+	number = {{arXiv}:2502.02672},
+	publisher = {{arXiv}},
+	author = {Jayawardhana, Mayuka and Tu, Renbo and Dooley, Samuel and Cherepanova, Valeriia and Wilson, Andrew Gordon and Hutter, Frank and White, Colin and Goldstein, Tom and Goldblum, Micah},
+	urldate = {2025-11-25},
+	date = {2025-02-04},
+	eprinttype = {arxiv},
+	eprint = {2502.02672 [cs]},
+	note = {version: 1},
+	keywords = {Computer Science - Computation and Language, Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/DQTPMDND/Jayawardhana 等 - 2025 - Transformers Boost the Performance of Decision Trees on Tabular Data across Sample Sizes.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/F3QJG7L8/2502.html:text/html},
+}
+
+@misc{zhou_domain_2023,
+	title = {Domain Adaptation under Missingness Shift},
+	url = {http://arxiv.org/abs/2211.02093},
+	doi = {10.48550/arXiv.2211.02093},
+	abstract = {Rates of missing data often depend on record-keeping policies and thus may change across times and locations, even when the underlying features are comparatively stable. In this paper, we introduce the problem of Domain Adaptation under Missingness Shift ({DAMS}). Here, (labeled) source data and (unlabeled) target data would be exchangeable but for different missing data mechanisms. We show that if missing data indicators are available, {DAMS} reduces to covariate shift. Addressing cases where such indicators are absent, we establish the following theoretical results for underreporting completely at random: (i) covariate shift is violated (adaptation is required); (ii) the optimal linear source predictor can perform arbitrarily worse on the target domain than always predicting the mean; (iii) the optimal target predictor can be identified, even when the missingness rates themselves are not; and (iv) for linear models, a simple analytic adjustment yields consistent estimates of the optimal target parameters. In experiments on synthetic and semi-synthetic data, we demonstrate the promise of our methods when assumptions hold. Finally, we discuss a rich family of future extensions.},
+	number = {{arXiv}:2211.02093},
+	publisher = {{arXiv}},
+	author = {Zhou, Helen and Balakrishnan, Sivaraman and Lipton, Zachary C.},
+	urldate = {2025-11-25},
+	date = {2023-05-03},
+	eprinttype = {arxiv},
+	eprint = {2211.02093 [cs]},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/PPI54DIN/Zhou 等 - 2023 - Domain Adaptation under Missingness Shift.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/B6ECKY7H/2211.html:text/html},
+}
+
+@misc{liu_tabpfn_2025,
+	title = {{TabPFN} Unleashed: A Scalable and Effective Solution to Tabular Classification Problems},
+	url = {http://arxiv.org/abs/2502.02527},
+	doi = {10.48550/arXiv.2502.02527},
+	shorttitle = {{TabPFN} Unleashed},
+	abstract = {{TabPFN} has emerged as a promising in-context learning model for tabular data, capable of directly predicting the labels of test samples given labeled training examples. It has demonstrated competitive performance, particularly on small-scale classification tasks. However, despite its effectiveness, {TabPFN} still requires further refinement in several areas, including handling high-dimensional features, aligning with downstream datasets, and scaling to larger datasets. In this paper, we revisit existing variants of {TabPFN} and observe that most approaches focus either on reducing bias or variance, often neglecting the need to address the other side, while also increasing inference overhead. To fill this gap, we propose Beta (Bagging and Encoder-based Fine-tuning for {TabPFN} Adaptation), a novel and effective method designed to minimize both bias and variance. To reduce bias, we introduce a lightweight encoder to better align downstream tasks with the pre-trained {TabPFN}. By increasing the number of encoders in a lightweight manner, Beta mitigate variance, thereby further improving the model's performance. Additionally, bootstrapped sampling is employed to further reduce the impact of data perturbations on the model, all while maintaining computational efficiency during inference. Our approach enhances {TabPFN}'s ability to handle high-dimensional data and scale to larger datasets. Experimental results on over 200 benchmark classification datasets demonstrate that Beta either outperforms or matches state-of-the-art methods.},
+	number = {{arXiv}:2502.02527},
+	publisher = {{arXiv}},
+	author = {Liu, Si-Yang and Ye, Han-Jia},
+	urldate = {2025-11-25},
+	date = {2025-02-04},
+	eprinttype = {arxiv},
+	eprint = {2502.02527 [cs]},
+	note = {version: 1},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/2S2NRQ7G/Liu和Ye - 2025 - TabPFN Unleashed A Scalable and Effective Solution to Tabular Classification Problems.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/9PIPDSWW/2502.html:text/html},
+}
+
+@article{guan_federated_2024,
+	title = {Federated learning for medical image analysis: A survey},
+	volume = {151},
+	issn = {0031-3203},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC10976951/},
+	doi = {10.1016/j.patcog.2024.110424},
+	shorttitle = {Federated learning for medical image analysis},
+	abstract = {Machine learning in medical imaging often faces a fundamental dilemma, namely, the small sample size problem. Many recent studies suggest using multi-domain data pooled from different acquisition sites/centers to improve statistical power. However, medical images from different sites cannot be easily shared to build large datasets for model training due to privacy protection reasons. As a promising solution, federated learning, which enables collaborative training of machine learning models based on data from different sites without cross-site data sharing, has attracted considerable attention recently. In this paper, we conduct a comprehensive survey of the recent development of federated learning methods in medical image analysis. We have systematically gathered research papers on federated learning and its applications in medical image analysis published between 2017 and 2023. Our search and compilation were conducted using databases from {IEEE} Xplore, {ACM} Digital Library, Science Direct, Springer Link, Web of Science, Google Scholar, and {PubMed}. In this survey, we first introduce the background of federated learning for dealing with privacy protection and collaborative learning issues. We then present a comprehensive review of recent advances in federated learning methods for medical image analysis. Specifically, existing methods are categorized based on three critical aspects of a federated learning system, including client end, server end, and communication techniques. In each category, we summarize the existing federated learning methods according to specific research problems in medical image analysis and also provide insights into the motivations of different approaches. In addition, we provide a review of existing benchmark medical imaging datasets and software platforms for current federated learning research. We also conduct an experimental study to empirically evaluate typical federated learning methods for medical image analysis. This survey can help to better understand the current research status, challenges, and potential research opportunities in this promising research field.},
+	pages = {110424},
+	journaltitle = {Pattern recognition},
+	shortjournal = {Pattern Recognit},
+	author = {Guan, Hao and Yap, Pew-Thian and Bozoki, Andrea and Liu, Mingxia},
+	urldate = {2025-11-25},
+	date = {2024-07},
+	pmid = {38559674},
+	pmcid = {PMC10976951},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/CFCTCGV2/Guan 等 - 2024 - Federated learning for medical image analysis A survey.pdf:application/pdf},
+}
+
+@misc{yoon_domain_2024,
+	title = {Domain Generalization for Medical Image Analysis: A Survey},
+	url = {http://arxiv.org/abs/2310.08598},
+	doi = {10.48550/arXiv.2310.08598},
+	shorttitle = {Domain Generalization for Medical Image Analysis},
+	abstract = {Medical image analysis ({MedIA}) has become an essential tool in medicine and healthcare, aiding in disease diagnosis, prognosis, and treatment planning, and recent successes in deep learning ({DL}) have made significant contributions to its advances. However, deploying {DL} models for {MedIA} in real-world situations remains challenging due to their failure to generalize across the distributional gap between training and testing samples - a problem known as domain shift. Researchers have dedicated their efforts to developing various {DL} methods to adapt and perform robustly on unknown and out-of-distribution data distributions. This paper comprehensively reviews domain generalization studies specifically tailored for {MedIA}. We provide a holistic view of how domain generalization techniques interact within the broader {MedIA} system, going beyond methodologies to consider the operational implications on the entire {MedIA} workflow. Specifically, we categorize domain generalization methods into data-level, feature-level, model-level, and analysis-level methods. We show how those methods can be used in various stages of the {MedIA} workflow with {DL} equipped from data acquisition to model prediction and analysis. Furthermore, we critically analyze the strengths and weaknesses of various methods, unveiling future research opportunities.},
+	number = {{arXiv}:2310.08598},
+	publisher = {{arXiv}},
+	author = {Yoon, Jee Seok and Oh, Kwanseok and Shin, Yooseung and Mazurowski, Maciej A. and Suk, Heung-Il},
+	urldate = {2025-11-25},
+	date = {2024-02-15},
+	eprinttype = {arxiv},
+	eprint = {2310.08598 [eess]},
+	note = {version: 2},
+	keywords = {Computer Science - Artificial Intelligence, Computer Science - Computer Vision and Pattern Recognition, Electrical Engineering and Systems Science - Image and Video Processing},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/AISIP4FB/Yoon 等 - 2024 - Domain Generalization for Medical Image Analysis A Survey.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/3K75NQ4H/2310.html:text/html},
+}
+
+@online{noauthor_reproducibility_nodate,
+	title = {Reproducibility of Lung Nodule Radiomic Features: Multivariable and Univariable Investigations that Account for Interactions Between {CT} Acquisition and Reconstruction Parameters - {PMC}},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC8273077/},
+	urldate = {2025-11-25},
+	file = {Reproducibility of Lung Nodule Radiomic Features\: Multivariable and Univariable Investigations that Account for Interactions Between CT Acquisition and Reconstruction Parameters - PMC:/Users/lqy/Zotero/storage/YD8A65IW/PMC8273077.html:text/html},
+}
+
+@article{stephens_narrative_2023,
+	title = {Narrative review of radiomics for classifying pulmonary nodules and potential impact on lung cancer screening},
+	volume = {5},
+	issn = {2664-3278},
+	url = {https://ccts.amegroups.org/article/view/46726},
+	doi = {10.21037/ccts-20-168},
+	abstract = {Narrative review of radiomics for classifying pulmonary nodules and potential impact on lung cancer screening},
+	number = {0},
+	journaltitle = {Current Challenges in Thoracic Surgery},
+	author = {Stephens, Matthew J.},
+	urldate = {2025-11-25},
+	date = {2023-02-25},
+	langid = {english},
+	note = {Publisher: {AME} Publishing Company},
+}
+
+@article{chaddad_domain_2025,
+	title = {Domain Adaptation Techniques for Natural and Medical Image Classification},
+	volume = {721},
+	issn = {00200255},
+	url = {http://arxiv.org/abs/2508.20537},
+	doi = {10.1016/j.ins.2025.122608},
+	abstract = {Domain adaptation ({DA}) techniques have the potential in machine learning to alleviate distribution differences between training and test sets by leveraging information from source domains. In image classification, most advances in {DA} have been made using natural images rather than medical data, which are harder to work with. Moreover, even for natural images, the use of mainstream datasets can lead to performance bias. \{With the aim of better understanding the benefits of {DA} for both natural and medical images, this study performs 557 simulation studies using seven widely-used {DA} techniques for image classification in five natural and eight medical datasets that cover various scenarios, such as out-of-distribution, dynamic data streams, and limited training samples.\} Our experiments yield detailed results and insightful observations highlighting the performance and medical applicability of these techniques. Notably, our results have shown the outstanding performance of the Deep Subdomain Adaptation Network ({DSAN}) algorithm. This algorithm achieved feasible classification accuracy (91.2{\textbackslash}\%) in the {COVID}-19 dataset using Resnet50 and showed an important accuracy improvement in the dynamic data stream {DA} scenario (+6.7{\textbackslash}\%) compared to the baseline. Our results also demonstrate that {DSAN} exhibits remarkable level of explainability when evaluated on {COVID}-19 and skin cancer datasets. These results contribute to the understanding of {DA} techniques and offer valuable insight into the effective adaptation of models to medical data.},
+	pages = {122608},
+	journaltitle = {Information Sciences},
+	shortjournal = {Information Sciences},
+	author = {Chaddad, Ahmad and Wu, Yihang and Kateb, Reem and Desrosiers, Christian},
+	urldate = {2025-11-25},
+	date = {2025-12},
+	eprinttype = {arxiv},
+	eprint = {2508.20537 [cs]},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/JEHX9P6J/Chaddad 等 - 2025 - Domain Adaptation Techniques for Natural and Medical Image Classification.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/WKNJ5UJ7/2508.html:text/html},
+}
+
+@misc{mccarter_towards_2024,
+	title = {Towards Backwards-Compatible Data with Confounded Domain Adaptation},
+	url = {http://arxiv.org/abs/2203.12720},
+	doi = {10.48550/arXiv.2203.12720},
+	abstract = {Most current domain adaptation methods address either covariate shift or label shift, but are not applicable where they occur simultaneously and are confounded with each other. Domain adaptation approaches which do account for such confounding are designed to adapt covariates to optimally predict a particular label whose shift is confounded with covariate shift. In this paper, we instead seek to achieve general-purpose data backwards compatibility. This would allow the adapted covariates to be used for a variety of downstream problems, including on pre-existing prediction models and on data analytics tasks. To do this we consider a modification of generalized label shift ({GLS}), which we call confounded shift. We present a novel framework for this problem, based on minimizing the expected divergence between the source and target conditional distributions, conditioning on possible confounders. Within this framework, we provide concrete implementations using the Gaussian reverse Kullback-Leibler divergence and the maximum mean discrepancy. Finally, we demonstrate our approach on synthetic and real datasets.},
+	number = {{arXiv}:2203.12720},
+	publisher = {{arXiv}},
+	author = {{McCarter}, Calvin},
+	urldate = {2025-11-25},
+	date = {2024-11-11},
+	eprinttype = {arxiv},
+	eprint = {2203.12720 [stat]},
+	note = {version: 3},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/9SS54QES/McCarter - 2024 - Towards Backwards-Compatible Data with Confounded Domain Adaptation.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/L844P6YY/2203.html:text/html},
+}
+
+@inproceedings{noauthor_pdf_nodate,
+	title = {({PDF}) Comparative Analysis of Tree-Based Models and Deep Learning Architectures for Tabular Data: Performance Disparities and Underlying Factors},
+	url = {https://www.researchgate.net/publication/378541500_Comparative_Analysis_of_Tree-Based_Models_and_Deep_Learning_Architectures_for_Tabular_Data_Performance_Disparities_and_Underlying_Factors},
+	doi = {10.1109/ICACCTech61146.2023.00044},
+	shorttitle = {({PDF}) Comparative Analysis of Tree-Based Models and Deep Learning Architectures for Tabular Data},
+	abstract = {{PDF} {\textbar} On Dec 23, 2023, Pratham Singh Rana and others published Comparative Analysis of Tree-Based Models and Deep Learning Architectures for Tabular Data: Performance Disparities and Underlying Factors {\textbar} Find, read and cite all the research you need on {ResearchGate}},
+	booktitle = {{ResearchGate}},
+	urldate = {2025-11-25},
+	langid = {english},
+	file = {Snapshot:/Users/lqy/Zotero/storage/HNA3SY25/378541500_Comparative_Analysis_of_Tree-Based_Models_and_Deep_Learning_Architectures_for_Tabular.html:text/html},
+}
+
+@article{pham_open-set_2025,
+	title = {Open-Set Heterogeneous Domain Adaptation: Theoretical Analysis and Algorithm},
+	volume = {39},
+	issn = {2159-5399},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC12286580/},
+	doi = {10.1609/aaai.v39i19.34191},
+	shorttitle = {Open-Set Heterogeneous Domain Adaptation},
+	abstract = {Domain adaptation ({DA}) tackles the issue of distribution shift by learning a model from a source domain that generalizes to a target domain. However, most existing {DA} methods are designed for scenarios where the source and target domain data lie within the same feature space, which limits their applicability in real-world situations. Recently, heterogeneous {DA} ({HeDA}) methods have been introduced to address the challenges posed by heterogeneous feature space between source and target domains. Despite their successes, current {HeDA} techniques fall short when there is a mismatch in both feature and label spaces. To address this, this paper explores a new {DA} scenario called open-set {HeDA} ({OSHeDA}). In {OSHeDA}, the model must not only handle heterogeneity in feature space but also identify samples belonging to novel classes. To tackle this challenge, we first develop a novel theoretical framework that constructs learning bounds for prediction error on target domain. Guided by this framework, we propose a new {DA} method called Representation Learning for {OSHeDA} ({RL}-{OSHeDA}). This method is designed to simultaneously transfer knowledge between heterogeneous data sources and identify novel classes. Experiments across text, image, and clinical data demonstrate the effectiveness of our algorithm. Model implementation is available at https://github.com/pth1993/{OSHeDA}.},
+	pages = {19895--19903},
+	number = {19},
+	journaltitle = {Proceedings of the ... {AAAI} Conference on Artificial Intelligence. {AAAI} Conference on Artificial Intelligence},
+	shortjournal = {Proc {AAAI} Conf Artif Intell},
+	author = {Pham, Thai-Hoang and Wang, Yuanlong and Yin, Changchang and Zhang, Xueru and Zhang, Ping},
+	urldate = {2025-11-25},
+	date = {2025-04-11},
+	pmid = {40703915},
+	pmcid = {PMC12286580},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/P7IFP8BW/Pham 等 - 2025 - Open-Set Heterogeneous Domain Adaptation Theoretical Analysis and Algorithm.pdf:application/pdf},
+}
+
+@misc{stokes_domain_2025,
+	title = {Domain Adaptation Under {MNAR} Missingness},
+	url = {http://arxiv.org/abs/2504.00322},
+	doi = {10.48550/arXiv.2504.00322},
+	abstract = {Current domain adaptation methods under missingness shift are restricted to Missing At Random ({MAR}) missingness mechanisms. However, in many real-world examples, the {MAR} assumption may be too restrictive. When covariates are Missing Not At Random ({MNAR}) in both source and target data, the common covariate shift solutions, including importance weighting, are not directly applicable. We show that under reasonable assumptions, the problem of {MNAR} missingness shift can be reduced to an imputation problem. This allows us to leverage recent methodological developments in both the traditional statistics and machine/deep-learning literature for {MNAR} imputation to develop a novel domain adaptation procedure for {MNAR} missingness shift. We further show that our proposed procedure can be extended to handle simultaneous {MNAR} missingness and covariate shifts. We apply our procedure to Electronic Health Record ({EHR}) data from two hospitals in south and northeast regions of the {US}. In this setting we expect different hospital networks and regions to serve different populations and to have different procedures, practices, and software for inputting and recording data, causing simultaneous missingness and covariate shifts.},
+	number = {{arXiv}:2504.00322},
+	publisher = {{arXiv}},
+	author = {Stokes, Tyrel and Do, Hyungrok and Blecker, Saul and Chunara, Rumi and Adhikari, Samrachana},
+	urldate = {2025-11-25},
+	date = {2025-04-01},
+	eprinttype = {arxiv},
+	eprint = {2504.00322 [stat]},
+	note = {version: 1},
+	keywords = {Statistics - Machine Learning, Statistics - Methodology},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/77W9L7KJ/Stokes 等 - 2025 - Domain Adaptation Under MNAR Missingness.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/926FV4BW/2504.html:text/html},
+}
+
+@online{noauthor_domain_nodate,
+	title = {Domain Generalization Based on Transfer Component Analysis {\textbar} {SpringerLink}},
+	url = {https://link.springer.com/chapter/10.1007/978-3-319-19258-1_28},
+	urldate = {2025-11-25},
+	file = {Domain Generalization Based on Transfer Component Analysis | SpringerLink:/Users/lqy/Zotero/storage/T6RUKDC8/978-3-319-19258-1_28.html:text/html},
+}
+
+@article{guan_domainatm_2023,
+	title = {{DomainATM}: Domain adaptation toolbox for medical data analysis},
+	volume = {268},
+	issn = {1053-8119},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC9908850/},
+	doi = {10.1016/j.neuroimage.2023.119863},
+	shorttitle = {{DomainATM}},
+	abstract = {Domain adaptation ({DA}) is an important technique for modern machine learning-based medical data analysis, which aims at reducing distribution differences between different medical datasets. A proper domain adaptation method can significantly enhance the statistical power by pooling data acquired from multiple sites/centers. To this end, we have developed the Domain Adaptation Toolbox for Medical data analysis ({DomainATM}) – an open-source software package designed for fast facilitation and easy customization of domain adaptation methods for medical data analysis. The {DomainATM} is implemented in {MATLAB} with a user-friendly graphical interface, and it consists of a collection of popular data adaptation algorithms that have been extensively applied to medical image analysis and computer vision. With {DomainATM}, researchers are able to facilitate fast feature-level and image-level adaptation, visualization and performance evaluation of different adaptation methods for medical data analysis. More importantly, the {DomainATM} enables the users to develop and test their own adaptation methods through scripting, greatly enhancing its utility and extensibility. An overview characteristic and usage of {DomainATM} is presented and illustrated with three example experiments, demonstrating its effectiveness, simplicity, and flexibility. The software, source code, and manual are available online.},
+	pages = {119863},
+	journaltitle = {{NeuroImage}},
+	shortjournal = {Neuroimage},
+	author = {Guan, Hao and Liu, Mingxia},
+	urldate = {2025-11-25},
+	date = {2023-03},
+	pmid = {36610676},
+	pmcid = {PMC9908850},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/P9HKJ5MB/Guan和Liu - 2023 - DomainATM Domain adaptation toolbox for medical data analysis.pdf:application/pdf},
+}
+
+@online{noauthor_domain_nodate-1,
+	title = {Domain Adaptation Principal Component Analysis: Base Linear Method for Learning with Out-of-Distribution Data {\textbar} {MDPI}},
+	url = {https://www.mdpi.com/1099-4300/25/1/33},
+	urldate = {2025-11-25},
+	file = {Domain Adaptation Principal Component Analysis\: Base Linear Method for Learning with Out-of-Distribution Data | MDPI:/Users/lqy/Zotero/storage/PANBQ8W9/33.html:text/html},
+}
+
+@article{guan_domain_2022,
+	title = {Domain Adaptation for Medical Image Analysis: A Survey},
+	volume = {69},
+	issn = {0018-9294, 1558-2531},
+	url = {http://arxiv.org/abs/2102.09508},
+	doi = {10.1109/TBME.2021.3117407},
+	shorttitle = {Domain Adaptation for Medical Image Analysis},
+	abstract = {Machine learning techniques used in computer-aided medical image analysis usually suffer from the domain shift problem caused by different distributions between source/reference data and target data. As a promising solution, domain adaptation has attracted considerable attention in recent years. The aim of this paper is to survey the recent advances of domain adaptation methods in medical image analysis. We first present the motivation of introducing domain adaptation techniques to tackle domain heterogeneity issues for medical image analysis. Then we provide a review of recent domain adaptation models in various medical image analysis tasks. We categorize the existing methods into shallow and deep models, and each of them is further divided into supervised, semi-supervised and unsupervised methods. We also provide a brief summary of the benchmark medical image datasets that support current domain adaptation research. This survey will enable researchers to gain a better understanding of the current status, challenges.},
+	pages = {1173--1185},
+	number = {3},
+	journaltitle = {{IEEE} Transactions on Biomedical Engineering},
+	shortjournal = {{IEEE} Trans. Biomed. Eng.},
+	author = {Guan, Hao and Liu, Mingxia},
+	urldate = {2025-11-25},
+	date = {2022-03},
+	eprinttype = {arxiv},
+	eprint = {2102.09508 [cs]},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Machine Learning, Electrical Engineering and Systems Science - Image and Video Processing},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/JH3N37EH/Guan和Liu - 2022 - Domain Adaptation for Medical Image Analysis A Survey.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/22SW9TWI/2102.html:text/html},
+}
+
+@article{ebbehoj_transfer_2022,
+	title = {Transfer learning for non-image data in clinical research: A scoping review},
+	volume = {1},
+	issn = {2767-3170},
+	url = {https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000014},
+	doi = {10.1371/journal.pdig.0000014},
+	shorttitle = {Transfer learning for non-image data in clinical research},
+	abstract = {Background Transfer learning is a form of machine learning where a pre-trained model trained on a specific task is reused as a starting point and tailored to another task in a different dataset. While transfer learning has garnered considerable attention in medical image analysis, its use for clinical non-image data is not well studied. Therefore, the objective of this scoping review was to explore the use of transfer learning for non-image data in the clinical literature. Methods and findings We systematically searched medical databases ({PubMed}, {EMBASE}, {CINAHL}) for peer-reviewed clinical studies that used transfer learning on human non-image data. We included 83 studies in the review. More than half of the studies (63\%) were published within 12 months of the search. Transfer learning was most often applied to time series data (61\%), followed by tabular data (18\%), audio (12\%) and text (8\%). Thirty-three (40\%) studies applied an image-based model to non-image data after transforming data into images (e.g. spectrograms). Twenty-nine (35\%) studies did not have any authors with a health-related affiliation. Many studies used publicly available datasets (66\%) and models (49\%), but fewer shared their code (27\%). Conclusions In this scoping review, we have described current trends in the use of transfer learning for non-image data in the clinical literature. We found that the use of transfer learning has grown rapidly within the last few years. We have identified studies and demonstrated the potential of transfer learning in clinical research in a wide range of medical specialties. More interdisciplinary collaborations and the wider adaption of reproducible research principles are needed to increase the impact of transfer learning in clinical research.},
+	pages = {e0000014},
+	number = {2},
+	journaltitle = {{PLOS} Digital Health},
+	shortjournal = {{PLOS} Digital Health},
+	author = {Ebbehoj, Andreas and Thunbo, Mette Østergaard and Andersen, Ole Emil and Glindtvad, Michala Vilstrup and Hulman, Adam},
+	urldate = {2025-11-25},
+	date = {2022-02-17},
+	langid = {english},
+	note = {Publisher: Public Library of Science},
+	keywords = {Cardiology, Computer vision, Database searching, Electrocardiography, Machine learning, Machine learning algorithms, Neural networks, Open data},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/4Z84TXPY/Ebbehoj 等 - 2022 - Transfer learning for non-image data in clinical research A scoping review.pdf:application/pdf},
+}
+
+@article{yang_contrastive_2023,
+	title = {Contrastive Learning Assisted-Alignment for Partial Domain Adaptation},
+	volume = {34},
+	issn = {2162-2388},
+	doi = {10.1109/TNNLS.2022.3145034},
+	abstract = {This work addresses unsupervised partial domain adaptation ({PDA}), in which classes in the target domain are a subset of the source domain. The key challenges of {PDA} are how to leverage source samples in the shared classes to promote positive transfer and filter out the irrelevant source samples to mitigate negative transfer. Existing {PDA} methods based on adversarial {DA} do not consider the loss of class discriminative representation. To this end, this article proposes a contrastive learning-assisted alignment ({CLA}) approach for {PDA} to jointly align distributions across domains for better adaptation and to reweight source instances to reduce the contribution of outlier instances. A contrastive learning-assisted conditional alignment ({CLCA}) strategy is presented for distribution alignment. {CLCA} first exploits contrastive losses to discover the class discriminative information in both domains. It then employs a contrastive loss to match the clusters across the two domains based on adversarial domain learning. In this respect, {CLCA} attempts to reduce the domain discrepancy by matching the class-conditional and marginal distributions. Moreover, a new reweighting scheme is developed to improve the quality of weights estimation, which explores information from both the source and the target domains. Empirical results on several benchmark datasets demonstrate that the proposed {CLA} outperforms the existing state-of-the-art {PDA} methods.},
+	pages = {7621--7634},
+	number = {10},
+	journaltitle = {{IEEE} transactions on neural networks and learning systems},
+	shortjournal = {{IEEE} Trans Neural Netw Learn Syst},
+	author = {Yang, Cuie and Cheung, Yiu-Ming and Ding, Jinliang and Tan, Kay Chen and Xue, Bing and Zhang, Mengjie},
+	date = {2023-10},
+	pmid = {35130173},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/STCK8ZAT/Yang 等 - 2023 - Contrastive Learning Assisted-Alignment for Partial Domain Adaptation.pdf:application/pdf},
+}
+
+@article{he_multi-attention_2022,
+	title = {Multi-attention representation network partial domain adaptation for {COVID}-19 diagnosis},
+	volume = {125},
+	issn = {1568-4946},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC9222222/},
+	doi = {10.1016/j.asoc.2022.109205},
+	abstract = {The outbreak of {COVID}-19 threatens the safety of all human beings. Rapid and accurate diagnosis of patients is the effective way to prevent the rapid spread of {COVID}-19. The current computer-aided diagnosis of {COVID}-19 requires extensive labeled data for training, and this undoubtedly increases human and material resources costs. Domain adaptation ({DA}), an existing promising approach, can transfer knowledge from rich labeled pneumonia datasets for {COVID}-19 diagnosis and classification. However, due to the differences in feature distribution and task semantic between pneumonia and {COVID}-19, negative transfer may reduce the performance in diagnosis {COVID}-19 and pneumonia. Furthermore, the training data is usually mixed with many noise samples in practice, and this also poses new challenges for domain adaptation. As a kind of domain adaptation, partial domain adaptation ({PDA}) can well avoid outlier samples in the source domain and achieve good classification performance in the target domain. However, the existing {PDA} methods all learn a single feature representation; this can only learn local information about the inputs and ignore other important information in the samples. Therefore multi-attention representation network partial domain adaptation ({MARPDA}) is proposed in this paper to overcome the above shortcomings of {PDA}. In {MARPDA}, we construct the multiple representation networks with attention to acquire the image representation and effectively learn knowledge from different feature spaces. We design the sample-weighted strategy to achieve partial data transfer and address the negative transfer of noise data during training. {MARPDA} adapts to complex application scenarios and learns fine-grained features of the image from multiple representations. We apply the model to classify pneumonia and {COVID}-19 respectively, and evaluate it in qualitative and quantitative manners. The experimental results show that our classification accuracy is higher than that of the existing state-of-the-art methods. The stability and reliability of the proposed method are validated by the confusion matrix and the performance curves experiments. In summary, our method has better performance for diagnosis {COVID}-19 compared to the existing state-of-the-art methods.},
+	pages = {109205},
+	journaltitle = {Applied Soft Computing},
+	shortjournal = {Appl Soft Comput},
+	author = {He, Chunmei and Zheng, Lanqing and Tan, Taifeng and Fan, Xianjun and Ye, Zhengchun},
+	urldate = {2025-11-25},
+	date = {2022-08},
+	pmid = {35765302},
+	pmcid = {PMC9222222},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/L7YC9KN8/He 等 - 2022 - Multi-attention representation network partial domain adaptation for COVID-19 diagnosis.pdf:application/pdf},
+}
+
+@online{noauthor_solitary_nodate,
+	title = {Solitary Pulmonary Nodule ({SPN}) Malignancy Risk Score (Mayo Clinic Model)},
+	url = {https://www.mdcalc.com/calc/4057/solitary-pulmonary-nodule-spn-malignancy-risk-score-mayo-clinic-model},
+	abstract = {The Solitary Pulmonary Nodule ({SPN}) Malignancy Risk Score predicts malignancy risk in solitary lung nodules on chest x-ray.},
+	titleaddon = {{MDCalc}},
+	urldate = {2025-11-25},
+	langid = {american},
+	file = {Snapshot:/Users/lqy/Zotero/storage/S78LKYDU/solitary-pulmonary-nodule-spn-malignancy-risk-score-mayo-clinic-model.html:text/html},
+}
+
+@article{susam_comparison_2022,
+	title = {Comparison of Brock University, Mayo Clinic and Herder models for pretest probability of cancer in solid pulmonary nodules},
+	volume = {16},
+	issn = {1752-6981},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC9629988/},
+	doi = {10.1111/crj.13546},
+	abstract = {We evaluate Mayo Clinic, Brock University and Herder prediction models to estimate the pretest probability of malignancy in solid pulmonary nodules. In 305 patients with a high malignancy rate (73\%) who underwent {PET}/{CT} and transthoracic needle biopsy, the results were close in all three models. However, the Herder model was found to be more successful in the high‐risk group (60\%).},
+	pages = {740--749},
+	number = {11},
+	journaltitle = {The Clinical Respiratory Journal},
+	shortjournal = {Clin Respir J},
+	author = {Susam, Seher and Çinkooğlu, Akın and Ceylan, Kenan Can and Gürsoy, Soner and Kömürcüoğlu, Berna Eren and Mertoğlu, Aydan and Çırak, Ali Kadri and Gayaf, Mine and Güldaval, Filiz and Tuksavul, Fevziye and Polat, Gülru and Ataman, Sena and Yıldırım, Eylem and Koparal, Hakan and Yücel, Nur},
+	urldate = {2025-11-25},
+	date = {2022-10-07},
+	pmid = {36207775},
+	pmcid = {PMC9629988},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/D8RFL779/Susam 等 - 2022 - Comparison of Brock University, Mayo Clinic and Herder models for pretest probability of cancer in s.pdf:application/pdf},
+}
+
+@article{deppen_predicting_2014,
+	title = {Predicting lung cancer prior to surgical resection in patients with lung nodules},
+	volume = {9},
+	issn = {1556-0864},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC4272613/},
+	doi = {10.1097/JTO.0000000000000287},
+	abstract = {Background
+Existing predictive models for lung cancer focus on improving screening or referral for biopsy in general medical populations. A predictive model calibrated for use during preoperative evaluation of suspicious lung lesions is needed to reduce unnecessary operations for benign disease. A clinical prediction model ({TREAT}) is proposed for this purpose.
+
+Methods
+We developed and internally validated a clinical prediction model for lung cancer in a prospective cohort evaluated at our institution. Best statistical practices were used to construct, evaluate and validate the logistic regression model in the presence of missing covariate data using bootstrap and optimism corrected techniques. The {TREAT} model was externally validated in a retrospectively collected Veteran Affairs population. The discrimination and calibration of the model was estimated and compared to the Mayo Clinic model in both populations.
+
+Results
+The {TREAT} model was developed in 492 patients from Vanderbilt whose lung cancer prevalence was 72\% and validated among 226 Veteran Affairs patients with a lung cancer prevalence of 93\%. In the development cohort the area under the receiver operating curve ({AUC}) and Brier score were 0.87 (95\%{CI}: 0.83–0.92) and 0.12 respectively compared to the {AUC} 0.89 (95\%{CI}: 0.79–0.98) and Brier score 0.13 in the validation dataset. The {TREAT} model had significantly higher accuracy (p{\textless}0.001) and better calibration than the Mayo Clinic model ({AUC}=0.80, 95\%{CI}: 75–85; Brier score=0.17).
+
+Conclusion
+The validated {TREAT} model had better diagnostic accuracy than the Mayo Clinic model in preoperative assessment of suspicious lung lesions in a population being evaluated for lung resection.},
+	pages = {1477--1484},
+	number = {10},
+	journaltitle = {Journal of thoracic oncology : official publication of the International Association for the Study of Lung Cancer},
+	shortjournal = {J Thorac Oncol},
+	author = {Deppen, Stephen A. and Blume, Jeffrey D. and Aldrich, Melinda C. and Fletcher, Sarah A. and Massion, Pierre P. and Walker, Ronald C. and Chen, Heidi C. and Speroff, Theodore and Necessary, Catherine A. and Pinkerman, Rhonda and Lambright, Eric S. and Nesbitt, Jonathan C. and Putnam, Joe B. and Grogan, Eric L.},
+	urldate = {2025-11-25},
+	date = {2014-10},
+	pmid = {25170644},
+	pmcid = {PMC4272613},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/EBAWE3EU/Deppen 等 - 2014 - Predicting lung cancer prior to surgical resection in patients with lung nodules.pdf:application/pdf},
+}
+
+@article{winter_external_2019,
+	title = {External validation and recalibration of the Brock model to predict probability of cancer in pulmonary nodules using {NLST} data},
+	volume = {74},
+	issn = {1468-3296},
+	doi = {10.1136/thoraxjnl-2018-212413},
+	abstract = {{INTRODUCTION}: We performed an external validation of the Brock model using the National Lung Screening Trial ({NLST}) data set, following strict guidelines set forth by the Transparent Reporting of a multivariable prediction model for Individual Prognosis Or Diagnosis statement. We report how external validation results can be interpreted and highlight the role of recalibration and model updating.
+{MATERIALS} {AND} {METHODS}: We assessed model discrimination and calibration using the {NLST} data set. Adhering to the inclusion/exclusion criteria reported by {McWilliams} et al, we identified 7879 non-calcified nodules discovered at the baseline low-dose {CT} screen with 2 years of follow-up. We characterised differences between Pan-Canadian Early Detection of Lung Cancer Study and {NLST} cohorts. We calculated the slope on the prognostic index and the intercept coefficient by fitting the original Brock model to {NLST}. We also assessed the impact of model recalibration and the addition of new covariates such as body mass index, smoking status, pack-years and asbestos.
+{RESULTS}: While the area under the curve ({AUC}) of the model was good, 0.905 (95\% {CI} 0.882 to 0.928), a histogram plot showed that the model poorly differentiated between benign and malignant cases. The calibration plot showed that the model overestimated the probability of cancer. In recalibrating the model, the coefficients for emphysema, spiculation and nodule count were updated. The updated model had an improved calibration and achieved an optimism-corrected {AUC} of 0.912 (95\% {CI} 0.891 to 0.932). Only pack-year history was found to be significant (p{\textless}0.01) among the new covariates evaluated.
+{CONCLUSION}: While the Brock model achieved a high {AUC} when validated on the {NLST} data set, the model benefited from updating and recalibration. Nevertheless, covariates used in the model appear to be insufficient to adequately discriminate malignant cases.},
+	pages = {551--563},
+	number = {6},
+	journaltitle = {Thorax},
+	shortjournal = {Thorax},
+	author = {Winter, Audrey and Aberle, Denise R. and Hsu, William},
+	date = {2019-06},
+	pmid = {30898897},
+	keywords = {Aged, Brock model, Calibration, Datasets as Topic, Early Detection of Cancer, external validation, Female, Guideline Adherence, Humans, lung cancer, Lung Neoplasms, Male, Mass Screening, Middle Aged, Models, Statistical, Multiple Pulmonary Nodules, prediction, Predictive Value of Tests, Probability, Prognosis, Randomized Controlled Trials as Topic, recalibration, Risk Assessment, Solitary Pulmonary Nodule, Tomography, X-Ray Computed},
+}
+
+@misc{awasthi_artificial_2025,
+	title = {Artificial Intelligence in Healthcare: 2024 Year in Review},
+	rights = {© 2025, Posted by Cold Spring Harbor Laboratory. This pre-print is available under a Creative Commons License (Attribution 4.0 International), {CC} {BY} 4.0, as described at http://creativecommons.org/licenses/by/4.0/},
+	url = {https://www.medrxiv.org/content/10.1101/2025.02.26.25322978v1},
+	doi = {10.1101/2025.02.26.25322978},
+	shorttitle = {Artificial Intelligence in Healthcare},
+	abstract = {Background With over a thousand {FDA}-approved artificial intelligence/machine learning-enabled medical devices, research and publications is maturing from focusing on the development and internal validation of models to the external validation of models and implementation trials. Foundation models, especially Large Language Models, have spurred additional aspects of {AI} research related to healthcare, especially with the use of text-based data to address healthcare education and administrative tasks related to patient care.
+Methods We performed a {PubMed} search using the terms “machine learning” or “artificial intelligence” and “2024,” restricted to English language and human subject research on January 1, 2025. Utilizing a deep learning-based approach, we assessed the maturity of publications. Following this, we manually annotated the healthcare specialty, data utilized, and models employed for the identified mature articles. Subsequently, empirical data analysis was performed to elucidate trends and statistics. We also performed a detailed analysis of the distribution of foundation model-based publications amongst the healthcare specialties.
+Results For the year 2024, the {PubMed} search yielded 28,180 articles, of which 1,693 were classified as mature using a {BERT} model. Following exclusions, 1,551 articles were selected for the final data analysis. Amongst these, the highest number of articles in each specialty originated from Imaging (407), Head and Neck (127), and General (122). The analysis of data types revealed that image data (903 [57.0\%]) was still the predominant data type, but the use of text data (525 [33.1\%]) had substantially increased. Additionally, we also found that {LLMs} (479) and {AI} General (448) category models have overtaken deep learning models (372) in healthcare {AI} research. For {LLM}-related publications, we are seeing increasing trends in research related to healthcare education and administrative tasks.
+Conclusion With the introduction of foundation models, healthcare research trends are changing. The adoption of {LLMs} and text data types amongst various healthcare specialties, especially for education and administrative tasks, is unlocking new potential for {AI} applications in healthcare.},
+	publisher = {{medRxiv}},
+	author = {Awasthi, Raghav and Ramachandran, Sai Prasad and Mishra, Shreya and Mahapatra, Dwarikanath and Arshad, Hajra and Atreja, Aarit and Bhattacharyya, Anirban and Bhattad, Atharva and Singh, Nishant and Cywinski, Jacek B. and Khanna, Ashish K. and Maheshwari, Kamal and Dave, Chintan and Khare, Avneesh and Papay, Francis A. and Mathur, Piyush},
+	urldate = {2025-11-25},
+	date = {2025-02-27},
+	langid = {english},
+	note = {Pages: 2025.02.26.25322978},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/MER5A228/Awasthi 等 - 2025 - Artificial Intelligence in Healthcare 2024 Year in Review.pdf:application/pdf},
+}
+
+@article{zhang_comprehensive_2022,
+	title = {Comprehensive Analysis of Clinical Logistic and Machine Learning-Based Models for the Evaluation of Pulmonary Nodules},
+	volume = {3},
+	issn = {2666-3643},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC8980995/},
+	doi = {10.1016/j.jtocrr.2022.100299},
+	abstract = {Introduction
+Over the years, multiple models have been developed for the evaluation of pulmonary nodules ({PNs}). This study aimed to comprehensively investigate clinical models for estimating the malignancy probability in patients with {PNs}.
+
+Methods
+{PubMed}, {EMBASE}, Cochrane Library, and Web of Science were searched for studies reporting mathematical models for {PN} evaluation until March 2020. Eligible models were summarized, and network meta-analysis was performed on externally validated models ({PROSPERO} database {CRD}42020154731). The cut-off value of 40\% was used to separate patients into high prevalence ({HP}) and low prevalence ({LP}), and a subgroup analysis was performed.
+
+Results
+A total of 23 original models were proposed in 42 included articles. Age and nodule size were most often used in the models, whereas results of positron emission tomography-computed tomography were used when collected. The Mayo model was validated in 28 studies. The area under the curve values of four most often used models ({PKU}, Brock, Mayo, {VA}) were 0.830, 0.785, 0.743, and 0.750, respectively. High-prevalence group ({HP}) models had better results in {HP} patients with a pooled sensitivity and specificity of 0.83 (95\% confidence interval [{CI}]: 0.78–0.88) and 0.71 (95\% {CI}: 0.71–0.79), whereas {LP} models only achieved pooled sensitivity and specificity of 0.70 (95\% {CI}: 0.60–0.79) and 0.70 (95\% {CI}: 0.62–0.77). For {LP} patients, the pooled sensitivity and specificity decreased from 0.68 (95\% {CI}: 0.57–0.78) and 0.93 (95\% {CI}: 0.87–0.97) to 0.57 (95\% {CI}: 0.21–0.88) and 0.82 (95\% {CI}: 0.65–0.92) when the model changed from {LP} to {HP} models. Compared with the clinical models, artificial intelligence-based models have promising preliminary results.
+
+Conclusions
+Mathematical models can facilitate the evaluation of lung nodules. Nevertheless, suitable model should be used on appropriate cohorts to achieve an accurate result.},
+	pages = {100299},
+	number = {4},
+	journaltitle = {{JTO} Clinical and Research Reports},
+	shortjournal = {{JTO} Clin Res Rep},
+	author = {Zhang, Kai and Wei, Zihan and Nie, Yuntao and Shen, Haifeng and Wang, Xin and Wang, Jun and Yang, Fan and Chen, Kezhong},
+	urldate = {2025-11-25},
+	date = {2022-02-22},
+	pmid = {35392654},
+	pmcid = {PMC8980995},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/2QAWMRI8/Zhang 等 - 2022 - Comprehensive Analysis of Clinical Logistic and Machine Learning-Based Models for the Evaluation of.pdf:application/pdf},
+}
+
+@article{borisov_deep_2024,
+	title = {Deep Neural Networks and Tabular Data: A Survey},
+	volume = {35},
+	issn = {2162-237X, 2162-2388},
+	url = {http://arxiv.org/abs/2110.01889},
+	doi = {10.1109/TNNLS.2022.3229161},
+	shorttitle = {Deep Neural Networks and Tabular Data},
+	abstract = {Heterogeneous tabular data are the most commonly used form of data and are essential for numerous critical and computationally demanding applications. On homogeneous data sets, deep neural networks have repeatedly shown excellent performance and have therefore been widely adopted. However, their adaptation to tabular data for inference or data generation tasks remains challenging. To facilitate further progress in the field, this work provides an overview of state-of-the-art deep learning methods for tabular data. We categorize these methods into three groups: data transformations, specialized architectures, and regularization models. For each of these groups, our work offers a comprehensive overview of the main approaches. Moreover, we discuss deep learning approaches for generating tabular data, and we also provide an overview over strategies for explaining deep models on tabular data. Thus, our first contribution is to address the main research streams and existing methodologies in the mentioned areas, while highlighting relevant challenges and open research questions. Our second contribution is to provide an empirical comparison of traditional machine learning methods with eleven deep learning approaches across five popular real-world tabular data sets of different sizes and with different learning objectives. Our results, which we have made publicly available as competitive benchmarks, indicate that algorithms based on gradient-boosted tree ensembles still mostly outperform deep learning models on supervised learning tasks, suggesting that the research progress on competitive deep learning models for tabular data is stagnating. To the best of our knowledge, this is the first in-depth overview of deep learning approaches for tabular data; as such, this work can serve as a valuable starting point to guide researchers and practitioners interested in deep learning with tabular data.},
+	pages = {7499--7519},
+	number = {6},
+	journaltitle = {{IEEE} Transactions on Neural Networks and Learning Systems},
+	shortjournal = {{IEEE} Trans. Neural Netw. Learning Syst.},
+	author = {Borisov, Vadim and Leemann, Tobias and Seßler, Kathrin and Haug, Johannes and Pawelczyk, Martin and Kasneci, Gjergji},
+	urldate = {2025-11-25},
+	date = {2024-06},
+	eprinttype = {arxiv},
+	eprint = {2110.01889 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/MC7XGYB2/Borisov 等 - 2024 - Deep Neural Networks and Tabular Data A Survey.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/ICWJBCIM/2110.html:text/html},
+}
+
+@article{gao_reproducibility_2022,
+	title = {Reproducibility of radiomic features of pulmonary nodules between low-dose {CT} and conventional-dose {CT}},
+	volume = {12},
+	issn = {2223-4292},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC8923849/},
+	doi = {10.21037/qims-21-609},
+	abstract = {Background
+The reproducibility of radiomic features is essential to lung cancer detection. This study aimed to investigate the reproducibility of radiomic features of pulmonary nodules between low-dose computed tomography ({LDCT}) and conventional-dose computed tomography ({CDCT}).
+
+Methods
+A total of 105 patients with 119 pulmonary nodules [39 ground-glass nodules ({GGNs}) and 80 solid nodules] who underwent {LDCT} and {CDCT} were retrospectively studied between September 2019 and November 2020. Pulmonary nodules were manually segmented and 1,125 radiomic features (shape, first-order intensity, texture, wavelet, and Laplacian of the Gaussian features) were extracted from both {LDCT} and {CDCT} images. The concordance correlation coefficient ({CCC}) was used to evaluate the reproducibility of these radiomic features.
+
+Results
+Of the 1,125 radiomic features considered, 35.5\% (399 of 1,125) and 41.5\% (467 of 1,125) were reproducible ({CCC} ≥0.85) for {GGNs} and solid nodules, respectively. The intensity, texture, and wavelet features of solid nodules were more reproducible than those of {GGNs}. The mean {CCC} values for intensity and texture features of solid nodules were of 0.85 and above, whereas the mean values for those of {GGNs} were of less than 0.85. After Gaussian kernel (σ =2) preprocessing, the {CCC} of intensity and texture features of {GGNs} improved from 0.77 to 0.90, and 84.9\% (79 of 93) of the radiomic features were reproducible (mean {CCC} increase from 0.84±0.13 to 0.92±0.08 for intensity features, and from 0.75±0.15 to 0.89±0.11 for texture features). Wavelet features had the lowest {CCCs} for both {GGNs} and solid nodules.
+
+Conclusions
+The majority of the radiomic feature classes of solid pulmonary nodules have a high level of reproducibility between {LDCT} and {CDCT}. However, {LDCT} should not be used as an alternative to {CDCT} in the radiomic study of {GGNs}.},
+	pages = {2368--2377},
+	number = {4},
+	journaltitle = {Quantitative Imaging in Medicine and Surgery},
+	shortjournal = {Quant Imaging Med Surg},
+	author = {Gao, Yufan and Hua, Minghui and Lv, Jun and Ma, Yanhe and Liu, Yanzhen and Ren, Min and Tian, Yaohua and Li, Ximing and Zhang, Hong},
+	urldate = {2025-11-25},
+	date = {2022-04},
+	pmid = {35371962},
+	pmcid = {PMC8923849},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/2D6DGPDV/Gao 等 - 2022 - Reproducibility of radiomic features of pulmonary nodules between low-dose CT and conventional-dose.pdf:application/pdf},
+}
+
+@article{wang_performance_2024,
+	title = {Performance of deep learning model and radiomics model for preoperative prediction of spread through air spaces in the surgically resected lung adenocarcinoma: a two-center comparative study},
+	volume = {13},
+	issn = {2226-4477, 2218-6751},
+	url = {https://tlcr.amegroups.org/article/view/94729},
+	doi = {10.21037/tlcr-24-646},
+	shorttitle = {Performance of deep learning model and radiomics model for preoperative prediction of spread through air spaces in the surgically resected lung adenocarcinoma},
+	abstract = {Performance of deep learning model and radiomics model for preoperative prediction of spread through air spaces in the surgically resected lung adenocarcinoma: a two-center comparative study},
+	number = {12},
+	journaltitle = {Translational Lung Cancer Research},
+	author = {Wang, Xiang and Ma, Chao and Jiang, Qinling and Zheng, Xuebin and Xie, Jun and He, Chuan and Gu, Pengchen and Wu, Yanyan and Xiao, Yi and Liu, Shiyuan},
+	urldate = {2025-11-25},
+	date = {2024-12-31},
+	langid = {english},
+	note = {Publisher: {AME} Publishing Company},
+}
+
+@article{massion_assessing_2020,
+	title = {Assessing the Accuracy of a Deep Learning Method to Risk Stratify Indeterminate Pulmonary Nodules},
+	volume = {202},
+	issn = {1073-449X},
+	url = {https://www.atsjournals.org/doi/10.1164/rccm.201903-0505OC},
+	doi = {10.1164/rccm.201903-0505OC},
+	abstract = {Rationale: The management of indeterminate pulmonary nodules ({IPNs}) remains challenging, resulting in invasive procedures and delays in diagnosis and treatment. Strategies to decrease the rate of unnecessary invasive procedures and optimize surveillance regimens are needed. Objectives: To develop and validate a deep learning method to improve the management of {IPNs}. Methods: A Lung Cancer Prediction Convolutional Neural Network model was trained using computed tomography images of {IPNs} from the National Lung Screening Trial, internally validated, and externally tested on cohorts from two academic institutions. Measurements and Main Results: The areas under the receiver operating characteristic curve in the external validation cohorts were 83.5\% (95\% confidence interval [{CI}], 75.4–90.7\%) and 91.9\% (95\% {CI}, 88.7–94.7\%), compared with 78.1\% (95\% {CI}, 68.7–86.4\%) and 81.9 (95\% {CI}, 76.1–87.1\%), respectively, for a commonly used clinical risk model for incidental nodules. Using 5\% and 65\% malignancy thresholds defining low- and high-risk categories, the overall net reclassifications in the validation cohorts for cancers and benign nodules compared with the Mayo model were 0.34 (Vanderbilt) and 0.30 (Oxford) as a rule-in test, and 0.33 (Vanderbilt) and 0.58 (Oxford) as a rule-out test. Compared with traditional risk prediction models, the Lung Cancer Prediction Convolutional Neural Network was associated with improved accuracy in predicting the likelihood of disease at each threshold of management and in our external validation cohorts. Conclusions: This study demonstrates that this deep learning algorithm can correctly reclassify {IPNs} into low- or high-risk categories in more than a third of cancers and benign nodules when compared with conventional risk models, potentially reducing the number of unnecessary invasive procedures and delays in diagnosis.},
+	pages = {241--249},
+	number = {2},
+	journaltitle = {American Journal of Respiratory and Critical Care Medicine},
+	shortjournal = {Am J Respir Crit Care Med},
+	author = {Massion, Pierre P. and Antic, Sanja and Ather, Sarim and Arteta, Carlos and Brabec, Jan and Chen, Heidi and Declerck, Jerome and Dufek, David and Hickes, William and Kadir, Timor and Kunst, Jonas and Landman, Bennett A. and Munden, Reginald F. and Novotny, Petr and Peschl, Heiko and Pickup, Lyndsey C. and Santos, Catarina and Smith, Gary T. and Talwar, Ambika and Gleeson, Fergus},
+	urldate = {2025-11-25},
+	date = {2020-07-15},
+	note = {Publisher: American Thoracic Society - {AJRCCM}},
+	keywords = {computer-aided image analysis, early detection, lung cancer, neural networks, risk stratification},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/X3G54HM2/Massion 等 - 2020 - Assessing the Accuracy of a Deep Learning Method to Risk Stratify Indeterminate Pulmonary Nodules.pdf:application/pdf},
+}
+
+@article{mahajan_novel_2025,
+	title = {A Novel Deep Learning-Based (3D U-Net Model) Automated Pulmonary Nodule Detection Tool for {CT} Imaging},
+	volume = {32},
+	rights = {http://creativecommons.org/licenses/by/3.0/},
+	issn = {1718-7729},
+	url = {https://www.mdpi.com/1718-7729/32/2/95},
+	doi = {10.3390/curroncol32020095},
+	abstract = {Background: Precise detection and characterization of pulmonary nodules on computed tomography ({CT}) is crucial for early diagnosis and management. Obj...},
+	number = {2},
+	journaltitle = {Current Oncology},
+	author = {Mahajan, Abhishek and Agarwal, Rajat and Agarwal, Ujjwal and Ashtekar, Renuka M. and Komaravolu, Bharadwaj and Madiraju, Apparao and Vaish, Richa and Pawar, Vivek and Punia, Vivek and Patil, Vijay Maruti and Noronha, Vanita and Joshi, Amit and Menon, Nandini and Prabhash, Kumar and Chaturvedi, Pankaj and Rane, Swapnil and Banwar, Priya and Gupta, Sudeep and Mahajan, Abhishek and Agarwal, Rajat and Agarwal, Ujjwal and Ashtekar, Renuka M. and Komaravolu, Bharadwaj and Madiraju, Apparao and Vaish, Richa and Pawar, Vivek and Punia, Vivek and Patil, Vijay Maruti and Noronha, Vanita and Joshi, Amit and Menon, Nandini and Prabhash, Kumar and Chaturvedi, Pankaj and Rane, Swapnil and Banwar, Priya and Gupta, Sudeep},
+	urldate = {2025-11-25},
+	date = {2025-02-08},
+	langid = {english},
+	note = {Company: Multidisciplinary Digital Publishing Institute
+Distributor: Multidisciplinary Digital Publishing Institute
+Institution: Multidisciplinary Digital Publishing Institute
+Label: Multidisciplinary Digital Publishing Institute
+Publisher: publisher},
+	keywords = {assistive technology, deep convolutional neural networks, deep learning, pulmonary nodule, radiology, U-Net},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/FWHQQQ8W/Mahajan 等 - 2025 - A Novel Deep Learning-Based (3D U-Net Model) Automated Pulmonary Nodule Detection Tool for CT Imagin.pdf:application/pdf},
+}
+
+@article{eche_toward_2021,
+	title = {Toward Generalizability in the Deployment of Artificial Intelligence in Radiology: Role of Computation Stress Testing to Overcome Underspecification},
+	volume = {3},
+	issn = {2638-6100},
+	url = {https://pmc.ncbi.nlm.nih.gov/articles/PMC8637230/},
+	doi = {10.1148/ryai.2021210097},
+	shorttitle = {Toward Generalizability in the Deployment of Artificial Intelligence in Radiology},
+	abstract = {The clinical deployment of artificial intelligence ({AI}) applications in medical
+imaging is perhaps the greatest challenge facing radiology in the next decade.
+One of the main obstacles to the incorporation of automated {AI}-based
+decision-making tools in medicine is the failure of models to generalize when
+deployed across institutions with heterogeneous populations and imaging
+protocols. The most well-understood pitfall in developing these {AI} models is
+overfitting, which has, in part, been overcome by optimizing training protocols.
+However, overfitting is not the only obstacle to the success and
+generalizability of {AI}. Underspecification is also a serious impediment that
+requires conceptual understanding and correction. It is well known that a single
+{AI} pipeline, with prescribed training and testing sets, can produce several
+models with various levels of generalizability. Underspecification defines the
+inability of the pipeline to identify whether these models have embedded the
+structure of the underlying system by using a test set independent of, but
+distributed identically, to the training set. An underspecified pipeline is
+unable to assess the degree to which the models will be generalizable. Stress
+testing is a known tool in {AI} that can limit underspecification and,
+importantly, assure broad generalizability of {AI} models. However, the
+application of stress tests is new in radiologic applications. This report
+describes the concept of underspecification from a radiologist perspective,
+discusses stress testing as a specific strategy to overcome underspecification,
+and explains how stress tests could be designed in radiology—by modifying
+medical images or stratifying testing datasets. In the upcoming years, stress
+tests should become in radiology the standard that crash tests have become in
+the automotive industry., Keywords: Computer Applications-General, Informatics, Computer-aided
+Diagnosis, © {RSNA}, 2021},
+	pages = {e210097},
+	number = {6},
+	journaltitle = {Radiology: Artificial Intelligence},
+	shortjournal = {Radiol Artif Intell},
+	author = {Eche, Thomas and Schwartz, Lawrence H. and Mokrane, Fatima-Zohra and Dercle, Laurent},
+	urldate = {2025-11-25},
+	date = {2021-10-27},
+	pmid = {34870222},
+	pmcid = {PMC8637230},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/4777X9UH/Eche 等 - 2021 - Toward Generalizability in the Deployment of Artificial Intelligence in Radiology Role of Computati.pdf:application/pdf},
+}
+
+@article{cai_impact_2023,
+	title = {Impact of localized fine tuning in the performance of segmentation and classification of lung nodules from computed tomography scans using deep learning},
+	volume = {13},
+	issn = {2234-943X},
+	url = {https://www.frontiersin.org/journals/oncology/articles/10.3389/fonc.2023.1140635/full},
+	doi = {10.3389/fonc.2023.1140635},
+	abstract = {Background: Algorithm malfunction may occur when there is a mismatch between the dataset with which it was developed and the dataset on which it was deployed.Methods: A baseline segmentation algorithm and a baseline classification algorithm were developed using public dataset of Lung Image Database Consortium to detect benign and malignant nodules, and two additional external datasets (i.e., {HB} and {XZ}) including 542 cases and 486 cases were involved for the independent validation of these two algorithms. To explore the impact of localized fine tuning on the individual segmentation and classification process, the baseline algorithms were fine tunned with {CT} scans of {HB} and {XZ} datasets, respectively, and the performance of the fine tunned algorithms was tested to compare with the baseline algorithms.Results: The proposed baseline algorithms of both segmentation and classification experienced a drop when directly deployed in external {HB} and {XZ} datasets. Comparing with the baseline validation results in nodule segmentation, the fine tunned segmentation algorithm obtained better performance in Dice coefficient, Intersection over Union, and Average Surface Distance in {HB} dataset (0.593 vs. 0.444; 0.450 vs. 0.348; 0.283 vs. 0.304) and {XZ} dataset (0.601 vs. 0.486; 0.482 vs. 0.378; 0.225 vs. 0.358). Similarly, comparing with the baseline validation results in benign and malignant nodule classification, the fine tunned classification algorithm had improved area under the receiver operating characteristic curve value, accuracy, and F1 score in {HB} dataset (0.851 vs. 0.812; 0.813 vs. 0.769; 0.852 vs. 0.822) and {XZ} dataset (0.724 vs. 0.668; 0.696 vs. 0.617; 0.737 vs. 0.668).Conclusions: The external validation performance of localized fine tunned algorithms outperformed the baseline algorithms in both segmentation process and classification process, which showed that localized fine tuning may be an effective way to enable a baseline algorithm generalize to site-specific use.},
+	journaltitle = {Frontiers in Oncology},
+	shortjournal = {Front. Oncol.},
+	author = {Cai, Jingwei and Guo, Lin and Zhu, Litong and Xia, Li and Qian, Lingjun and Lure, Yuan-Ming Fleming and Yin, Xiaoping},
+	urldate = {2025-11-25},
+	date = {2023-03-28},
+	note = {Publisher: Frontiers},
+	keywords = {Classification, localized fine tuning, Lung nodules, segmentation, sitespecific use},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/7ZG5UU2D/Cai 等 - 2023 - Impact of localized fine tuning in the performance of segmentation and classification of lung nodule.pdf:application/pdf},
+}
+
+@article{chen_enhanced_2025,
+	title = {Enhanced Malignancy Prediction of Small Lung Nodules in Different Populations Using Transfer Learning on Low-Dose Computed Tomography},
+	volume = {15},
+	rights = {http://creativecommons.org/licenses/by/3.0/},
+	issn = {2075-4418},
+	url = {https://www.mdpi.com/2075-4418/15/12/1460},
+	doi = {10.3390/diagnostics15121460},
+	abstract = {Background: Predicting malignancy in small lung nodules ({SLNs}) across diverse populations is challenging due to significant demographic and clinical v...},
+	number = {12},
+	journaltitle = {Diagnostics},
+	author = {Chen, Jyun-Ru and Hou, Kuei-Yuan and Wang, Yung-Chen and Lin, Sen-Ping and Mo, Yuan-Heng and Peng, Shih-Chieh and Lu, Chia-Feng and Chen, Jyun-Ru and Hou, Kuei-Yuan and Wang, Yung-Chen and Lin, Sen-Ping and Mo, Yuan-Heng and Peng, Shih-Chieh and Lu, Chia-Feng},
+	urldate = {2025-11-25},
+	date = {2025-06-08},
+	langid = {english},
+	note = {Company: Multidisciplinary Digital Publishing Institute
+Distributor: Multidisciplinary Digital Publishing Institute
+Institution: Multidisciplinary Digital Publishing Institute
+Label: Multidisciplinary Digital Publishing Institute
+Publisher: publisher},
+	keywords = {deep learning, malignancy prediction, population variations, small lung nodule, transfer learning},
+	file = {Full Text PDF:/Users/lqy/Zotero/storage/MEI5CLJ2/Chen 等 - 2025 - Enhanced Malignancy Prediction of Small Lung Nodules in Different Populations Using Transfer Learnin.pdf:application/pdf},
+}
+
+@online{gardner_tableshift_nodate,
+	title = {{TableShift}},
+	url = {https://jpgard.github.io/tableshift-web/index.html},
+	abstract = {{TableShift} is a benchmark and associated Python library for machine learning with tabular data under distribution shift. The {TableShift} Python package contains: An {API} providing unified access to 15 benchmark datasets with predefined real-world domain splits in only a few lines of Python code. Utilities for loading the datasets in …},
+	titleaddon = {{TableShift}},
+	author = {Gardner, Josh},
+	urldate = {2025-11-25},
+	langid = {english},
+	file = {Snapshot:/Users/lqy/Zotero/storage/282XGWYN/index.html:text/html},
+}
+
+@misc{niu_survey_2024,
+	title = {A Survey on Domain Generalization for Medical Image Analysis},
+	url = {http://arxiv.org/abs/2402.05035},
+	doi = {10.48550/arXiv.2402.05035},
+	abstract = {Medical Image Analysis ({MedIA}) has emerged as a crucial tool in computer-aided diagnosis systems, particularly with the advancement of deep learning ({DL}) in recent years. However, well-trained deep models often experience significant performance degradation when deployed in different medical sites, modalities, and sequences, known as a domain shift issue. In light of this, Domain Generalization ({DG}) for {MedIA} aims to address the domain shift challenge by generalizing effectively and performing robustly across unknown data distributions. This paper presents the a comprehensive review of substantial developments in this area. First, we provide a formal definition of domain shift and domain generalization in medical field, and discuss several related settings. Subsequently, we summarize the recent methods from three viewpoints: data manipulation level, feature representation level, and model training level, and present some algorithms in detail for each viewpoints. Furthermore, we introduce the commonly used datasets. Finally, we summarize existing literature and present some potential research topics for the future. For this survey, we also created a {GitHub} project by collecting the supporting resources, at the link: https://github.com/Ziwei-Niu/{DG}\_for\_MedIA},
+	number = {{arXiv}:2402.05035},
+	publisher = {{arXiv}},
+	author = {Niu, Ziwei and Ouyang, Shuyi and Xie, Shiao and Chen, Yen-wei and Lin, Lanfen},
+	urldate = {2025-11-25},
+	date = {2024-02-07},
+	eprinttype = {arxiv},
+	eprint = {2402.05035 [cs]},
+	note = {version: 1},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/CNPXLFNS/Niu 等 - 2024 - A Survey on Domain Generalization for Medical Image Analysis.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/L2Y3W4GD/2402.html:text/html},
+}
+
+@misc{kolesnikov_wild-tab_2023,
+	title = {Wild-Tab: A Benchmark For Out-Of-Distribution Generalization In Tabular Regression},
+	url = {http://arxiv.org/abs/2312.01792},
+	doi = {10.48550/arXiv.2312.01792},
+	shorttitle = {Wild-Tab},
+	abstract = {Out-of-Distribution ({OOD}) generalization, a cornerstone for building robust machine learning models capable of handling data diverging from the training set's distribution, is an ongoing challenge in deep learning. While significant progress has been observed in computer vision and natural language processing, its exploration in tabular data, ubiquitous in many industrial applications, remains nascent. To bridge this gap, we present Wild-Tab, a large-scale benchmark tailored for {OOD} generalization in tabular regression tasks. The benchmark incorporates 3 industrial datasets sourced from fields like weather prediction and power consumption estimation, providing a challenging testbed for evaluating {OOD} performance under real-world conditions. Our extensive experiments, evaluating 10 distinct {OOD} generalization methods on Wild-Tab, reveal nuanced insights. We observe that many of these methods often struggle to maintain high-performance levels on unseen data, with {OOD} performance showing a marked drop compared to in-distribution performance. At the same time, Empirical Risk Minimization ({ERM}), despite its simplicity, delivers robust performance across all evaluations, rivaling the results of state-of-the-art methods. Looking forward, we hope that the release of Wild-Tab will facilitate further research on {OOD} generalization and aid in the deployment of machine learning models in various real-world contexts where handling distribution shifts is a crucial requirement.},
+	number = {{arXiv}:2312.01792},
+	publisher = {{arXiv}},
+	author = {Kolesnikov, Sergey},
+	urldate = {2025-11-25},
+	date = {2023-12-04},
+	eprinttype = {arxiv},
+	eprint = {2312.01792 [cs]},
+	keywords = {Computer Science - Machine Learning},
+	file = {Preprint PDF:/Users/lqy/Zotero/storage/ICSVJAT6/Kolesnikov - 2023 - Wild-Tab A Benchmark For Out-Of-Distribution Generalization In Tabular Regression.pdf:application/pdf;Snapshot:/Users/lqy/Zotero/storage/SRBM2RRL/2312.html:text/html},
+}
+
+@online{khoeini_fttransformer_2024,
+	title = {{FTTransformer}: Transformer Architecture for Tabular Datasets},
+	url = {https://arashk.medium.com/fttransformer-transformer-architecture-for-tabular-datasets-d4bfe591d6fb},
+	shorttitle = {{FTTransformer}},
+	abstract = {Exploring the {FTTransformer}: Revolutionizing Deep Learning for Tabular Data},
+	titleaddon = {Medium},
+	author = {Khoeini, Arash},
+	urldate = {2025-11-25},
+	date = {2024-08-13},
+	langid = {english},
+	file = {Snapshot:/Users/lqy/Zotero/storage/MKSX9PFE/fttransformer-transformer-architecture-for-tabular-datasets-d4bfe591d6fb.html:text/html},
+}

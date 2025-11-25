@@ -93,7 +93,7 @@ For external validation (train on Cohort A, test on Cohort B), the TCA-enhanced 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{combined_heatmaps_nature.pdf}
+    \includegraphics[width=\linewidth]{img/cross_hospital/combined_heatmaps_nature.pdf}
     \caption{\textbf{Performance comparison across source and target domains.}
     \textbf{a} Source domain 10-fold cross-validation performance heatmap across five classification metrics. The PANDA framework achieves the best overall performance across all metrics. \textbf{b} Cross-domain performance heatmap on the external validation set. The TCA-enhanced PANDA model shows the highest AUC and recall, indicating improved generalization under domain shift.}
     \label{fig:performance-heatmaps}
@@ -103,19 +103,81 @@ Feature-space checks (Fig.~\ref{fig:tca-visualization}) suggest TCA is doing its
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=1\linewidth]{TCA_dimensionality_reduction.pdf}
+    \includegraphics[width=1\linewidth]{img/cross_hospital/TCA_dimensionality_reduction.pdf}
     \caption{TCA-based domain adaptation visualization. \textbf{a,b} PCA visualization before and after TCA transformation, showing improved alignment of target samples with source samples. \textbf{c,d} t-SNE visualization before and after TCA transformation, demonstrating enhanced cluster center alignment and distribution consistency.}
     \label{fig:tca-visualization}
+\end{figure}
+
+\subsection{Additional Cross-Domain Validation on a Public Benchmark}
+
+We added a public benchmark to stress-test PANDA under a race shift: the TableShift BRFSS
+Diabetes task, which trains on primarily White respondents and evaluates on non-White
+respondents. Table~\ref{tab:brfss_cohort_summary} summarizes the full cohorts before subsampling,
+highlighting the massive data scale, the imbalance in diabetes prevalence (12.5\% vs.\ 17.4\%), and
+the precise definition of the domain variable (PRACE1). For reproducible experiments we draw
+$n_{\text{train}}=1024$ and $n_{\text{test}}=2048$ records while keeping the same label distribution, mirroring
+the small-sample constraints studied in the hospital setting.
+
+\begin{table}[htbp]
+\centering
+\caption{Source (ID) vs Target (OOD) cohorts for BRFSS Diabetes (race shift).}
+\label{tab:brfss_cohort_summary}
+\begin{tabular}{lcc}
+\hline
+\textbf{Characteristic} & \textbf{Source / ID (PRACE1=1)} & \textbf{Target / OOD (PRACE1 in $\{2..6\}$)} \\\hline
+Sample size (full split) & 969{,}229 (train) + 121{,}154 (val) + 121{,}154 (test) & 23{,}264 (val) + 209{,}375 (test) \\
+Diabetes positive rate & 12.5\% (train) & 17.4\% (ood\_test) \\
+Years (top four) & 2015: 245{,}675; 2017: 244{,}996; 2019: 221{,}847; 2021: 223{,}088 & 2015: 49{,}216; 2017: 52{,}150; 2019: 48{,}012; 2021: 50{,}595 \\
+Domain shift variable & PRACE1 = 1 (non-Hispanic White) & PRACE1 in $\{2,3,4,5,6\}$ (other races) \\
+Label definition & \multicolumn{2}{c}{DIABETES coded 1 (Yes) vs 0 (No/Prediabetes/Borderline); NA rows dropped} \\
+Feature summary & \multicolumn{2}{c}{142 numerical features; cross-year aligned; underscores removed; IYEAR retained} \\
+Preprocessing notes & \multicolumn{2}{c}{DRNK\_PER\_WEEK=99900 dropped; SEX$\rightarrow\{0,1\}$; health-day 88$\rightarrow$0; TOLDHI/SMOKDAY2 fill NOTASKED\_MISSING} \\
+Sampling for modeling & 1{,}024 sampled for training (seed 42) & 2{,}048 sampled for evaluation (seed 42) \\\hline
+\end{tabular}
+\end{table}
+
+Because the evaluation uses the native 0.5 threshold on a 17\% positive cohort without class weighting,
+the classifiers lean toward the majority (negative) class. As a result, the TableShift panels in
+Fig.~\ref{fig:brfss-roc} and Fig.~\ref{fig:brfss-heatmap} show high accuracy yet visibly low precision/recall/F1:
+the models rarely fire on positives, so recall collapses while precision spikes only on the few true
+positives. We keep these raw values to reflect the default-deployment setting; more aggressive
+threshold tuning or balanced loss functions could raise the recall if needed.
+
+Across seven baselines and variants, PANDA with TCA achieved the highest OOD AUC (0.804) and
+accuracy (0.848), edging out the non-adaptive TabPFN variant (AUC 0.796, accuracy 0.847) and
+tree ensembles (best GBDT AUC 0.783). Using the source cross-validation tuning run
+(AUC 0.809, accuracy 0.848) as a reference, the race-shift performance drop is mild
+($\Delta$AUC $\approx$ 0.005; $\Delta$Accuracy $<0.001$), while adaptation provides a small but consistent
+gain over PANDA\_NoUDA ($+0.008$ AUC). Classic SVM and decision trees degraded more sharply under
+the race shift, reinforcing the need for explicit alignment even on large public datasets.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/tableshift/combined_analysis_figure.pdf}
+    \caption{\textbf{TableShift BRFSS Diabetes (race shift: White $\rightarrow$ non-White).}
+    \textbf{a,b} ROC curves for baselines and PANDA variants on the public benchmark.
+    \textbf{c,d} Calibration curves highlighting probability alignment post-adaptation.
+    \textbf{e,f} Decision curves illustrating net benefit across threshold ranges.}
+    \label{fig:brfss-roc}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/tableshift/combined_heatmaps_nature.pdf}
+    \caption{\textbf{Performance heatmaps for the TableShift BRFSS Diabetes task.}
+    \textbf{a} Source cross-validation metrics.
+    \textbf{b} Race-shift (White $\rightarrow$ non-White) OOD metrics.}
+    \label{fig:brfss-heatmap}
 \end{figure}
 
 
 \subsection{Model Explainability, Reliability, and Clinical Utility}
 
-RFE with the pre-trained model kept interpretation manageable, and performance across subset sizes leveled off around 9--13 features (Fig.~\ref{fig:rfe-performance}). In terms of reliability, the ROC curves give PANDA a clear edge—AUC 0.829 on the source cohort and 0.705 for the TCA-augmented model on the external one. Calibration plots also place PANDA closer to the diagonal, with TCA nudging the target-side curve a bit nearer to what we would hope for. Decision curves, which weigh net clinical benefit across thresholds, tilt in PANDA’s favor as well, and the TCA variant adds a small but noticeable gain on the external cohort.
+RFE with the pre-trained model kept interpretation manageable, and performance across subset sizes leveled off around 9--13 features (Fig.~\ref{fig:rfe-performance}). In terms of reliability, the ROC curves give PANDA a clear edge--AUC 0.829 on the source cohort and 0.705 for the TCA-augmented model on the external one. Calibration plots also place PANDA closer to the diagonal, with TCA nudging the target-side curve a bit nearer to what we would hope for. Decision curves, which weigh net clinical benefit across thresholds, tilt in PANDA's favor as well, and the TCA variant adds a small but noticeable gain on the external cohort.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=1\linewidth]{feature_performance_comparison_comprehensive.pdf}
+    \includegraphics[width=1\linewidth]{img/cross_hospital/feature_performance_comparison_comprehensive.pdf}
     \caption{Comprehensive feature selection and performance analysis using recursive feature elimination (RFE). 
     \textbf{a} AUC, accuracy, and F1 curves as functions of the number of selected features. Performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. 
     \textbf{b} Class-specific accuracy for malignant and benign cases across feature subset sizes, illustrating how predictive balance shifts as features are removed. 
@@ -127,8 +189,11 @@ RFE with the pre-trained model kept interpretation manageable, and performance a
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=1\linewidth]{combined_analysis_figure.pdf}
-    \caption{\textbf{Performance and utility across source and target domains.}              
-    \textbf{a,b} ROC curves. \textbf{c,d} Calibration plots. \textbf{e,f} Decision curves.}
+    \includegraphics[width=1\linewidth]{img/cross_hospital/combined_analysis_figure.pdf}
+    \caption{\textbf{Cross-hospital pulmonary nodule task (Cohort A $\rightarrow$ Cohort B).}
+    \textbf{a,b} ROC curves on source and target cohorts.
+    \textbf{c,d} Calibration plots showing probability reliability after TCA.
+    \textbf{e,f} Decision curves quantifying net benefit for internal versus external
+    deployment.}
     \label{fig:combined_analysis}
 \end{figure}

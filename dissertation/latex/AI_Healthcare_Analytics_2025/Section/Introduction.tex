@@ -1,13 +1,64 @@
 \section{Introduction}
 
-Early and accurate prediction of pulmonary nodule malignancy still shapes lung cancer outcomes, yet many decision support tools struggle in everyday clinical use. Nodules discovered on routine CT scans create tricky triage decisions, with malignancy estimates ranging anywhere from 5\% to 70\% depending on setting and patient mix~\cite{swensen1997chest}. Classic risk scores like the Mayo Clinic and Veterans Affairs models remain helpful, though their performance often drops once they leave the cohorts they were built on~\cite{swensen1997chest,gould2007clinical,cui_comparison_2019}. The gap is familiar by now: we need methods that can travel between hospitals while still meeting the sensitivity expectations of screening workflows.
+Early and accurate prediction of pulmonary nodule malignancy remains central to lung cancer
+screening, yet decision support tools routinely fail once they leave the academic centers in which they
+were born. Classical risk scores such as the Mayo Clinic, Veterans Affairs, Brock (PanCan), PKUPH,
+and Li models reach internal AUCs in the 0.80--0.94 range by fitting logistic regressions to carefully
+curated cohorts, then collapse to 0.60--0.75 when applied to community-screening sites, Asian
+hospitals, or solitary-nodule subgroups~\cite{swensen1997chest,mcwilliams2013probability,li2011development,he2021novel,garau_external_2020,zhang_comprehensive_2022,liu_establishment_2024}.
+Meta-analyses covering more than 80{,}000 nodules emphasize that prevalence changes, acquisition
+protocols, and different baseline diseases (e.g., tuberculosis versus granulomas) all distort the learned
+decision boundaries, making non-adaptive risk calculators a clinical liability in cross-hospital practice.
 
-Recent tabular foundation models—most notably TabPFN—have changed small-sample learning by relying on large-scale pre-training to perform well with limited data~\cite{hollmann2025accurate}. Yet these models implicitly assume that feature distributions remain aligned across sites, which makes them surprisingly fragile when real cross-hospital shifts come into play~\cite{zech_variable_2018}. Domain adaptation techniques that succeed in imaging remain thin for structured clinical data~\cite{guan2021domain}, so algorithmic progress has not translated into predictable bedside gains.
+In response, the medical AI community has assembled an ecosystem of algorithms that mirror the
+broader evolution of structured-data learning. Gradient-boosted decision trees, led by
+XGBoost/LightGBM successors, dominate many tabular benchmarks because they remain robust to
+heterogeneous feature scales and missing values, and they continue to anchor registries such as
+NLST~\cite{chen2016xgboost,gorishniy2021revisiting}. Radiomics pipelines engineer thousands of
+texture descriptors from CT volumes to capture subtle morphologic cues, but their scanner sensitivity
+and need for harmonization often erase cross-site gains~\cite{garau_external_2020,hellin2024unraveling}.
+Neural ``deep tabular'' architectures---TabNet, TabTransformer, SAINT, and a wave of attention-based
+variants---extend differentiability to structured data and enable multimodal fusion, yet they demand
+large, well-calibrated cohorts and frequently trail tuned tree ensembles on clinical tabular
+benchmarks~\cite{arik2021tabnet,huang2020tabtransformer,somepalli2021saint,borisov2022deep}.
+Foundation-style approaches push further: TabPFN uses synthetic structural-causal priors to deliver
+hyperparameter-free, small-sample inference; TabPFN-2.5 and drift-resilient variants relax attention
+bottlenecks and introduce explicit temporal priors; and researchers now explore re-purposing tabular
+foundation models for graph reasoning and multimodal prompts~\cite{hollmann2025accurate,noauthor_prior_nodate,noauthor_closer_nodate,noauthor_realistic_nodate,noauthor_automldrift-resilient_tabpfn_2025,eremeev_turning_2025}.
 
-Three knots entangle cross-hospital deployment. First, datasets are small; many hospitals share only a few hundred patients with complete records, too little to train deep models from scratch~\cite{borisov2022deep}. Second, domain shift magnifies the issue because patient mixes, workflows, and collection protocols differ enough to drag external AUC down by 20--30\%~\cite{guo_evaluation_2022}. Third, feature heterogeneity shows up when sites record variables inconsistently, use different codes, or leave gaps, so models do not transfer cleanly~\cite{zhou2025representationlearningadvancemultiinstitutional}. Tackling each problem alone has not proved durable.
+Despite this diversity of techniques, cross-hospital transfer remains fragile. Performance fails because
+the three dominant pathologies of medical tabular data co-occur: (i) sample scarcity---most nodular
+cohorts comprise a few hundred labeled patients, limiting the stability of purely supervised training;
+(ii) distribution shift---label prevalence, scanner kernels, and demographics change the marginal
+$P(X)$ and even the conditional $P(Y|X)$ between hospitals; and (iii) feature heterogeneity---sites log
+disjoint biomarker panels, measurement units, and coding policies that invalidate naive feature
+alignment~\cite{koch2024distribution,guo_evaluation_2022,orouji_domain_nodate}. Domain adaptation
+research in imaging and wearables demonstrates that adversarial training, optimal transport, or
+statistical moment matching can rescue some performance, but these methods are rarely tailored to
+structured clinical data, and benchmarks like TableShift show that off-the-shelf algorithms still suffer
+large out-of-distribution gaps even when in-distribution accuracy is high~\cite{guan2021domain,gardner_benchmarking_2024,ahn_unsupervised_2023}.
+Large-scale regulators now treat shift detection and recalibration as core parts of post-market
+surveillance, underscoring that robustness cannot be an afterthought~\cite{koch2024distribution}.
 
-Tabular foundation models shine in small-sample regimes yet come without built-in domain adaptation~\cite{schneider2024foundation}. Domain adaptation work mostly targets images, not structured clinical data~\cite{guan2021domain}. We have not seen a single approach that marries pre-trained tabular models with cross-domain feature selection and unsupervised alignment, which keeps reliable deployment out of reach in mixed healthcare settings.
+Tabular foundation models partially alleviate the sample-size constraint, yet they inherit a closed-world
+assumption: the context set used during in-context learning must reflect the same joint distribution as
+the query samples. When shifts in biomarkers, acquisition settings, or feature schemata emerge, even
+TabPFN variants can become overconfident because their attention weights are tied to the geometry of
+the source cohort~\cite{schneider2024foundation,noauthor_realistic_nodate}. Emerging iterations like
+TabPFN-2.5 and drift-resilient TabPFN extend context length and bake simulated drifts into the prior,
+but they remain sensitive to mismatched feature spaces or unlabeled target domains without an
+explicit alignment step~\cite{noauthor_prior_nodate,noauthor_automldrift-resilient_tabpfn_2025}.
+Consequently, bridging the gulf between high internal accuracy and safe cross-site deployment
+requires combining foundation models with principled unsupervised domain adaptation and feature
+selection that respect clinical realities.
 
-We present \emph{PANDA} (Pretrained Adaptation Network with Domain Alignment), a pragmatic attempt to pair a pre-trained tabular foundation model with unsupervised domain adaptation for cross-hospital pulmonary nodule malignancy prediction. The recipe mixes three pieces: (1) TabPFN's small-sample modeling via meta-training on millions of synthetic tasks; (2) Transfer Component Analysis (TCA) to align feature distributions across hospitals while keeping signal; and (3) Recursive Feature Elimination (RFE) to surface stable clinical variables across sites, softening feature heterogeneity. The goal is cross-hospital prediction while holding the high sensitivity (94.4\%) screening usually demands.
-
-The promise rests on four points that seem worth testing in practice: it appears to be the first time a pre-trained tabular foundation model is paired with domain adaptation in a medical setting; external validation hints the approach might travel across hospital systems without falling apart; the sensitivity target of 94.4\% lines up with what screening workflows expect, with calibration and decision-curve gains to match; and the alignment path tries to juggle small sample sizes, class imbalance, and distribution shift in one pass.
+We therefore introduce \emph{PANDA} (Pretrained Adaptation Network with Domain Alignment), a
+pragmatic framework that chains three proven ideas. First, TabPFN supplies a strong inductive prior for
+small cohorts by meta-learning across millions of synthetic tabular tasks~\cite{hollmann2025accurate}.
+Second, Transfer Component Analysis (TCA) aligns source and target distributions in a shared
+reproducing-kernel subspace without labeled target data, minimizing divergence while preserving
+clinical variance~\cite{pan2010domain}. Third, cross-domain Recursive Feature Elimination prunes to the
+biomarkers that are consistently available and stable, mitigating schema mismatch and noisy hospital
+artifacts~\cite{sun2019informative}. PANDA targets the explicit goal of cross-hospital pulmonary nodule
+prediction with screening-level sensitivity by combining these components rather than relying on any
+single modeling breakthrough.
