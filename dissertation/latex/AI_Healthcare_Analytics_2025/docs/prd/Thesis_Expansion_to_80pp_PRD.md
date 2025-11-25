@@ -158,6 +158,32 @@
   - [X] 列 3–4 个 gap → 映射 PANDA 组件（tabular FM、cross-domain RFE、TCA on TabPFN latent、私有肺结节+公共基准实验设计）
   - [X] ≥600 字；收尾一句引到 PANDA 框架
 
+#### 2.7 Related Work 定点加深计划（在现有结构上增厚 3–5 页）
+
+- [X] 2.7.1 强化 2.1 Tabular learning for medical data
+  - [X] 在树模型小节中单独补一段“XGBoost/GBDT 在 EHR/医疗表格上的优势与小样本局限”（稀疏感知分裂、缺失值处理、对单调变换不敏感，但 N≈300 时易过拟合、不可微、难以做端到端 DA）
+  - [X] 在 deep tabular 小节中补一段“TabNet/TabTransformer/FT-Transformer 在大规模公开基准 vs. 医疗小样本上的表现差异”，强调需要大样本和复杂调参，在 noisy、小样本医疗队列上不稳定
+  - [X] 收束一句话对比传统 deep tabular 的 end-to-end 学习思路与 TabPFN 的 meta-learning/few-shot 路线，并指出二者都默认单域、未显式处理 cross-hospital shift
+- [X] 2.7.2 新增 2.2.4 Domain adaptation and transfer learning for clinical tabular/EHR data
+  - [X] 总结 1–2 个典型 EHR UDA 工作（如 AdaDiag 等），说明在 MIMIC vs UCLA 等场景中 baseline AUROC 掉 5–10 个点，DA 方法能回一部分但仍不完美
+  - [X] 引出 multi-center EHR foundation model + transfer learning 的趋势，说明这类模型在跨院转移上更 sample-efficient，但任务多为 EHR 序列，与本论文的“结构化风险评分 + UDA”设定不同
+  - [X] 用 Ben-David 误差上界（$\epsilon_T \le \epsilon_S + \text{divergence} + \lambda$）做半页左右的理论收束，强调“只在 source 上追求低误差不够，必须显式降低 divergence”
+  - [X] 小结一句：Existing work has largely focused either on temporal shift in large EHR cohorts or on imaging-based DA, leaving a gap for small tabular cohorts with heterogeneous features…
+- [X] 2.7.3 深化 2.3 Feature selection & domain-aware stability
+  - [X] 在 2.3.1 中补一段“经典 RFE/LASSO vs 新一代 WPFS/GRACES/DeepFS”的优缺点对比：经典方法假设线性/单特征效应、小样本下稳定性差；新方法通过辅助网络、图结构或自编码器，应对超高维、小样本、类不平衡
+  - [X] 在 2.3.3 末尾或新增 2.3.4 小结段，强调在跨域场景下特征选择还承担“domain alignment”的角色：选出各域都稳定的特征，抛弃 site-specific spurious 特征
+  - [X] 以 1–2 句点明 PANDA 的 cross-domain RFE 实现了这一思想：利用预训练 TabPFN 在两家医院联合排名特征，只保留在两域都重要的 best7/best8
+- [X] 2.7.4 深化 2.4 Pulmonary nodule malignancy prediction
+  - [X] 在 2.4.1 中补一段“external validation & failure modes”，总结 Brock/Mayo/VA/Herder 等模型在中国队列、TB 高发地区和不同筛查人群中的外部 AUC 下跌和失配人群
+  - [X] 在 2.4.2 中概括 radiomics + SVM/RF/XGBoost 在肺结节任务上的典型内部 AUC 范围（多在 0.75–0.90）以及跨扫描协议、特征可重复性不足导致的 external validation 薄弱
+  - [X] 在 2.4.3 中补充 1–2 个代表性的 deep/multimodal 模型（3D-CNN、radiomics+DL+clinical），强调它们在本地或双中心数据上很强，但需要 site-specific fine-tuning，几乎没有“train at A, deploy at B without labels”
+  - [X] 视需要补一个 2.4.4 Attempts to improve cross-hospital generalization 小节，用最新多中心中国小结节工作为例说明：即便针对新队列更新模型，外部 AUC 仍不稳定
+  - [X] 收尾一段：Taken together, these studies show that neither handcrafted scores, radiomics pipelines, nor deep CNNs currently offer reliable malignancy prediction across hospitals without local retraining…
+- [X] 2.7.5 补强 2.5 Benchmarks and open problems
+  - [X] 在现有 TableShift/Wild-Tab/Wild-Time 段落后补一段，引用泛 tabular benchmark/survey（如 deep vs tree 在多数据集对比中的结论），总结在现实 tabular 场景下 GBDT 仍然是强 baseline，许多 deep/DG 方法没有系统性优势
+  - [X] 强调 label shift 在误差中的主导作用，单纯对齐 feature moments 意义有限，为 PANDA 中显式考虑标签分布和校准做铺垫
+  - [X] 在 Gap analysis 收尾处加一句话，点明本工作首次将 tabular foundation model、cross-domain RFE 和 TCA 组合到跨院肺结节 + 公共 TableShift 任务上
+
 #### 2.6 文献搬运与细化（对应原 2.7a–d，细化成步骤）
 
 - [X] 2.6.1 结构对齐：在 `Section/Related_Work.tex` 写好 2.1–2.5.2 标题，留 `% TODO: fill from <doc>`

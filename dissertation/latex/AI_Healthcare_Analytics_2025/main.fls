@@ -203,12 +203,12 @@ INPUT Section/Problem_Formulation.tex
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT Section/Solution.tex
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf

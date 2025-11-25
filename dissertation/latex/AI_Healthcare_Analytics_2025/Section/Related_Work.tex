@@ -39,6 +39,18 @@ and hospital-specific priors leak into leaf structure. Because gradients stop at
 each split, trees cannot share representations with image encoders or participate
 in gradient-based domain adaptation, forcing manual feature harmonization whenever
 schemas or prevalence shift.
+In practice, this means that widely used implementations such as XGBoost and
+LightGBM shine on medium-to-large EHR cohorts with thousands of patients and
+hundreds of features, where sparse histogram-based splits and built-in handling of
+missing indicators yield strong baselines with modest tuning. On the small,
+heavily imbalanced cohorts typical of lung-screening registries ($N\approx 300$),
+the same capacity becomes a liability: a few malignant cases can be memorized by
+deep trees, calibration deteriorates in low-prevalence subgroups, and there is no
+clear way to ``warm start'' or fine-tune an existing model when a new hospital
+adds or removes variables. Because tree ensembles are non-differentiable and lack
+explicit latent representations, they are also difficult to integrate into
+end-to-end multimodal models or to pair with standard DA objectives, motivating
+methods that transfer tree-like priors into differentiable architectures.
 
 \subsubsection{Deep tabular networks}
 
@@ -76,6 +88,15 @@ categorical vocabularies change or when privacy constraints cap batch sizes~\cit
 guo_evaluation_2022,ren_deep_2025}. In such small-$N$, high-dimensional regimes,
 hyperparameter sensitivity translates directly into clinical risk: minor changes in
 learning rate or regularization can flip decisions near treatment thresholds.
+Compared with tree ensembles, these architectures seek to learn shared feature
+representations that might in principle adapt across hospitals or tasks. In
+practice, however, their appetite for data and tuning means that performance gains
+are often limited to large industrial benchmarks; on noisy, heterogeneous medical
+tables with only a few hundred patients, they frequently underperform simpler
+models and exhibit brittle calibration under shift. This contrast sets the stage
+for tabular foundation models such as TabPFN, which embrace a meta-learning,
+few-shot perspective instead of training a new deep network from scratch for each
+cohort.
 
 \subsubsection{Tabular foundation models}
 
@@ -204,6 +225,44 @@ methods often assume aligned label spaces and therefore miscalibrate rare condit
 Regulatory guidance now treats shift detection and recalibration as part of
 post-market surveillance, emphasizing that robustness must be engineered rather than
 assumed~\cite{koch2024distribution}.
+Complementary benchmarks and surveys on generic tabular learning echo these
+findings: across hundreds of datasets, tuned GBDTs remain exceptionally strong
+baselines, and many deep or domain-generalization architectures fail to deliver
+consistent gains once evaluation moves beyond a handful of leaderboard tasks~\cite{fan_tabular_2024,
+shmuel_comprehensive_2024,somvanshi2024survey}. Moreover, empirical decompositions
+of error budgets highlight that label shift and calibration drift often dominate
+covariate shift, suggesting that feature-space alignment alone is insufficient for
+reliable deployment. Together with the medical DA literature, these results argue
+for methods that combine strong small-sample priors, explicit feature governance,
+and lightweight, task-aware alignment instead of relying on black-box ``robust''
+architectures.
+
+\subsubsection{Domain adaptation and transfer learning for clinical tabular and EHR data}
+
+Recent work brings these ideas to longitudinal EHR and claims data. AdaDiag-style
+methods align source and target hospitals in a representation space while jointly
+training prognostic models, reporting partial recovery of AUROC lost when models
+trained on MIMIC-like cohorts are evaluated at external centers~\cite{zhang_adadiag_2022,
+guan2021domain}. Multi-center EHR foundation models go further by pre-training
+sequence encoders on records from dozens of institutions and then fine-tuning on
+downstream tasks, demonstrating that shared representations can reduce the amount
+of labeled data required for local adaptation~\cite{noauthor_multi-center_nodate}.
+These approaches show that both unsupervised alignment and transfer learning have
+value in clinical AI, but they typically assume abundant longitudinal data, focus
+on large hospitals with rich EHR infrastructure, and operate on sequential rather
+than static tabular summaries.
+
+Standard domain-adaptation theory provides a unifying lens: target risk can be
+bounded by source risk plus a measure of distribution discrepancy and a term
+capturing irreducible label-set differences~\cite{pan2010domain,guo_evaluation_2022}.
+Reducing error on the source domain alone is therefore insufficient; one must also
+control divergence between source and target feature distributions, for example via
+moment-matching, adversarial objectives, or feature-space DA. Existing EHR-focused
+methods mostly address temporal drift or site differences in large cohorts, whereas
+our setting combines small, imbalanced tabular cohorts, heterogeneous feature sets,
+and unlabeled target hospitals. This gap motivates PANDA's combination of strong
+tabular priors, cross-domain feature selection, and lightweight alignment tailored
+to static risk scores rather than long EHR sequences.
 
 \subsection{Feature selection and domain-aware stability for small medical cohorts}
 
@@ -233,6 +292,17 @@ features, directly reducing assay costs and simplifying model interpretation.
 However, most of these works assume a single training domain: the selected subset
 is optimized for internal performance and may not transfer when another hospital
 measures a slightly different panel or when missingness patterns change.
+From a methodological standpoint, this marks a shift from classical LASSO or
+univariate ranking---which rely on linear or marginal-effect assumptions and can be
+highly unstable in small cohorts---to architectures that explicitly model complex
+feature interactions and redundancy. WPFS and GRACES, for example, introduce
+auxiliary networks or graph structures to propagate importance across correlated
+features, while DeepFS leverages deep encoders to identify nonlinear manifolds
+where only a subset of variables drive variation~\cite{chen2023graces,liu2022deepfs,
+li2023deep}. These designs are particularly appealing in high-dimensional, sparse
+medical settings (omics panels, questionnaire data), but they still optimize for
+one domain at a time and do not ensure that the chosen biomarkers remain predictive
+under cross-hospital shift.
 
 \subsubsection{Feature selection with transformers and foundation models}
 
@@ -268,6 +338,16 @@ source-site performance and cross-site stability, leading to compact ``best7'' a
 domain-aware subsets provide low-dimensional, harmonized inputs to TCA, reducing
 the risk of negative transfer and making the subsequent alignment problem better
 posed.
+Viewed through this lens, feature selection becomes a form of implicit domain
+alignment: instead of matching full distributions in a high-dimensional space, one
+first discards variables whose predictive contribution is strongly domain-specific
+and focuses on biomarkers that are consistently informative across sites. This is
+particularly valuable when hospitals measure different panels or exhibit pronounced
+missingness shift, because aligning on a smaller, shared subset of stable features
+is both statistically and operationally simpler. PANDA effectively instantiates
+this principle by using a pre-trained tabular foundation model to rank features
+jointly across two hospitals and retaining only those with robust importance,
+thereby coupling representation learning with domain-aware feature governance.
 
 \subsection{Pulmonary nodule malignancy prediction: from clinical scores to multi-modal AI}
 
@@ -351,10 +431,13 @@ volumes, offering richer representations than clinical risk scores but introduci
 major reproducibility hazards. Texture and wavelet descriptors vary with voxel
 spacing, reconstruction kernel, and segmentation protocol; ComBat-style harmonization
 reduces scanner effects yet requires batch labels and can blur subtle lesions~\cite{hellin2024unraveling,
-garau_external_2020}. External validations on LIDC-IDRI, LUNA16, and NLST repeatedly
-report double-digit AUC drops when deployed to scanners with different kernels or
-patient mixes, while shortcut-learning analyses show that models sometimes rely on
-grid artifacts or reconstruction noise rather than morphology~\cite{ardila_end--end_2019,
+garau_external_2020}. In internal validation, radiomics-based classifiers that pair
+LASSO- or stability-selected feature subsets with SVMs, random forests, or GBDTs
+typically report AUCs in the 0.75--0.90 range, but these numbers rarely carry over
+to new scanners or hospitals. External validations on LIDC-IDRI, LUNA16, and NLST
+repeatedly report double-digit AUC drops when deployed to scanners with different
+kernels or patient mixes, while shortcut-learning analyses show that models sometimes
+rely on grid artifacts or reconstruction noise rather than morphology~\cite{ardila_end--end_2019,
 zech_variable_2018,koch2024distribution}. These failures illustrate that radiomics
 alone cannot guarantee transportability and that alignment plus feature vetting are
 required before cross-hospital use.
@@ -401,7 +484,11 @@ cost and annotation effort. Multi-task variants that jointly predict malignancy,
 growth, or histological subtype promise richer supervision but require large,
 carefully curated datasets that few hospitals possess. In practice, many published
 CAD systems are trained and tuned on a single trial or institution, with limited
-reporting on cross-hospital generalization or calibration.
+reporting on cross-hospital generalization or calibration. Where multi-center
+experiments are reported, performance is typically rescued by site-specific
+fine-tuning on labeled cases from each target hospital, and very few studies attempt
+label-free ``train at A, deploy at B'' deployment. As a result, deep CAD systems
+remain powerful local tools rather than robust cross-hospital risk predictors.
 
 \subsubsection{Tabular and multi-modal nodule models}
 
@@ -417,6 +504,10 @@ NLST, yet most studies remain single-center or rely on random train--test splits
 that do not reflect real cross-hospital deployment. Only a handful of works evaluate
 performance when training on one hospital and testing on another, and these typically
 report substantial AUC drops and unstable decision thresholds~\cite{garau_external_2020,
+hellin2024unraveling}. Recent multi-center studies in Asian and Chinese screening
+cohorts echo this pattern: even when models are re-estimated or augmented with
+additional imaging features for new hospitals, external AUCs often plateau in the
+low- to mid-0.70s and remain sensitive to protocol details and case mix~\cite{garau_external_2020,
 hellin2024unraveling}. These observations motivate a shift toward tabular-centric
 models that can incorporate imaging-derived biomarkers while explicitly handling
 feature mismatch and domain shift rather than assuming homogeneous acquisition.
@@ -443,7 +534,10 @@ alignment tailored to nodule malignancy prediction~\cite{garau_external_2020,
 hellin2024unraveling}. Consequently, the literature lacks robust, tabular-centric
 frameworks that (i) start from strong small-sample priors, (ii) identify a compact
 set of biomarkers stable across hospitals, and (iii) explicitly align feature
-distributions without assuming access to large labeled target cohorts. Addressing
+distributions without assuming access to large labeled target cohorts. Taken
+together, these studies show that neither handcrafted risk scores, radiomics
+pipelines, nor deep CNN-based CAD systems currently offer reliable malignancy
+prediction across hospitals without local retraining or recalibration. Addressing
 these gaps is a central motivation for the PANDA framework developed in this thesis.
 
 \subsection{Benchmarks and open problems for cross-domain tabular learning}
@@ -499,7 +593,10 @@ alignment to handle unlabeled target data. The same pipeline is evaluated both o
 private cross-hospital pulmonary nodule cohort and on the public TableShift BRFSS
 Diabetes race-shift task, demonstrating that the ingredients are not handcrafted for
 a single dataset but generalize across tabular shift scenarios~\cite{gardner_benchmarking_2024,
-noauthor_mlfoundationstableshift_nodate}. In this sense, PANDA fills the gap between
+noauthor_mlfoundationstableshift_nodate}. To our knowledge, this is the first
+framework to jointly combine a tabular foundation model, cross-domain RFE, and TCA
+for cross-hospital pulmonary nodule risk prediction and public TableShift-style
+tabular shift benchmarks. In this sense, PANDA fills the gap between
 single-domain tabular FMs, imaging-focused DA, and benchmark-driven tabular DA by
 providing an end-to-end, alignment-aware framework tailored to small, imbalanced,
 and feature-mismatched medical cohorts.

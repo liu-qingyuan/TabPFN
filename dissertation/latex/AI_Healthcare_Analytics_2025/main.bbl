@@ -389,6 +389,10 @@ mlfoundations/tableshift: A benchmark for distribution shift in tabular data.
 Josh Gardner.
 \newblock {TableShift}.
 
+\bibitem{noauthor_multi-center_nodate}
+A multi-center study on the adaptability of a shared foundation model for
+  electronic health records {\textbar} npj digital medicine.
+
 \bibitem{guyon2002gene}
 Isabelle Guyon, Jason Weston, Stephen Barnhill, and Vladimir Vapnik.
 \newblock Gene selection for cancer classification using support vector
