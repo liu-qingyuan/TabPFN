@@ -22,113 +22,174 @@ Cross-hospital malignancy prediction and public-health surveillance generate int
 
 This architecture ensures that every component answers a crisp question: why do small-sample medical deployments fail, and what prior or alignment tool counters that failure?
 
-\subsection{Training and Inference Pipeline}
-The full workflow treats both pulmonary nodules and BRFSS as unlabeled-target problems. The steps below summarize the data dependencies and the order in which components are invoked.
+\subsection{Feature Engineering and Selection Implementation}
+\label{subsec:feature_engineering}
 
-\noindent\textbf{PANDA cross-domain pipeline.}
+The feature engineering pipeline in PANDA is designed to handle the heterogeneity of medical data sources while preserving domain-invariant signals. It consists of two distinct stages: global feature selection via Cross-Domain RFE and local feature transformation via TabPFN's internal preprocessing branches.
+
+\subsubsection{Cross-Domain Recursive Feature Elimination (RFE)}
+\label{subsubsec:rfe_implementation}
+To address the "feature mismatch" challenge, we implement a Cross-Domain Recursive Feature Elimination (RFE) strategy. Unlike standard RFE which optimizes for a single dataset, our approach seeks a feature subset $\mathcal{S}^*$ that maximizes predictive performance on the source domain $\mathcal{D}_s$ while satisfying availability constraints in the target domain $\mathcal{D}_t$.
+
+The process, implemented in \texttt{predict\_healthcare\_RFE.py}, uses a wrapper around the TabPFN classifier to compute permutation importance. We define the importance of feature $j$ as the degradation in AUC when its values are randomly shuffled:
+\begin{equation}
+    I_j = \text{AUC}(\mathcal{D}_{\text{val}}) - \frac{1}{K} \sum_{k=1}^K \text{AUC}(\mathcal{D}_{\text{val}}^{(j, \text{shuffled})})
+\end{equation}
+where $K=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative elimination process.
+
+\begin{algorithm}[H]
+\caption{Cross-Domain Recursive Feature Elimination (RFE)}
+\label{alg:cross_domain_rfe}
+\begin{algorithmic}[1]
+\REQUIRE Source Data $X_s, y_s$, Target Schema $\mathcal{F}_t$, Target Feature Count $k_{\text{target}}$
+\ENSURE Optimal Feature Subset $\mathcal{S}^*$
+\STATE \textbf{Initialize:} $\mathcal{S} \leftarrow \text{features}(X_s) \cap \mathcal{F}_t$ \COMMENT{Intersect with target availability}
+\WHILE{$|\mathcal{S}| > k_{\text{target}}$}
+    \STATE Train TabPFN classifier $\mathcal{M}$ on $X_s[\mathcal{S}], y_s$
+    \STATE Compute Permutation Importance vector $\mathbf{I} \in \mathbb{R}^{|\mathcal{S}|}$ using 5 repeats
+    \STATE Identify feature with minimum importance: $f_{\text{min}} \leftarrow \arg\min_{f \in \mathcal{S}} \mathbf{I}[f]$
+    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{f_{\text{min}}\}}$ \COMMENT{Eliminate weakest feature}
+    \STATE Record performance metric $M_{|\mathcal{S}|}$ (AUC) via 10-fold CV
+\ENDWHILE
+\STATE \textbf{Select} $\mathcal{S}^*$ based on Cost-Effectiveness Index (CEI):
+\STATE $\text{CEI}(k) = \frac{\text{AUC}_k - 0.5}{\text{Cost}_k}$ \COMMENT{Optional cost-aware selection}
+\RETURN $\mathcal{S}^*$
+\end{algorithmic}
+\end{algorithm}
+
+This algorithm produces the standard subsets referenced throughout the study: ``best7'' (Age, Spiculation, etc.) and ``best8''.
+
+\subsubsection{Multi-Branch Preprocessing Strategy}
+Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechanism to handle distribution shifts in feature scaling and encoding. This is effectively a "test-time augmentation" for tabular data. The \texttt{EnsembleConfig} generates 32 distinct views of the data through four preprocessing pipelines:
 \begin{enumerate}
-  \item \textbf{Schema harmonization:} compute the shared index set $\mathcal{F}_{\cap}$ between $\mathcal{D}_s$ and $\mathcal{D}_t$; align categorical codes and clinical units, producing matrices $X_s^{\cap}, X_t^{\cap}$.
-  \item \textbf{Cross-domain RFE:} run recursive feature elimination with permutation-based importances on $\mathcal{D}_s$ while constraining candidates to $\mathcal{F}_{\cap}$. Record stable subsets (best7/best8) for downstream use.
-  \item \textbf{Multi-branch preprocessing:} for each retained subset, construct four preprocessing branches (raw order, rotated order, quantile transform, ordinal encoding). Each branch yields context matrices and associated metadata.
-  \item \textbf{TabPFN context construction:} concatenate support (training) samples and target queries per branch, tokenize as sequences, and feed to the frozen TabPFN backbone to obtain contextual embeddings.
-  \item \textbf{Transfer Component Analysis:} solve the TCA objective on each branch's embeddings using both $X_s^{\cap}$ and $X_t^{\cap}$ to obtain projection $\mathbf{W}$; project embeddings into an aligned latent space.
-  \item \textbf{Prediction and aggregation:} pass aligned embeddings through the foundation-model classifier head to get probabilities; apply class-balanced calibration/temperature scaling; average across 32 branch-seed combinations to form the final risk score.
-  \item \textbf{Thresholding and reporting:} select operating points (e.g., 0.5 default or clinically mandated net-benefit thresholds) separately for each cohort, but keep the classifier weights fixed.
+    \item \textbf{No-Op Branch:} Raw features are passed directly, preserving original distributions (useful for tree-based logic).
+    \item \textbf{Quantile Branch:} Features are transformed via $F^{-1}(\Phi(x))$, mapping the empirical CDF to a standard Normal $\mathcal{N}(0,1)$. This handles extreme outliers and skewed distributions common in medical markers (e.g., CEA levels).
+    \item \textbf{Ordinal Branch:} All unique values are ranked and replaced by their integer rank. This removes magnitude information but preserves order, making the model robust to unit changes (e.g., cm vs mm).
+    \item \textbf{Power Transform Branch:} Applies $x \mapsto x^\lambda$ (e.g., square root or log) to stabilize variance.
 \end{enumerate}
+Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring consistent mapping.
 
-\subsection{Foundation Model Architecture}
+\subsection{Foundation Model Integration Mechanism}
+\label{subsec:foundation_model_integration}
 
-\subsubsection{TabPFN Backbone Details}
-TabPFN uses a 12-layer Transformer with four attention heads and 128-dimensional embeddings. Clinical samples are tokenized as $[\text{CLS}, \mathbf{x}_1, \ldots, \mathbf{x}_d, \text{SEP}]$ with positional encodings to preserve ordering. Training instances and test queries are processed jointly in one forward pass, enabling in-context learning without gradient updates.
+PANDA utilizes TabPFN not just as a black-box classifier but as a differentiable feature extractor and probabilistic reasoner. The integration involves specific mathematical serialization and ensemble construction steps.
 
-\subsubsection{Synthetic Task Generation}
+\subsubsection{In-Context Serialization and Tokenization}
+Unlike BERT-style models that require text, TabPFN consumes raw numerical and categorical values. The serialization process, defined in \texttt{src/tabpfn/model/encoders.py}, maps a heterogeneous row $\mathbf{x} \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
 
-Pre-training draws diverse synthetic classification tasks from several function priors, including Gaussian processes, multilayer perceptrons, and ridge regression families. This variety teaches generalizable tabular reasoning patterns that appear to transfer to real-world medical classification tasks.
+For a numerical feature $x^{(j)}$, the embedding is a linear projection:
+\begin{equation}
+    \mathbf{e}^{(j)} = \mathbf{W}_{\text{num}}^{(j)} x^{(j)} + \mathbf{b}_{\text{num}}^{(j)}
+\end{equation}
+For a categorical feature with index $c$, we use a lookup table:
+\begin{equation}
+    \mathbf{e}^{(j)} = \text{EmbeddingMatrix}^{(j)}[c]
+\end{equation}
+Missing values are handled by a specialized learnable token $\mathbf{e}_{\text{nan}}$. The full sample embedding is the sum of feature embeddings plus a positional encoding:
+\begin{equation}
+    \mathbf{E}_{\text{sample}} = \text{MLP}(\text{Concat}(\mathbf{e}^{(1)}, \dots, \mathbf{e}^{(d)})) + \mathbf{P}_{\text{pos}}
+\end{equation}
+This allows the Transformer to attend to "patient A" vs "patient B" distinctively within the context window.
 
-\subsection{Feature Selection and Preprocessing}
+\subsubsection{Ensemble Construction and Inference}
+The final prediction is an average over 32 diverse forward passes. Let $\mathcal{B} = \{P_1, \dots, P_4\}$ be the set of preprocessing functions and $\mathcal{S} = \{s_1, \dots, s_8\}$ be a set of random seeds that control the subsampling of the context set (the "support set" of labeled examples). The ensemble probability estimate is:
 
-\subsubsection{Cross-Domain RFE Algorithm}
+\begin{equation}
+    \hat{P}(y=1|\mathbf{x}_q) = \frac{1}{32} \sum_{P \in \mathcal{B}} \sum_{s \in \mathcal{S}} \sigma\left( \frac{f_\theta(P(\mathbf{x}_q) \mid P(\mathbf{X}_{\text{ctx}}^s))}{T} \right)
+\end{equation}
 
-We recursively eliminate features based on domain-invariant importance scores:
+where:
+\begin{itemize}
+    \item $\mathbf{x}_q$ is the target query (patient).
+    \item $\mathbf{X}_{\text{ctx}}^s$ is the subset of training data selected by seed $s$ (typically 1024 samples).
+    \item $f_\theta$ is the frozen TabPFN Transformer backbone.
+    \item $T=0.9$ is the temperature scaling parameter calibrated for small-sample confidence.
+\end{itemize}
 
-\[
-\text{Importance}(\mathbf{x}_j) = \frac{1}{M}\sum_{m=1}^{M} \left| \mathcal{R}_s^{(m)}(\mathcal{F} \setminus \{\mathbf{x}_j\}) - \mathcal{R}_s^{(m)}(\mathcal{F}) \right|
-\]
+Algorithm~\ref{alg:tabpfn_inference} summarizes the inference pass.
 
-where $M = 5$ permutation repeats evaluate feature stability. At each iteration the least important element within $\mathcal{F}_{\cap}$ is dropped, producing nested subsets. Clinical input from collaborators constrains the search to candidates physically measurable at every institution, so the procedure naturally returns compact sets (best7, best8) that survive both availability and robustness checks.
-
-\subsubsection{Multi-Branch Preprocessing Pipeline}
-The 32-model ensemble comes from four simple branches: two keep the original or rotated feature order with plain numerical encodings, and two pair those orders with a quantile transform plus ordinal encoding. Each branch spits out eight runs with seeds 1--8, and a majority vote settles the label. Balanced-accuracy weights keep the malignant class from getting drowned out.
+\begin{algorithm}[H]
+\caption{PANDA Inference with TabPFN Backbone}
+\label{alg:tabpfn_inference}
+\begin{algorithmic}[1]
+\REQUIRE Query $\mathbf{x}_q$, Context $\mathcal{D}_{\text{train}}$, Ensemble $N=32$
+\ENSURE Malignancy Probability $\hat{y}$
+\STATE $\text{Logits} \leftarrow []$
+\FOR{$i=1$ \TO $N$}
+    \STATE Sample preprocessing $P \sim \mathcal{B}$ and context subset $\mathcal{D}_i \subset \mathcal{D}_{\text{train}}$
+    \STATE $\mathbf{x}'_q, \mathcal{D}'_i \leftarrow P(\mathbf{x}_q), P(\mathcal{D}_i)$ \COMMENT{Apply Branch}
+    \STATE $\mathbf{E} \leftarrow \text{Serialize}(\mathbf{x}'_q, \mathcal{D}'_i)$ \COMMENT{Tokenize}
+    \STATE $\mathbf{z} \leftarrow \text{Transformer}(\mathbf{E})$ \COMMENT{Forward Pass}
+    \STATE $l_i \leftarrow \text{ClassifierHead}(\mathbf{z})$
+    \STATE $\text{Logits}.\text{append}(l_i)$
+\ENDFOR
+\STATE $\hat{y} \leftarrow \text{Softmax}(\text{Mean}(\text{Logits}) / T)$
+\RETURN $\hat{y}$
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Domain Adaptation Implementation}
+\label{subsec:da_implementation}
+We utilize the \texttt{adapt} library (v0.4.4) to implement Transfer Component Analysis (TCA) and baselines. The integration is handled by the \texttt{AdaptUDAMethod} wrapper in \texttt{uda/adapt\_methods.py}.
 
-\subsubsection{TCA Optimization}
-Transfer Component Analysis learns domain-invariant representations by solving:
-\[
-\min_{\mathbf{W}} \text{tr}(\mathbf{W}^\top \mathbf{X} \mathbf{L} \mathbf{X}^\top \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W})
-\]
-where $\mathbf{L}$ is the MMD kernel matrix with entries $L_{ij} = K_{ij}/(n_s^2) + K_{ij}/(n_t^2) - 2K_{ij}/(n_s n_t)$. The kernel matrix $K$ adopts Gaussian RBF kernels with bandwidth $\sigma$ set via the median heuristic.
+\subsubsection{Transfer Component Analysis (TCA)}
+TCA is applied in the latent embedding space of TabPFN. The core optimization problem is finding a projection matrix $\mathbf{W} \in \mathbb{R}^{d \times p}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target distributions while preserving data variance.
+\begin{equation}
+    \min_{\mathbf{W}} \text{tr}(\mathbf{W}^\top \mathbf{K} \mathbf{L} \mathbf{K} \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W})
+\end{equation}
+\begin{itemize}
+    \item \textbf{Kernel Matrix $\mathbf{K}$}: We employ a linear kernel $\mathbf{K}_{ij} = \mathbf{x}_i^\top \mathbf{x}_j$ on the TabPFN embeddings. Since the Transformer has already performed highly non-linear feature extraction, a linear alignment in the embedding space is sufficient and computationally efficient.
+    \item \textbf{MMD Matrix $\mathbf{L}$}: Constructed as $L_{ij} = \frac{1}{n_s^2}$ if $i,j \in \mathcal{D}_s$, $\frac{1}{n_t^2}$ if $i,j \in \mathcal{D}_t$, and $-\frac{1}{n_s n_t}$ otherwise.
+    \item \textbf{Regularization $\mu$}: Set to 1.0 based on stability tests (refer to Section~\ref{sec:param_sensitivity}).
+\end{itemize}
 
-The alignment step preserves discriminative information while reducing domain discrepancy:
-\[
-\mathbf{z} = \mathbf{W}^\top \phi(\mathbf{x}), \quad \phi: \mathbb{R}^d \rightarrow \mathbb{R}^h
-\]
-where latent dimensionality $h = 15$ balances information preservation with alignment effectiveness.
+\subsubsection{Baselines (SA and CORAL)}
+For comparative analysis, we implemented:
+\begin{itemize}
+    \item \textbf{Subspace Alignment (SA)}: Learns a linear mapping function $M$ to align the PCA subspaces of source and target. Implemented via \texttt{adapt.feature\_based.SA}.
+    \item \textbf{CORAL}: Minimizes the difference in second-order statistics (covariance matrices) between domains. Implemented via \texttt{adapt.feature\_based.CORAL} with $\lambda=1.0$.
+\end{itemize}
 
-\subsubsection{Label Prevalence Handling}
-Unsupervised deployment cannot rely on target labels to recalibrate prevalence. PANDA therefore performs class-balanced sampling on the source cohort so that minority cases remain visible during TabPFN context construction. During inference we maintain cohort-specific threshold tables: pulmonary nodule deployments retain clinically validated malignancy cutoffs, whereas BRFSS experiments default to 0.5 for AUC computation and adapt thresholds only when policy guidance requires specific sensitivity ranges. Temperature scaling is applied using a held-out source fold to avoid leaking target information.
+\subsection{Experimental Configuration}
+\label{subsec:experimental_config}
 
-\subsection{Assumptions and Mitigation Strategies}
-The pipeline rests on several operational assumptions. Table~\ref{tab:assumption_table} lists the most salient ones, describes the failure mode if they are violated, and notes the mitigation built into PANDA. This keeps the discussion in the methods section distinct from later empirical performance claims.
+\subsubsection{Baseline Hyperparameters}
+To ensure fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. The \texttt{MLBaselineModel} class in \texttt{modeling/ml\_baseline_models.py} manages these configurations.
 
 \begin{table}[htbp]
-  \centering
-  \caption{Key assumptions behind PANDA and the mitigation strategies employed when deployments deviate from them.}
-  \label{tab:assumption_table}
-  \begin{tabular}{p{0.28\textwidth}p{0.30\textwidth}p{0.30\textwidth}}
-    \toprule
-    Assumption & Failure mode if violated & Mitigation in PANDA \\ \midrule
-    Shared schema retains predictive signals & Missing biomarkers or survey items make $\mathcal{F}_{\cap}$ too small, degrading TabPFN context quality & Cross-domain RFE enforces minimum-cardinality subsets (best7/best8) vetted by clinicians; fallback to manual feature engineering when subset shrinks below safety threshold \\ 
-    Covariate shift is smooth enough for kernel alignment & Abrupt scanner or questionnaire shifts push samples outside the kernel bandwidth, leading to large $d_{\mathcal{H}\Delta\mathcal{H}}$ & Online statistics monitor MMD and trigger retraining/alignment updates; kernel bandwidth adapts via median heuristic recalculated per batch \\ 
-    Label prevalence drift is moderate & Thresholds calibrated on $P_s(y)$ misclassify minority cohorts & Maintain cohort-specific threshold dictionaries and class-balanced sampling; clinicians can override cutoffs per site \\ 
-    TabPFN context window covers source+target batches & Excessively large batches overflow the Transformer input, forcing truncation & Use stratified subsampling (1k context rows default) with deterministic seeds; for BRFSS we slice the unlabeled pool before feeding TabPFN \\ 
-    Independence of samples within context & Correlated patients (e.g., repeat visits) bias in-context learning & Deduplicate patient identifiers and enforce visit-level sampling prior to TabPFN ingestion \\ \bottomrule
-  \end{tabular}
+\centering
+\caption{Hyperparameter search space for baseline models. Best parameters were selected via 5-fold CV on the source domain.}
+\label{tab:hyperparams}
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Parameter} & \textbf{Search Space / Value} \\ \midrule
+\multirow{3}{*}{XGBoost} & Learning Rate & [0.01, 0.05, 0.1] \\
+ & Max Depth & [3, 4, 5, 6] \\
+ & N Estimators & [50, 100, 200] \\ \midrule
+\multirow{3}{*}{Random Forest} & N Estimators & [100, 200, 500] \\
+ & Max Features & ['sqrt', 'log2'] \\
+ & Class Weight & 'balanced' \\ \midrule
+\multirow{2}{*}{SVM} & C (Regularization) & [0.1, 1, 10, 100] \\
+ & Kernel & ['rbf', 'linear'] \\ \midrule
+\multirow{1}{*}{Logistic Regression} & Penalty & ['l1', 'l2', 'elasticnet'] \\ \bottomrule
+\end{tabular}
 \end{table}
 
-\subsection{Ethics Statement and Data Collection}
-This study received Institutional Review Board approval from two participating hospitals in China and followed the Declaration of Helsinki. Patient data were retrospectively extracted from electronic medical records and fully de-identified before analysis. Written informed consent for research use of clinical information was obtained from all patients with solitary pulmonary nodules (SPNs) at admission, and no identifiable personal data were retained.
-
-The training cohort (Cohort A, $n=295$) originated from Hospital A between January 2011 and December 2016. The external test cohort (Cohort B, $n=190$) was collected at Hospital B. All participants provided written informed consent for scientific use of their clinical data at the time of admission.
-
-\subsubsection{Data Variables and Measurements}
-Collected variables included demographics (age, sex, height, weight, body mass index), smoking history, family cancer history, and symptoms (fever, cough, hemoptysis, chest pain). Radiologic descriptors of SPNs covered anatomical location (lung side and lobe), nodule diameter and area, calcification, cavity, spiculation, pleural thickening, and adhesion. Laboratory data comprised hematologic and biochemical indices such as white blood cell count (WBC), neutrophil-to-lymphocyte ratio (NLR), platelet-to-lymphocyte ratio (PLR), albumin/globulin ratio (AGR), liver and renal function markers, and tumor biomarkers including CEA, Cyfra21-1, and NSE.
-
-\subsection{Experimental Procedures}
-
-\subsubsection{Cross-Validation Protocol}
-For internal validation, we applied 10-fold cross-validation on Cohort A. The dataset was randomly split into 10 equal parts with class balance preserved. Each fold served once as validation while the remaining nine folds trained the model. This cycle was repeated 10 times with different random seeds to strengthen robustness of performance estimates.
-
-
-\subsubsection{Baseline Methods}
-
-For comparison, we included a few familiar baselines:
-
+\subsubsection{Clinical Scoring Models}
+We implemented three established clinical calculators for pulmonary nodule malignancy:
 \begin{itemize}
-
-\item Decision Tree (CART)~\cite{breiman1984classification}
-
-\item Gradient Boosting Decision Tree~\cite{friedman2001greedy}
-
-\item Random Forest~\cite{breiman2001random}
-
-\item XGBoost~\cite{chen2016xgboost}
-
-\item Support Vector Machine~\cite{cortes1995support}
-
-\item LASSO Logistic Regression for nodule risk~\cite{he2021novel}
-
-\item Clinical scores (Mayo Clinic, PKUPH)~\cite{swensen1997chest,perandini_solid_2016}
-
+    \item \textbf{Mayo Model}: $P = \sigma(-6.8 + 0.039 \cdot \text{Age} + 0.79 \cdot \text{Smoker} + 1.33 \cdot \text{CancerHx} + \dots)$
+    \item \textbf{Brock (PanCan) Model}: Includes spiculation and nodule count.
+    \item \textbf{PKUPH Model}: A regression model specifically developed for Chinese populations \cite{perandini_solid_2016}.
 \end{itemize}
+These models are applied using their published coefficients without re-training, representing the standard of care.
+
+\subsubsection{Computational Framework}
+All experiments were conducted on a workstation equipped with:
+\begin{itemize}
+    \item \textbf{Hardware}: NVIDIA RTX 4090 GPU (24GB VRAM), AMD Ryzen 9 7950X CPU, 64GB DDR5 RAM.
+    \item \textbf{Software}: PyTorch 2.1.2 (CUDA 12.1), Scikit-learn 1.3.2, Adapt 0.4.4.
+    \item \textbf{Reproducibility}: Random seeds for Numpy, PyTorch, and Scikit-learn were fixed to 42. Code is available at \texttt{https://github.com/PriorLabs/TabPFN}.
+\end{itemize}
+
 \label{sec:meth-end}
