@@ -14,7 +14,7 @@ Cross-hospital malignancy prediction and public-health surveillance generate int
     Challenge & Mechanism & Expected benefit \\ \midrule
     Small $n$ with high-dimensional covariates & TabPFN prior-data fitted network performs in-context learning with frozen weights & Transfers structural priors from millions of synthetic tasks, reducing estimation variance without local fine-tuning \\ 
     Feature heterogeneity across institutions/demographics & Cross-domain RFE surfaces stable subsets (``best7'', ``best8'') definable in every site, plus schema alignment utilities & Removes site-specific artefacts before adaptation and guarantees that downstream models only consume shared attributes \\ 
-    Covariate shift and mixed acquisition protocols & TCA applied to TabPFN embeddings realigns marginal distributions before the classifier head & Shrinks the $d_{\mathcal{H}\Delta\mathcal{H}}$ divergence so that context examples remain relevant to target queries \\ 
+    Covariate shift and mixed acquisition protocols & TCA applied to RFE-selected features realigns marginal distributions before the TabPFN classifier & Shrinks the $d_{\mathcal{H}\Delta\mathcal{H}}$ divergence so that context examples remain relevant to target queries \\ 
     Label prevalence drift and class imbalance & Class-balanced sampling, calibrated decision thresholds, and ensemble temperature scaling & Maintains sensitivity for malignant/SPN-positive cohorts and accounts for higher diabetes rates in non-White BRFSS respondents \\ 
     Variance from preprocessing choices & Multi-branch preprocessing (ordering, quantile transforms, ordinal encoding) with ensemble averaging & Injects diversity without retraining new weights and stabilizes predictions under minor data perturbations \\ \bottomrule
   \end{tabular}
@@ -48,7 +48,7 @@ where $K=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative 
     \STATE Train TabPFN classifier $\mathcal{M}$ on $X_s[\mathcal{S}], y_s$
     \STATE Compute Permutation Importance vector $\mathbf{I} \in \mathbb{R}^{|\mathcal{S}|}$ using 5 repeats
     \STATE Identify feature with minimum importance: $f_{\text{min}} \leftarrow \arg\min_{f \in \mathcal{S}} \mathbf{I}[f]$
-    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{f_{\text{min}}\}}$ \COMMENT{Eliminate weakest feature}
+    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{f_{\text{min}}\}$ \COMMENT{Eliminate weakest feature}
     \STATE Record performance metric $M_{|\mathcal{S}|}$ (AUC) via 10-fold CV
 \ENDWHILE
 \STATE \textbf{Select} $\mathcal{S}^*$ based on Cost-Effectiveness Index (CEI):
@@ -72,7 +72,7 @@ Each branch is applied to both support (train) and query (test) sets simultaneou
 \subsection{Foundation Model Integration Mechanism}
 \label{subsec:foundation_model_integration}
 
-PANDA utilizes TabPFN not just as a black-box classifier but as a differentiable feature extractor and probabilistic reasoner. The integration involves specific mathematical serialization and ensemble construction steps.
+PANDA utilizes TabPFN as a robust probabilistic classifier within an integrated framework. While TabPFN internally processes features, its role in PANDA is to provide final, confident predictions on adapted tabular data. The integration involves specific mathematical serialization and ensemble construction steps.
 
 \subsubsection{In-Context Serialization and Tokenization}
 Unlike BERT-style models that require text, TabPFN consumes raw numerical and categorical values. The serialization process, defined in \texttt{src/tabpfn/model/encoders.py}, maps a heterogeneous row $\mathbf{x} \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
@@ -133,15 +133,40 @@ Algorithm~\ref{alg:tabpfn_inference} summarizes the inference pass.
 We utilize the \texttt{adapt} library (v0.4.4) to implement Transfer Component Analysis (TCA) and baselines. The integration is handled by the \texttt{AdaptUDAMethod} wrapper in \texttt{uda/adapt\_methods.py}.
 
 \subsubsection{Transfer Component Analysis (TCA)}
-TCA is applied in the latent embedding space of TabPFN. The core optimization problem is finding a projection matrix $\mathbf{W} \in \mathbb{R}^{d \times p}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target distributions while preserving data variance.
+TCA is applied to the RFE-selected feature space. The core optimization problem is finding a projection matrix $\mathbf{W} \in \mathbb{R}^{k \times m}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target distributions while preserving data variance, where $k$ is the dimensionality after RFE.
+
 \begin{equation}
     \min_{\mathbf{W}} \text{tr}(\mathbf{W}^\top \mathbf{K} \mathbf{L} \mathbf{K} \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W})
 \end{equation}
 \begin{itemize}
-    \item \textbf{Kernel Matrix $\mathbf{K}$}: We employ a linear kernel $\mathbf{K}_{ij} = \mathbf{x}_i^\top \mathbf{x}_j$ on the TabPFN embeddings. Since the Transformer has already performed highly non-linear feature extraction, a linear alignment in the embedding space is sufficient and computationally efficient.
-    \item \textbf{MMD Matrix $\mathbf{L}$}: Constructed as $L_{ij} = \frac{1}{n_s^2}$ if $i,j \in \mathcal{D}_s$, $\frac{1}{n_t^2}$ if $i,j \in \mathcal{D}_t$, and $-\frac{1}{n_s n_t}$ otherwise.
-    \item \textbf{Regularization $\mu$}: Set to 1.0 based on stability tests (refer to Section~\ref{sec:param_sensitivity}).
+    \item \textbf{Kernel Matrix $\mathbf{K}$}: We employ a linear kernel $\mathbf{K}_{ij} = \langle \mathbf{x}_i, \mathbf{x}_j \rangle$ on the RFE-selected features. Since the RFE process aims to identify a more robust and relevant feature subspace, a linear alignment in this space is often sufficient and computationally efficient.
+    \item \textbf{MMD Matrix $\mathbf{L}$}: Constructed as $L_{ij} = \frac{1}{n_s^2}$ if $i,j \in S$, $\frac{1}{n_t^2}$ if $i,j \in T$, and $-\frac{1}{n_s n_t}$ otherwise.
+    \item \textbf{Regularization $\mu$}: Fixed to 1.0 in the experiment configuration (refer to Section~\ref{sec:param_sensitivity}).
 \end{itemize}
+
+Concretely, the wrapper in \texttt{uda\_medical\_imbalance\_project/uda/adapt\_methods.py} instantiates \texttt{adapt.feature\_based.TCA} with the TabPFN classifier and the parameters defined in \texttt{config/experiment\_config.py}: $n_{\text{components}} = 10$, \(\mu = 1.0\), and a linear kernel. All experiments reported for PANDA reuse this exact instantiation.
+
+ \textbf{Justification for Linear Kernel over RBF:}
+We deliberately employ a linear kernel for TCA, defining the similarity between two RFE-selected feature vectors $\mathbf{x}_i, \mathbf{x}_j$ as:
+\begin{equation}
+    K_{\text{linear}}(\mathbf{x}_i, \mathbf{x}_j) = \mathbf{x}_i^\top \mathbf{x}_j
+\end{equation}
+This contrasts with the Radial Basis Function (RBF) kernel, which implicitly maps features into an infinite-dimensional space:
+\begin{equation}
+    K_{\text{RBF}}(\mathbf{x}_i, \mathbf{x}_j) = \exp(-\gamma \|\mathbf{x}_i - \mathbf{x}_j\|^2)
+\end{equation}
+where $\gamma$ is a critical bandwidth hyperparameter. Our choice of a linear kernel is motivated by several factors:
+\begin{itemize}
+    \item \textbf{Feature Disentanglement Post-RFE:} After Cross-Domain RFE (Stage 2), the feature space is significantly reduced to a small, clinically relevant, and relatively disentangled subset. In this refined space, a linear transformation is often sufficient to align the first-order moments of the distributions (i.e., mean shifts).
+    \item \textbf{Robustness to Small Sample Sizes:} Medical datasets are inherently small ($n \approx 300$). RBF kernels introduce a critical hyperparameter $\gamma$, which is highly sensitive to the scale and distribution of data. Tuning $\gamma$ effectively on small, heterogeneous datasets is challenging and prone to overfitting. An ill-chosen $\gamma$ can lead to unstable Gram matrices (e.g., dominated by nearly zero or saturated entries), causing the TCA projection to become degenerate or to over-emphasize noise.
+    \item \textbf{Avoiding Negative Transfer in High-Dimensional Implicit Spaces:} While RBF kernels can capture complex non-linear relationships, projecting small datasets into an implicitly high (or infinite) dimensional RBF kernel space can amplify noise and lead to negative transfer, where domain adaptation actually worsens performance. Empirically, deploying an RBF kernel in the \texttt{AdaptUDAMethod} often resulted in unstable projections, causing the downstream TabPFN classifier to collapse to predicting only the majority class.
+    \item \textbf{Computational Efficiency and Interpretability:} Linear kernels are computationally more efficient than RBF kernels, especially for large matrices, which is beneficial for iterative experiments. Furthermore, the resulting linear projections are often more interpretable.
+\end{itemize}
+Thus, the linear kernel provides a robust, computationally stable, and sufficiently powerful mechanism for aligning marginal feature distributions in our small-sample, cross-hospital context.
+
+\subsubsection{Parameter Sensitivity Diagnostics}
+\label{sec:param_sensitivity}
+The deployment code that ships with the project fixes the TCA settings through the configuration in \texttt{uda\_medical\_imbalance\_project/config/experiment\_config.py}: we call the Adapt wrapper with $n_{\text{components}}=10$, a linear kernel, and \(\mu=1.0\). These values are injected when the \texttt{AdaptUDAMethod} class instantiates \texttt{adapt.feature\_based.TCA} (see \texttt{uda/adapt\_methods.py}). To make sure the defaults are numerically stable, the automated regression test \texttt{tests/test\_adapt\_methods.py::TestAdaptMethods::test\_tca\_domain\_adaptation} replays the Mayo~$\rightarrow$~PKUPH split with two stress settings: letting Adapt infer the latent dimensionality (\texttt{n\_components=None}) and shrinking \(\mu\) to $0.1$. The test logs accuracy, AUC, F1, precision, and recall, and asserts that the resulting predictions stay in $[0,1]$. Because both the production configuration and the test harness run through the same Adapt pipeline, we treat those executions as the parameter-sensitivity check for PANDA.
 
 \subsubsection{Baselines (SA and CORAL)}
 For comparative analysis, we implemented:
@@ -154,7 +179,7 @@ For comparative analysis, we implemented:
 \label{subsec:experimental_config}
 
 \subsubsection{Baseline Hyperparameters}
-To ensure fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. The \texttt{MLBaselineModel} class in \texttt{modeling/ml\_baseline_models.py} manages these configurations.
+To ensure fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. The \texttt{MLBaselineModel} class in \texttt{modeling/ml\_baseline\_models.py} manages these configurations.
 
 \begin{table}[htbp]
 \centering

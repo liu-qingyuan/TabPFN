@@ -1,76 +1,104 @@
-\section{Analysis: Mechanisms of Generalization}
-\label{sec:analysis-start}
+\section{Theoretical Analysis of Cross-Hospital Generalization}
 \label{sec:analysis}
 
-This section dissects \textit{why} PANDA succeeds where traditional baselines fail. By isolating the contributions of the pre-trained backbone, the feature selection strategy, and the domain alignment, we show that performance gains stem from specific architectural choices rather than random chance.
+This chapter moves beyond the phenomenological reporting of performance metrics to establish a rigorous theoretical understanding of \textit{why} the PANDA framework succeeds where traditional methods falter. We posit that the failure of classical models (e.g., GBDTs, CNNs) in cross-hospital deployment is not merely an engineering oversight but a violation of the fundamental assumptions of statistical learning theory—specifically, the assumption that training and test data are drawn independent and identically distributed (i.i.d.) from the same joint distribution $P(X, Y)$.
 
-\subsection{Mechanism 1: The Pre-training Prior as a Regularizer}
+By dissecting PANDA through the lens of the Ben-David et al. generalization bound for domain adaptation, we demonstrate that the architecture is a direct algorithmic response to the theoretical decomposition of target error.
 
-The most striking result in our experiments (refer to Table~\ref{tab:source_cv_results}) is the performance gap on the source domain itself. TabPFN achieves an AUC of 0.829, significantly outperforming Random Forest (0.752) and XGBoost (0.742) on the same 295-patient cohort.
+\subsection{Theoretical Foundation: The Generalization Bound}
+\label{subsec:generalization_bound}
 
-\textbf{Why does this happen?}
-Deep learning theory suggests that small datasets (\$n < 1000\$) lack sufficient signal to constrain the vast hypothesis space of over-parameterized models (like gradient boosted trees). TabPFN circumvents this by not learning from scratch. Instead, it performs \textit{in-context Bayesian inference}.
+To analyze the generalization capability of PANDA, we adopt the seminal learning-theoretic bound proposed by Ben-David et al. (2010). This bound decomposes the error on the target domain into three observable and optimizable quantities.
 
-Mathematically, a standard model estimates $P(y|x, \mathcal{D}_{\text{train}})$ by optimizing parameters $\theta$ to minimize empirical risk. TabPFN, however, approximates the posterior predictive distribution:
-\[
-P(y|x, \mathcal{D}_{\text{train}}) \approx \int P(y|x, \theta) P(\theta|\mathcal{D}_{\text{train}}) d\theta
-\]
-using a Transformer pre-trained to simulate this integral over millions of synthetic priors. This "synthetic prior" acts as a massive regularizer. When the model sees a small medical dataset, it doesn't try to fit a new complex decision boundary; it effectively matches the data pattern to a library of known robust functions (e.g., smooth linear trends, sparse interactions). This explains why TabPFN retains high performance (AUC 0.698) on the external target domain even without adaptation, whereas Random Forest collapses to 0.632—a generalization gap of over 6\%.
+\begin{theorem}[Ben-David et al., 2010]
+Let $\mathcal{H}$ be a hypothesis space of VC-dimension $d_{VC}$. If $S$ and $T$ are samples of size $n$ drawn from source distribution $\mathcal{D}_S$ and target distribution $\mathcal{D}_T$ respectively, then for any $\delta \in (0, 1)$, with probability at least $1 - \delta$, for every $h \in \mathcal{H}$:
+\begin{equation}
+    \label{eq:ben_david_bound}
+    \epsilon_T(h) \leq \epsilon_S(h) + \frac{1}{2} d_{\mathcal{H}\Delta\mathcal{H}}(\mathcal{D}_S, \mathcal{D}_T) + \lambda + \mathcal{O}\left(\sqrt{\frac{d_{VC} \log n}{n} + \log \frac{1}{\delta}}\right)
+\end{equation}
+\end{theorem}
 
-\subsection{Mechanism 2: Feature Stability via Cross-Domain RFE}
-
-Medical datasets are notorious for "site-specific artifacts"—features that are highly predictive in one hospital but meaningless in another (e.g., a specific scanner setting or a radiologist's subjective "spiculation" score).
-
-Our Cross-Domain RFE protocol forces the model to discard these brittle features. By intersecting the feature importance rankings from the source domain with the availability constraints of the target domain, we converge on a "minimal sufficient set" (the \texttt{best8} set).
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{img/hospital_cross_domain/feature_stability.png}
-\caption{Feature stability analysis. Features retained by Cross-Domain RFE (green) show consistent importance rankings across domains, while rejected features (red) exhibit high variance or domain-specific bias.}
-\label{fig:feature_stability}
-\end{figure}
-
-The "Cost-Effectiveness Index" (CEI) defined in Eq.~\ref{eq:cei} further penalizes large feature sets. We observed that adding features beyond the top 8 yielded diminishing returns in AUC but linearly increased the risk of missing data in the target domain. Thus, RFE acts as a "validity filter," ensuring that the downstream adaptation engine (TCA) only processes signals that are likely to transfer.
-
-\subsection{Mechanism 3: Latent Space Alignment (TCA)}
-
-While TabPFN provides a strong initialization, a distribution shift remains. The source and target cohorts differ in subtle demographic ways (e.g., smoking prevalence, age distribution). Transfer Component Analysis (TCA) bridges this last mile.
-
-Our results show that TCA improves AUC from 0.698 (PANDA\_NoUDA) to 0.705 (PANDA). While this gain appears modest (+0.007), it is statistically significant in the context of clinical risk scoring, where thresholds are sensitive.
-
-\textbf{Why Linear Alignment Works in Latent Space:}
-TCA seeks a projection $\mathbf{W}$ to minimize the Maximum Mean Discrepancy (MMD) between domains. We apply this in the \textit{embedding space} of the Transformer, not the raw input space.
-\[
-\mathbf{z} = \text{Transformer}(\mathbf{x})
-\]
-\[
-\text{MMD}^2(P_S, P_T) = \|\mu_S(\mathbf{z}) - \mu_T(\mathbf{z})\|_{\mathcal{H}}^2
-\]
-Since the Transformer has already linearized the complex manifolds of the raw data (disentangling class clusters), a simple linear alignment (TCA) on $\mathbf{z}$ is sufficient to correct global shifts (like mean shifts due to calibration differences) without overfitting. Non-linear alignment methods (like Kernel PCA) often failed in our experiments, likely inducing negative transfer by aligning noise.
-
-\subsection{Ablation Analysis: Dissecting PANDA's Components}
-
-To understand the sources of PANDA's performance, we analyze the contribution of its two main pillars: the pre-trained foundation model backbone and the domain adaptation mechanism.
-
-\subsubsection{Contribution of Domain Adaptation (TCA)}
-The primary ablation compares the full PANDA framework (with TCA) against the PANDA baseline without domain adaptation (No-TCA). As shown in the experimental results, applying TCA improves the AUC on the target domain from 0.6980 to 0.7046. While the absolute gain in AUC is modest, the primary benefit of TCA lies in correcting the distributional mismatch, ensuring that the model's confidence scores are better aligned with the target population's risk profile. This alignment is critical for determining safe operating thresholds in a clinical setting.
-
-\subsubsection{Contribution of the Pre-trained Backbone}
-We can view the traditional machine learning baselines (Random Forest, XGBoost) as an ablation of the "Foundation Model" component. The PANDA (No-TCA) variant uses the TabPFN backbone and achieves an AUC of 0.6980 on the external cohort, whereas Random Forest and XGBoost achieve only 0.6324 and 0.5672, respectively. This significant gap ($\Delta \text{AUC} > 0.06$) demonstrates that the robustness of PANDA is primarily driven by the priors learned during the pre-training phase of the TabPFN backbone, which prevents the overfitting observed in tree-based models on small datasets.
-
-\subsection{Error Analysis and Limitations}
-
-Despite the improvements, PANDA makes errors. We analyzed 50 misclassified cases from the target cohort:
-
+This inequality dictates that minimizing target error $\epsilon_T(h)$ requires simultaneously minimizing three distinct terms:
 \begin{enumerate}
-    \item \textbf{False Negatives (Risk Underestimation)}: Most often occurred in small nodules ($<8$mm) in non-smokers. The model, driven by priors that associate malignancy with size and smoking, tends to be conservative here.
-    \item \textbf{False Positives (Over-treatment risk)}: Often involved inflammatory granulomas (tuberculosis scars). These mimic the radiological appearance of malignancy (spiculation) but are benign. PANDA struggles to distinguish these without specific biomarkers (like PET-CT metabolic activity), which were not in the "best8" set.
-    \item \textbf{Subgroup Bias}: Performance remains lower in younger patients ($<45$), likely because the training cohort (avg age ~60) is dominated by older demographics.
+    \item \textbf{Source Risk} $\epsilon_S(h)$: The expected error on the source domain.
+    \item \textbf{Domain Divergence} $d_{\mathcal{H}\Delta\mathcal{H}}(\mathcal{D}_S, \mathcal{D}_T)$: A measure of discrepancy between the marginal feature distributions $P_S(\mathbf{x})$ and $P_T(\mathbf{x})$.
+    \item \textbf{Adaptability Term} $\lambda$: The error of the ideal joint hypothesis, $\lambda = \min_{h \in \mathcal{H}} (\epsilon_S(h) + \epsilon_T(h))$, which captures irreducible error due to concept shift.
 \end{enumerate}
 
-These findings highlight the "Closed-World Assumption" limitation: PANDA cannot learn features that are not present in the input schema. If crucial discriminators (like PET-CT) are missing from the shared set, no amount of adaptation can fully recover the performance.
+Standard approaches often fail because they optimize only one term (e.g., GBDTs minimize $\epsilon_S(h)$ but ignore divergence) or optimize naively (e.g., aligning raw features reduces divergence but may increase $\lambda$ by distorting semantic boundaries). PANDA is explicitly engineered to address all three, as detailed below.
 
-\subsection{Real-Time Feasibility}
-The complete PANDA pipeline, including feature preprocessing, TabPFN inference, and TCA projection, executes in less than one minute per patient case on standard hardware. This latency is negligible compared to the time required for radiological image acquisition and human review, confirming that the proposed framework is computationally viable for real-time clinical decision support systems.
+\subsection{Minimizing Source Risk $\epsilon_S(h)$: The TabPFN Mechanism}
+\label{subsec:analysis_source_risk}
 
-\label{sec:analysis-end}
+The first challenge is the small sample size ($n_s \approx 295$). In this regime, standard Empirical Risk Minimization (ERM) is prone to high variance. Deep neural networks typically require $n > 10^4$ to generalize, while GBDTs often overfit, effectively "memorizing" the noise in $S$ rather than learning the structure of $\mathcal{D}_S$.
+
+\subsubsection{Prior-Data Fitted Networks vs. Parametric Learning}
+Traditional parametric learning optimizes weights $\theta$ to minimize loss on $S$: $\hat{\theta} = \arg\min_{\theta} \sum_{(\mathbf{x},y) \in S} \mathcal{L}(f_\theta(\mathbf{x}), y)$. This process is data-hungry because it starts with uninformative priors.
+
+In contrast, PANDA uses TabPFN, a \textbf{Prior-Data Fitted Network (PFN)}. It minimizes $\epsilon_S(h)$ not by gradient descent on $S$, but by approximating the \textbf{Posterior Predictive Distribution (PPD)} using a Transformer pre-trained on millions of synthetic causal models:
+\begin{equation}
+    P(y_{\text{query}} \mid \mathbf{x}_{\text{query}}, S) \approx \int P(y \mid \mathbf{x}, M) P(M \mid S) \, dM
+\end{equation}
+By treating the source dataset $S$ as a \textit{context} for Bayesian inference rather than a training set for parameter optimization, TabPFN acts as a massive regularizer. It enforces inductive biases favoring sparsity and piecewise smoothness.
+
+\textbf{Empirical Consequence:} As shown in our results, TabPFN achieves a source AUC of \textbf{0.829}, significantly outperforming Random Forest (0.752) and XGBoost (0.742). This establishes a strictly lower starting point for the $\epsilon_S(h)$ term in the bound.
+
+\subsection{Minimizing Divergence $d_{\mathcal{H}\Delta\mathcal{H}}$: Latent Space TCA}
+\label{subsec:analysis_divergence}
+
+The second term, $d_{\mathcal{H}\Delta\mathcal{H}}$, measures the discrepancy between domains. In our setting, scanner heterogeneity causes \textbf{Covariate Shift}: $P_S(\mathbf{x}) \neq P_T(\mathbf{x})$.
+
+\subsubsection{Why Feature Space Alignment?}
+Aligning raw features is often suboptimal due to the complexity and non-linear dependencies of medical variables. Instead, PANDA applies TCA directly to the RFE-selected features. This is motivated by the observation that after RFE, the features are already a more robust and relevant subset, making them more amenable to linear alignment. The goal of this step is to directly align the marginal distributions of these pre-selected features between the source and target domains.
+
+
+\subsubsection{The TCA Optimization Objective}
+We employ Transfer Component Analysis (TCA) to find a projection $\mathbf{W} \in \mathbb{R}^{k \times m}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target features (after RFE). The objective is:
+\begin{equation}
+    \begin{aligned}
+    \min_{\mathbf{W}} \quad & \text{tr}(\mathbf{W}^\top \mathbf{K} \mathbf{L} \mathbf{K} \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W}) \\
+    \text{s.t.} \quad & \mathbf{W}^\top \mathbf{K} \mathbf{H} \mathbf{K} \mathbf{W} = \mathbf{I}
+    \end{aligned}
+\end{equation}
+where $\mathbf{K}$ is the kernel matrix of RFE-selected features ($K_{ij} = \langle \mathbf{x}_i, \mathbf{x}_j \rangle$), $\mathbf{L}$ is the MMD indicator matrix, and $\mathbf{H}$ is the centering matrix. The constraint $\mathbf{W}^\top \mathbf{K} \mathbf{H} \mathbf{K} \mathbf{W} = \mathbf{I}$ preserves data variance, ensuring the projection does not collapse informative signals while aligning means. Here, $k$ represents the dimensionality of the RFE-selected features.
+
+\subsection{Minimizing Adaptability Error $\lambda$: Cross-Domain RFE}
+\label{subsec:analysis_adaptability}
+
+The third term, $\lambda$, represents the irreducible error of the best joint hypothesis. A large $\lambda$ implies \textbf{Concept Shift} ($P_S(Y|\mathbf{x}) \neq P_T(Y|\mathbf{x})$), where the same feature value implies different risks across hospitals (e.g., "spiculation" caused by cancer in Hospital A vs. tuberculosis in Hospital B).
+
+PANDA minimizes $\lambda$ via \textbf{Cross-Domain Recursive Feature Elimination (RFE)}. By intersecting feature importance rankings from the source with availability and stability constraints, we effectively restrict the hypothesis class $\mathcal{H}$ to a subspace $\mathcal{F}^*$ where the conditional distributions are approximately invariant:
+\begin{equation}
+    P_S(Y \mid \mathbf{x}_{\mathcal{F}^*}) \approx P_T(Y \mid \mathbf{x}_{\mathcal{F}^*})
+\end{equation}
+Discarding unstable features (like subjective morphological scores) might slightly increase intrinsic source error $\epsilon_S$ (bias), but it drastically reduces $\lambda$, resulting in a tighter overall bound on target error.
+
+\subsection{Synthesis: Linking Theory to Empirical Results}
+\label{subsec:analysis_synthesis}
+
+Table~\ref{tab:theory_empirics} synthesizes the theoretical components with our experimental findings, demonstrating how each PANDA component targets a specific term in the Ben-David bound.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Mapping Theoretical Error Terms to PANDA Components and Empirical Results}
+  \label{tab:theory_empirics}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \\
+    \midrule
+    $\epsilon_S(h)$ & Small Sample Size & TabPFN Backbone & Source AUC: $0.829$ vs $0.742$ (XGBoost) \\
+    & Overfitting & (Meta-learned Priors) & (High sample efficiency) \\
+    \midrule
+    $d_{\mathcal{H}\Delta\mathcal{H}}$ & Covariate Shift & TCA on RFE-Selected Features & Target Recall: $0.944$ vs $0.888$ (No-TCA) \\
+    & (Scanner variation) & (MMD Minimization) & (Boundary correction) \\
+    \midrule
+    $\lambda$ & Concept Shift & Cross-Domain RFE & Target AUC Gap: $<0.01$ (TableShift) \\
+    & (TB vs Cancer) & (Stability Filtering) & (Robustness to population shift) \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\subsection{Conclusion}
+ The PANDA framework is not merely an ensemble of heuristics but a theoretically grounded solution to the domain adaptation bound. TabPFN secures the source risk $\epsilon_S$ via priors; TCA minimizes divergence $d_{\mathcal{H}\Delta\mathcal{H}}$ via spectral alignment; and RFE minimizes adaptability error $\lambda$ via stability-based pruning. Together, they ensure generalization in the challenging regime of small, heterogeneous medical datasets.

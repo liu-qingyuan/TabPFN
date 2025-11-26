@@ -509,24 +509,4 @@ Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
 \newblock 8(1):9286.
 \newblock Publisher: Nature Publishing Group.
 
-\bibitem{breiman1984classification}
-Leo Breiman, Jerome Friedman, Richard~A Olshen, and Charles~J Stone.
-\newblock {\em Classification and regression trees}.
-\newblock Chapman and Hall/CRC, 1984.
-
-\bibitem{friedman2001greedy}
-Jerome~H Friedman.
-\newblock Greedy function approximation: a gradient boosting machine.
-\newblock {\em Annals of statistics}, pages 1189--1232, 2001.
-
-\bibitem{breiman2001random}
-Leo Breiman.
-\newblock Random forests.
-\newblock {\em Machine learning}, 45(1):5--32, 2001.
-
-\bibitem{cortes1995support}
-Corinna Cortes and Vladimir Vapnik.
-\newblock Support-vector networks.
-\newblock {\em Machine learning}, 20(3):273--297, 1995.
-
 \end{thebibliography}

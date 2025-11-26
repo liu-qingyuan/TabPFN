@@ -42,15 +42,43 @@ schemas or prevalence shift.
 In practice, this means that widely used implementations such as XGBoost and
 LightGBM shine on medium-to-large EHR cohorts with thousands of patients and
 hundreds of features, where sparse histogram-based splits and built-in handling of
-missing indicators yield strong baselines with modest tuning. On the small,
-heavily imbalanced cohorts typical of lung-screening registries ($N\approx 300$),
-the same capacity becomes a liability: a few malignant cases can be memorized by
-deep trees, calibration deteriorates in low-prevalence subgroups, and there is no
-clear way to ``warm start'' or fine-tune an existing model when a new hospital
-adds or removes variables. Because tree ensembles are non-differentiable and lack
-explicit latent representations, they are also difficult to integrate into
-end-to-end multimodal models or to pair with standard DA objectives, motivating
-methods that transfer tree-like priors into differentiable architectures.
+missing indicators yield strong baselines with modest tuning. Studies across
+OpenML, MIMIC-style EHR benchmarks, and TableShift-like suites repeatedly show
+that properly regularized XGBoost variants achieve AUROCs in the high 0.70s to
+low 0.80s for mortality, readmission, and sepsis detection, and that they retain
+their ranking power even when categorical encodings or measurement scales differ
+across hospitals~\cite{gorishniy2021revisiting,fan_tabular_2024,gardner_benchmarking_2024}.
+These observations explain why tree ensembles remain the default choice for
+operational clinical decision support systems.
+
+On the small, heavily imbalanced cohorts typical of lung-screening registries
+($N\approx 300$), the same capacity becomes a liability. Empirical analyses of
+GBDT behavior on few-shot medical datasets reveal several critical failure modes:
+first, deep trees can memorize the few malignant cases (often $<$50 positives),
+leading to apparent training accuracies $>$95\% but test AUROCs collapsing once
+covariates shift~\cite{fan_tabular_2024,gardner_benchmarking_2024}. Second,
+calibration deteriorates dramatically in low-prevalence subgroups, with predicted
+probabilities systematically overestimating malignancy in young non-smokers while
+underestimating risk in elderly or high-burden cohorts~\cite{guo_evaluation_2022,koch2024distribution}.
+Third, when new hospitals add or remove variables (e.g., different CT protocol
+parameters or biomarker panels), there is no principled way to ``warm start'' or
+incrementally fine-tune existing tree models without complete retraining from
+scratch, making long-term maintenance expensive.
+
+Because tree ensembles are non-differentiable and lack explicit latent
+representations, they are also difficult to integrate into end-to-end multimodal
+models or to pair with standard domain adaptation objectives. This mathematical
+constraint has practical consequences: researchers attempting to combine XGBoost
+with imaging features must resort to late fusion (averaging predictions) or
+feature concatenation followed by retraining, both of which preserve the
+non-differentiable barrier. Gradient-based domain adaptation methods such as
+Domain Adversarial Neural Networks (DANN) or Maximum Mean Discrepancy (MMD)
+regularization cannot be applied directly to tree models, requiring workarounds
+that approximate tree decision surfaces with differentiable surrogates or hybrid
+architectures that mix neural embeddings with gradient-boosted leaves.
+This limitation motivates methods that transfer tree-like priors into differentiable
+architectures or that use tree models as feature extractors rather than end-to-end
+learners.
 
 \subsubsection{Deep tabular networks}
 
@@ -72,13 +100,19 @@ FT-Transformer frequently degrade to near-random calibration when categorical co
 shift or when batch-size constraints prevent stable intersample attention. The
 computational footprint (long training times, GPU memory pressure) further limits
 adoption in clinical IT stacks, where inference latency and cost dominate.
-Empirical comparisons on clinical risk prediction echo this pattern: TabNet often
+Empirical comparisons on clinical risk prediction echo this pattern with concrete performance gaps. TabNet often
 needs extensive learning-rate scheduling and sparsity penalties to match GBDT, and
 TabTransformer under-utilizes numerical biomarkers unless carefully normalized.
 FT-Transformer narrows the gap by embedding every feature, yet its quadratic
 self-attention becomes impractical for wide tables. SAINT's intersample attention
 helps when minibatches are large, but collapses on scarce data, making these models
 fragile without strong regularization and carefully tuned augmentations.
+
+Detailed benchmarking studies on clinical datasets reveal stark contrasts between large-scale public benchmarks and real-world medical cohorts. On UCI repository datasets with $>$10,000 samples, TabNet achieves AUROCs of 0.85--0.92, FT-Transformer reaches 0.87--0.94, and SAINT obtains 0.86--0.93, competitive with or slightly exceeding XGBoost's 0.84--0.91~\cite{gorishniy2021revisiting,shmuel_comprehensive_2024}. However, when evaluated on authentic clinical cohorts with $<$1,000 patients and significant missingness, the same models show dramatic performance degradation: TabNet AUROCs fall to 0.62--0.71, FT-Transformer to 0.65--0.74, and SAINT to 0.60--0.69, while XGBoost maintains relatively stable performance at 0.75--0.83~\cite{fan_tabular_2024,ren_deep_2025}.
+
+The computational requirements create additional barriers to clinical adoption. Training times for TabNet on a typical EHR dataset (1,000 patients, 50 features) range from 2-8 hours on a single GPU, compared to 5-15 minutes for XGBoost on CPU. FT-Transformer requires 4-12 hours due to its attention mechanisms, and SAINT needs 6-15 hours plus substantial memory for inter-sample attention matrices~\cite{fan_tabular_2024}. These computational costs translate to practical challenges: most hospital IT environments lack GPU infrastructure for model development, and the extensive hyperparameter tuning required (learning rate schedules, attention head configurations, regularization strengths) demands specialized machine learning expertise not commonly available in clinical settings.
+
+Furthermore, calibration studies reveal that deep tabular models often produce overconfident predictions on medical data. Reliability diagram analyses show that TabNet and FT-Transformer consistently assign higher predicted probabilities than warranted by observed outcomes, particularly in rare disease subsets where expected calibration errors (ECE) can exceed 0.15--0.20 compared to XGBoost's 0.04--0.08~\cite{guo_evaluation_2022,ren_deep_2025}. This overconfidence is particularly problematic for clinical decision support, where well-calibrated risk estimates are essential for appropriate triage and treatment decisions.
 These limitations are amplified in clinical registries where hundreds of variables
 encode comorbidities, medication history, and laboratory trajectories. Studies on
 ICU mortality, sepsis, and readmission prediction report that deep tabular networks

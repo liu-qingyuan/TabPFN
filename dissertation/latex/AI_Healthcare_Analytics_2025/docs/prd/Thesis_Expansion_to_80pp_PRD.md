@@ -12,6 +12,18 @@
 - 方法：逐组件点明挑战与对应方案（TabPFN 表格基础模型、跨域 RFE、TCA/UDA 等）。
 - 实验：增强讨论，解释为何 PANDA 优于基线，并覆盖新跨域数据集。
 
+## 🛠️ 编译指令
+
+所有扩写工作完成后请从仓库根目录运行以下命令生成最新 PDF：
+
+```bash
+cd dissertation/latex/AI_Healthcare_Analytics_2025
+latexmk -pdf main.tex
+```
+
+- 如果需要完整清理再编译，可执行 `latexmk -C` 后重新运行上面的命令。
+- 生成的 `main.pdf` 会位于同一目录下，供页数统计与走查使用。
+
 ## 📋 TODO（按阶段推进）
 
 ### 阶段 0：基线盘点与版面预算
@@ -187,7 +199,7 @@
 #### 2.6 文献搬运与细化（对应原 2.7a–d，细化成步骤）
 
 - [X] 2.6.1 结构对齐：在 `Section/Related_Work.tex` 写好 2.1–2.5.2 标题，留 `% TODO: fill from <doc>`
-- [ ] 2.6.2 分段搬运+改写：逐个 docx（尤其 `Related Work Expansion for Medical AI.docx`）拷贝到临时文本并改写降重，按写作任务补缺（外部 AUC、子人群差异等）
+- [X] 2.6.2 分段搬运+改写：逐个 docx（尤其 `Related Work Expansion for Medical AI.docx`）拷贝到临时文本并改写降重，按写作任务补缺（外部 AUC、子人群差异等）
 - [ ] 2.6.3 引用检查：每次引用先查 `refs.bib`；找不到则换同类或删句，避免悬空引用
 - [ ] 2.6.4 篇幅检查：每完成一大块运行 `wc -w Section/Related_Work.tex`，不足则回对应小节增段落（失败模式/子群差异等）
 
@@ -250,9 +262,25 @@
   - [X] 增补 open-world/输入范围安全约束与隐私合规表述，删除或弱化复杂度推导，保持仅给实践可行性结论。
   - [X] 添加“临床挑战 ↔ PANDA 组件 ↔ 理论依据”对照表的写作占位。
 
+### 阶段 3B：理论统一与符号标准化 (Phase 3B: Notation Unification & Analysis Integration)
+
+**Target**: `Section/Problem_Formulation.tex` & `Section/Analysis.tex` (Cross-cutting)
+
+- [X] 3B.1 **建立统一符号系统 (Unified Notation System)**:
+
+  - [X] **创建符号表**: 在 `Section/Problem_Formulation.tex`  开头插入 `tab:unified_notation`，统一定义域 ($\\mathcal{D}$)、数据集 ($S, T$)、假设 ($h$)、风险 ($\\epsilon$) 等核心符号。
+  - [X] **全局符号扫描**: 检查全书（Problem Formulation, Solution, Methods, Analysis），解决 $\\mathcal{D}_S$ vs $P_S$、向量/矩阵加粗 ($\mathbf{x}, \mathbf{K}$) 的不一致问题。
+  - [X] **核函数定义**: 明确 $\mathbf{K}$ 是基于 Embedding $\phi(\mathbf{x})$ 的线性核。
+- [X] 3B.2 **重构分析章节 (Analysis Chapter Rewrite)**:
+
+  - [X] **Ben-David 界映射**: 确保 `Section/Analysis.tex` 明确将泛化误差界的三项 ($\epsilon_S, d_{\mathcal{H}\Delta\mathcal{H}}, \lambda$) 一一对应到 PANDA 组件 (TabPFN Priors, TCA, RFE)。
+  - [X] **理论深度增强**:
+    - 补充 TabPFN 后验预测分布 (PPD) 的积分公式。
+    - 补充 TCA 优化目标 trace 形式的推导。
+    - 补充 RFE 降低 Adaptability Error ($\lambda$) 的理论论述（Concept Shift 抑制）。
+  - [X] **整合新内容**: 将基于 `Dissertation Analysis_ Notation Unification & Theory.pdf` 生成的新版 Analysis 内容填入 LaTeX。
+
 ### 阶段 3C：解决方案详解扩写（目标：4-6 页）
-
-
 
 - [X] 3C.1 **PANDA 架构蓝图 (Architectural Overview)**:
 
@@ -315,86 +343,94 @@
     - [X] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
 
 ### 阶段 4：方法实现细节扩写 (Phase 4: Methods Expansion)
+
 **Target**: `Section/Methods.tex` (Gap +4 pages)
 
 - [X] 4.1 **Deep Dive into Feature Engineering Implementation**:
-    - [X] 详细描述 `uda_processor.py` 中的预处理链：
-        - **Quantile Branch**: `QuantileTransformer` 的参数与作用。
-        - **Ordinal Branch**: 类别特征整数编码细节。
-        - **Missing Value Strategy**: 插补策略说明。
-    - [X] **新增算法伪代码**: 插入 "Algorithm 1: Cross-Domain Recursive Feature Elimination (RFE)"，展示循环剔除与 CEI 评估过程。
 
+  - [X] 详细描述 `uda_processor.py` 中的预处理链：
+    - **Quantile Branch**: `QuantileTransformer` 的参数与作用。
+    - **Ordinal Branch**: 类别特征整数编码细节。
+    - **Missing Value Strategy**: 插补策略说明。
+  - [X] **新增算法伪代码**: 插入 "Algorithm 1: Cross-Domain Recursive Feature Elimination (RFE)"，展示循环剔除与 CEI 评估过程。
 - [X] 4.2 **Foundation Model Integration Mechanism**:
-    - [X] **Ensemble Construction**: Mathematical formulation of the 32-member ensemble generation (4 branches $\times$ 8 seeds), replacing simple parameter lists.
-    - [X] **In-Context Serialization**: Mathematical description of how mixed-type features are tokenized and serialized into the Transformer context window (referencing `src/tabpfn/model/encoders.py` logic but using formal notation).
-    - [X] **Inference Algorithm**: Add Pseudocode for the TabPFN forward pass in the PANDA context (Schema matching -> Tokenization -> Forward Pass -> Logits).
 
+  - [X] **Ensemble Construction**: Mathematical formulation of the 32-member ensemble generation (4 branches $\times$ 8 seeds), replacing simple parameter lists.
+  - [X] **In-Context Serialization**: Mathematical description of how mixed-type features are tokenized and serialized into the Transformer context window (referencing `src/tabpfn/model/encoders.py` logic but using formal notation).
+  - [X] **Inference Algorithm**: Add Pseudocode for the TabPFN forward pass in the PANDA context (Schema matching -> Tokenization -> Forward Pass -> Logits).
 - [X] 4.3 **Domain Adaptation Library Implementation**:
-    - [X] 引用 `uda/adapt_methods.py` 包装器结构。
-    - [X] **TCA Implementation**: 详述基于 `adapt` 库的实现，特别是 Embedding 上的线性核构建。
-    - [X] **Baselines**: 简述 SA 和 CORAL 的实现逻辑。
 
+  - [X] 引用 `uda/adapt_methods.py` 包装器结构。
+  - [X] **TCA Implementation**: 详述基于 `adapt` 库的实现，特别是 Embedding 上的线性核构建。
+  - [X] **Baselines**: 简述 SA 和 CORAL 的实现逻辑。
 - [X] 4.4 **Ensemble & Calibration Logic**:
-    - [X] **Temperature Scaling**: 校准公式 ($T=0.9$)。
-    - [X] **Aggregation**: 32 个成员的 Logits 平均机制。
 
+  - [X] **Temperature Scaling**: 校准公式 ($T=0.9$)。
+  - [X] **Aggregation**: 32 个成员的 Logits 平均机制。
 - [X] 4.5 **Baseline Model Configuration & Hardware**:
-    - [X] **Hyperparameter Grids**: 插入基线模型 (XGBoost, SVM 等) 的搜索空间表。
-    - [X] **Clinical Scores**: Mayo, Brock, PKUPH 的复现公式。
-    - [X] **Computational Framework**: 软硬件环境 (PyTorch, GPU)。
+
+  - [X] **Hyperparameter Grids**: 插入基线模型 (XGBoost, SVM 等) 的搜索空间表。
+  - [X] **Clinical Scores**: Mayo, Brock, PKUPH 的复现公式。
+  - [X] **Computational Framework**: 软硬件环境 (PyTorch, GPU)。
 
 ### 阶段 5：深度分析与机理扩写 (Phase 5: Analysis & Mechanism)
+
 **Target**: `Section/Analysis.tex` (Gap +11 pages - *Critical Expansion Area*)
 
 - [X] 5.1 **PANDA Advantage Mechanism (优势机理)**:
-    - [X] 深入剖析预训练表征如何缩小域间差距。
-    - [X] 论证 RFE 如何去除场景特异噪声 (Site-specific Artifacts)。
-    - [X] 理论解释 TCA 在 TabPFN 隐空间中的对齐效果优于原始空间的原因。
 
+  - [X] 深入剖析预训练表征如何缩小域间差距。
+  - [X] 论证 RFE 如何去除场景特异噪声 (Site-specific Artifacts)。
+  - [X] 理论解释 TCA 在 TabPFN 隐空间中的对齐效果优于原始空间的原因。
 - [X] 5.2 **Ablation Studies (消融实验详解)**:
-    - [X] **Effect of Domain Adaptation**: 详细对比 PANDA (TCA) 与 PANDA (No-TCA) 的性能差异。
-    - [X] **Effect of Foundation Model Backbone**: 将 TabPFN 与 Tree Baselines (RF/XGB) 进行对比分析。
 
+  - [X] **Effect of Domain Adaptation**: 详细对比 PANDA (TCA) 与 PANDA (No-TCA) 的性能差异。
+  - [X] **Effect of Foundation Model Backbone**: 将 TabPFN 与 Tree Baselines (RF/XGB) 进行对比分析。
 - [X] 5.3 **Error Analysis (误差分析)**:
-    - [X] **Misclassification Cases**: 分析具体的误判案例（如良性结核被误判为恶性肿瘤）。
-    - [X] **Subgroup Performance**: 按性别、吸烟史、结节大小分层，分析模型在不同子群体上的表现差异。
-    - [X] **Confusion Matrix Deep Dive**: 讨论假阳性与假阴性的临床代价。
 
+  - [X] **Misclassification Cases**: 分析具体的误判案例（如良性结核被误判为恶性肿瘤）。
+  - [X] **Subgroup Performance**: 按性别、吸烟史、结节大小分层，分析模型在不同子群体上的表现差异。
+  - [X] **Confusion Matrix Deep Dive**: 讨论假阳性与假阴性的临床代价。
 - [X] 5.4 **Real-Time Feasibility (实时性分析)**:
-    - [X] 定性描述全流程（RFE+TabPFN+TCA）在分钟级内完成，满足临床实时需求，无需详细显存/耗时数值。
+
+  - [X] 定性描述全流程（RFE+TabPFN+TCA）在分钟级内完成，满足临床实时需求，无需详细显存/耗时数值。
 
 ### 阶段 6：实验结果与评估 (Phase 6: Evaluation Results)
+
 **Target**: `Section/Evaluation.tex` (Gap +4 pages)
 
 - [X] 6.1 **Cross-Hospital Nodule Experiment (跨院实验)**:
-    - [X] 报告分层性能指标（表格）。
-    - [X] 展示校准曲线 (Calibration Plot) 和决策曲线 (DCA)。
-    - [X] 讨论阈值选择对临床流程的影响。
 
+  - [X] 报告分层性能指标（表格）。
+  - [X] 展示校准曲线 (Calibration Plot) 和决策曲线 (DCA)。
+  - [X] 讨论阈值选择对临床流程的影响。
 - [X] 6.2 **TableShift Benchmark (公共基准)**:
-    - [X] 详述 BRFSS 任务设置与 Race Shift 定义。
-    - [X] 报告 OOD 性能统计。
 
+  - [X] 详述 BRFSS 任务设置与 Race Shift 定义。
+  - [X] 报告 OOD 性能统计。
 - [X] 6.3 **Main Comparison Tables (主对比表)**:
-    - [X] 提供包含精确数值（AUC/Acc/F1/Prec/Recall）的综合对比表，作为可视化图表的补充证据。
 
+  - [X] 提供包含精确数值（AUC/Acc/F1/Prec/Recall）的综合对比表，作为可视化图表的补充证据。
 - [X] 6.4 **Precision/Recall Discussion**:
-    - [X] 针对 BRFSS 低精度问题进行深入讨论（正例占比低、无类权重影响）。
+
+  - [X] 针对 BRFSS 低精度问题进行深入讨论（正例占比低、无类权重影响）。
 
 ### 阶段 7：结论与未来工作 (Phase 7: Conclusion)
+
 **Target**: `Section/Conclusion.tex` (Gap +2 pages)
 
 - [X] 7.1 **Limitations (局限性)**:
-    - [X] 讨论闭域假设 (Closed-world assumption)。
-    - [X] 特征缺失类型的限制 (MNAR vs MAR)。
-    - [X] 推理成本考量。
 
+  - [X] 讨论闭域假设 (Closed-world assumption)。
+  - [X] 特征缺失类型的限制 (MNAR vs MAR)。
+  - [X] 推理成本考量。
 - [X] 7.2 **Future Work (未来工作)**:
-    - [X] 联邦域适应 (Federated DA) 的可能性。
-    - [X] 多模态 (影像+表格) 扩展方向。
 
+  - [X] 联邦域适应 (Federated DA) 的可能性。
+  - [X] 多模态 (影像+表格) 扩展方向。
 - [X] 7.3 **Final Summary (总结)**:
-    - [X] 强调跨私有数据与公共基准的泛化能力。
+
+  - [X] 强调跨私有数据与公共基准的泛化能力。
 
 ### 阶段 6：引用与校对
 

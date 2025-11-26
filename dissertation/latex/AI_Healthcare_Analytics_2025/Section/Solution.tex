@@ -9,116 +9,133 @@ We formalize the PANDA solution as a composite function $f_{\text{PANDA}}: \math
 \subsection{Architectural Overview}
 \label{subsec:sol-architecture}
 
-The PANDA framework operates as a directed acyclic graph (DAG) of data transformations. Table \ref{tab:data-flow} details the data processing flow, tracking the evolution of feature representations from raw clinical inputs to the final ensemble prediction.
+The PANDA framework operates as a directed acyclic graph (DAG) of data transformations, guiding raw clinical inputs through a carefully orchestrated sequence to produce a calibrated malignancy probability. Table \ref{tab:data-flow} details this journey, illustrating how feature representations evolve at each stage.
 
 \begin{table}[htbp]
-\centering
-\caption{Data Flow and Transformations in the PANDA Framework. The pipeline progressively refines the data from raw, high-dimensional inputs to low-dimensional, domain-invariant embeddings, and finally to a calibrated probability.}
-\label{tab:data-flow}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lllll}
-\toprule
-\textbf{Stage} & \textbf{Component} & \textbf{Input Space} & \textbf{Core Operation} & \textbf{Output Space} \\
-\midrule
-1 & Feature Alignment & $\mathbb{R}^{d_{\text{raw}}}$ & Schema intersection $\cap$ & $\mathbb{R}^{d_{\cap}}$ \\
-2 & Cross-Domain RFE & $\mathbb{R}^{d_{\cap}}$ & Iterative elimination via $\mathcal{I}(f)$ & $\mathbb{R}^{k}$ ($k \approx 8$) \\
-3 & TabPFN Encoder & $\mathbb{R}^{k}$ & $\mathbf{z} = \text{Transformer}_{\theta \setminus W_{\text{head}}}(\mathbf{x})$ & $\mathbb{R}^{h}$ ($h=128$) \\
-4 & Latent TCA & $\mathbb{R}^{h}$ & Projection $\mathbf{z}' = \mathbf{W}^\top \mathbf{z}$ & $\mathbb{R}^{m}$ ($m=15$) \\
-5 & Classification & $\mathbb{R}^{m}$ & Logistic Regression $h(\mathbf{z}')$ & $[0, 1]$ (Prob.) \\
-6 & Ensemble & $[0, 1]^{B \times S}$ & Temperature-scaled Averaging & $[0, 1]$ (Final) \\
-\bottomrule
-\end{tabular}%
-}
+    \centering
+    \caption{Data flow and transformations in the PANDA framework. The pipeline progressively refines the data from raw, high-dimensional inputs to low-dimensional, domain-invariant embeddings, and finally to a calibrated probability.}
+    \label{tab:data-flow}
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{lllll}
+            \toprule
+            \textbf{Stage} & \textbf{Component} & \textbf{Input Space} & \textbf{Core Operation} & \textbf{Output Space} \\
+            \midrule
+            1 & Feature Alignment & $\mathbb{R}^{d_{\text{raw}}}$ & Schema intersection $\cap$ & $\mathbb{R}^{d_{\cap}}$ \\
+            2 & Cross-Domain RFE & $\mathbb{R}^{d_{\cap}}$ & Iterative elimination via $\mathcal{I}(f)$ & $\mathbb{R}^{k}$ ($k \approx 8$) \\
+            3 & Latent TCA & $\mathbb{R}^{k}$ & Projection $\mathbf{x}' = \mathbf{W}^\top \mathbf{x}$ & $\mathbb{R}^{m}$ ($m=15$) \\
+            4 & TabPFN Classifier & $\mathbb{R}^{m}$ & Classification $f_{\text{TabPFN}}(\mathbf{x}')$ & $[0, 1]$ (Prob.) \\
+            5 & Ensemble & $[0, 1]^{B \times S}$ & Temperature-scaled averaging & $[0, 1]$ (Final) \\
+            \bottomrule
+        \end{tabular}%
+    }
 \end{table}
 
-The process begins with \textbf{Feature Alignment}, where the schema of the target hospital's data is intersected with the source schema to identify the maximum common feature set. This handles the "Missingness Shift" inherent in multi-center data. Subsequently, \textbf{Cross-Domain Recursive Feature Elimination (RFE)} reduces the dimensionality to a stable core subset (typically $k=8$ clinical features), guided by a cost-effectiveness index.
-These selected features are then fed into the \textbf{TabPFN Encoder}. Unlike standard usage, we intercept the forward pass before the classification head to extract contextual embeddings. These embeddings, which reside in a semantically rich latent space, are then aligned using \textbf{Transfer Component Analysis (TCA)} to minimize the Maximum Mean Discrepancy (MMD) between hospitals. Finally, a \textbf{Multi-Branch Ensemble} aggregates predictions across different preprocessing views (Raw, Quantile, Rotated) to ensure robustness against outliers and variance.
 
-\subsection{Core Component I: TabPFN as a Feature Extractor}
+
+The data journey begins with \textbf{Stage 1: Feature Alignment}. Here, we perform a robust schema intersection ($\mathcal{F}_{\cap}$) between the features available in the source domain and each target hospital's dataset. This crucial step effectively addresses the "missingness shift" by identifying the maximal common feature set, ensuring that only universally collected and relevant variables proceed through the pipeline, even if certain examinations are not uniformly performed across all clinical sites.
+
+Following alignment, \textbf{Stage 2: Cross-Domain Recursive Feature Elimination (RFE)} takes over. From the $d_{\cap}$ features, this stage systematically reduces the dimensionality to a concise set of $k \approx 8$ clinically impactful features, denoted as $\mathcal{F}^*$. This reduction is not arbitrary; it serves to minimize the joint error ($\lambda$) across domains and guarantees that the selected features are practically acquirable by all participating hospitals. This process aligns directly with the feature set $\mathcal{F}^*$ and the target feature space for domain $t$, $S^{(t)}$, as introduced in Section 3.6.1.
+
+Subsequently, in \textbf{Stage 3: Latent Transfer Component Analysis (TCA)}, the refined feature set $\mathbb{R}^k$ is adapted. TCA projects these features into a lower-dimensional, domain-invariant space $\mathbb{R}^m$ (typically $m=15$). This projection, $\mathbf{x}' = \mathbf{W}^\top \mathbf{x}$, is learned to minimize the Maximum Mean Discrepancy (MMD) between the source and target domain distributions in this latent space, thereby mitigating covariate shift.
+
+\textbf{Stage 4: TabPFN Classifier} then processes the TCA-transformed features to predict the initial malignancy probability. In this stage, the TabPFN acts as a robust, pre-trained classifier on the domain-adapted data. Its in-context learning capabilities allow it to infer complex, non-linear decision boundaries without extensive gradient updates on small medical datasets.
+
+Finally, \textbf{Stage 5: Ensemble} aggregates predictions from multiple TabPFN Classifier instances. This involves temperature scaling of the individual TabPFN outputs, followed by averaging across $B \times S$ ensemble members, yielding the final, calibrated malignancy probability. The temperature scaling is crucial for adjusting predicted probabilities to account for potential label shifts between domains, ensuring more reliable and interpretable outputs.
+
+\subsubsection*{Mapping to Formal Problem Formulation}
+To establish a clear connection between the PANDA framework's architectural stages and its formal problem formulation presented in Section 3.6, we explicitly map the components of $f_{\text{PANDA}}(x) = h(\psi(x; \mathcal{F}^*))$ to the corresponding stages:
+\begin{itemize}
+    \item $\mathcal{F}^* \leftarrow$ Stages 1--2 (Schema Intersection + Cross-Domain RFE)
+    \item $\psi \leftarrow$ Stage 3 (Latent TCA)
+    \item $h \leftarrow$ Stages 4--5 (TabPFN Classifier + Ensemble/Calibration)
+\end{itemize}
+This mapping clarifies how the abstract components of the PANDA function are instantiated through the concrete processing steps, providing readers with a direct link between theory and implementation.
+
+\subsection{Core Component I: TabPFN as a Robust Classifier}
 \label{subsec:sol-tabpfn}
 
-The backbone of PANDA is the TabPFN (Tabular Prior-Data Fitted Network) foundation model. While TabPFN is typically used as an end-to-end classifier, we leverage it primarily as a robust \textbf{Feature Extractor}.
-Mathematically, let the pre-trained Transformer be denoted by a function $T_\theta(\cdot)$ that maps an input token sequence to a final output vector, followed by a linear classification head $W_{\text{head}}$. We define the feature extractor $\phi(\cdot)$ by identifying the penultimate layer representations, effectively "decapitating" the network:
+The backbone of PANDA is the TabPFN (Tabular Prior-Data Fitted Network) foundation model. While TabPFN is capable of extracting embeddings, in the PANDA framework, we leverage it primarily as a robust \textbf{Classifier} operating on the domain-adapted features. This strategic choice is driven by TabPFN's unique ability to generalize well on small tabular datasets without extensive domain-specific fine-tuning.
+Mathematically, after the feature set $\mathbf{x}$ has been aligned and reduced (Stages 1-2) and then adapted by TCA into $\mathbf{x}'$ (Stage 3), the TabPFN classifier $f_{\text{TabPFN}}(\cdot)$ directly maps these transformed features to a malignancy probability:
 \begin{equation}
-    \phi(\mathbf{x}) = \text{Transformer}_{\theta \setminus W_{\text{head}}}(\text{Tokenize}(\mathbf{x}; \mathcal{D}_{\text{context}})) \in \mathbb{R}^h
+    f_{\text{TabPFN}}(\mathbf{x}') \in [0, 1]
 \end{equation}
-where $\mathcal{D}_{\text{context}}$ is the in-context training set (the source domain data). This operation extracts the **contextual embeddings** formed by the self-attention mechanism, where each patient's representation is computed via attention to similar patients in the support set.
+Here, the entire pre-trained TabPFN model, including its Transformer encoder and classification head, is used to make predictions.
 
-**Theoretical Advantage (In-Context Learning Prior):**
-The core innovation here is leveraging the **Prior-Data Fitted (PFN)** nature of the model. TabPFN was meta-trained on millions of synthetic datasets generated from Structural Causal Models (SCMs). This meta-training instills a strong Bayesian prior $P_{\text{prior}}$ that favors simple, causal explanations over spurious correlations. In the context of medical data, where $N \approx 300$, deep learning models typically overfit. However, TabPFN's embeddings are "pre-regularized" by this prior, allowing it to infer complex, non-linear decision boundaries (e.g., non-linear interactions between Age and Nodule Size) without requiring gradient updates on the small medical dataset. This directly solves the "Small Sample Size" constraint defined in Section \ref{sec:problem-formulation}.
+\textbf{Theoretical Advantage (Prior-Data Fitted Learning):}
+The core innovation here is leveraging the \textbf{Prior-Data Fitted (PFN)} nature of TabPFN. TabPFN was meta-trained on millions of synthetic datasets generated from Structural Causal Models (SCMs). This meta-training instills a strong Bayesian prior $P_{\text{prior}}$ that favors simple, causal explanations over spurious correlations. In the context of medical data, where sample sizes are often small ($n \approx 300$), traditional deep learning models typically overfit. However, TabPFN's meta-learned prior allows it to infer complex, non-linear decision boundaries (e.g., non-linear interactions between Age and Nodule Size) on the adapted features without requiring gradient updates on the small medical dataset. This directly addresses the "Small Sample Size" constraint defined in Section \ref{sec:problem-formulation}. By applying TabPFN to TCA-transformed features, we benefit from both domain invariance and strong generalization capabilities on small cohorts.
 
 \subsection{Core Component II: Cross-Domain RFE with Cost-Effectiveness Index}
 \label{subsec:sol-rfe}
 
 Medical datasets often contain high-dimensional noise (e.g., irrelevant radiomics features) and "concept shift" (features whose predictive value changes across hospitals). To handle this, we employ a Cross-Domain Recursive Feature Elimination (RFE) mechanism.
-The selection process is not merely about maximizing AUC; it is governed by a global **Cost-Effectiveness Index (CEI)** that balances predictive power against stability, clinical acquisition cost, and model complexity. We formulate the optimization problem for the optimal feature subset size $k^*$ as:
+The selection process is not merely about maximizing AUC; it is governed by a global \textbf{Cost-Effectiveness Index (CEI)} that balances predictive power against stability, clinical acquisition cost, and model complexity. We formulate the optimization problem for the optimal feature subset size $k^*$ as:
 \begin{equation}
     \mathcal{F}^* = \arg\max_{k} \left( w_1 S_{\text{perf}}(k) + w_2 S_{\text{eff}}(k) + w_3 S_{\text{stab}}(k) + w_4 S_{\text{simp}}(k) \right)
 \end{equation}
 where the components are defined as:
 \begin{itemize}
-    \item **Performance ($S_{\text{perf}}$):** A weighted sum of AUC and F1-score on the source validation folds.
-    \item **Efficiency ($S_{\text{eff}}$):** Measures the reduction in clinical burden, defined as $1 - \frac{\text{Cost}(\mathcal{F}_k)}{\text{Cost}(\mathcal{F}_{\text{total}})}$, where Cost proxies for the difficulty of acquiring the feature (e.g., age is cheap, contrast CT is expensive).
-    \item **Stability ($S_{\text{stab}}$):** Quantifies the robustness of the feature subset across cross-validation folds, defined as $1 - \text{Std}(\text{AUC})$.
-    \item **Simplicity ($S_{\text{simp}}$):** A sparsity penalty $\exp(-\alpha k)$ to prefer smaller, clinically manageable subsets (typically $k \in [5, 10]$).
+    \item \textbf{Performance ($S_{\text{perf}}$):} A weighted sum of AUC and F1-score on the source validation folds.
+    \item \textbf{Efficiency ($S_{\text{eff}}$):} Measures the reduction in clinical burden, defined as $1 - \frac{\text{Cost}(\mathcal{F}_k)}{\text{Cost}(\mathcal{F}_{\text{total}})}$, where Cost proxies for the difficulty of acquiring the feature (e.g., age is cheap, contrast CT is expensive).
+    \item \textbf{Stability ($S_{\text{stab}}$):} Quantifies the robustness of the feature subset across cross-validation folds, defined as $1 - \text{Std}(\text{AUC})$.
+    \item \textbf{Simplicity ($S_{\text{simp}}$):} A sparsity penalty $\exp(-\alpha k)$ to prefer smaller, clinically manageable subsets (typically $k \in [5, 10]$).
 \end{itemize}
 
-Implementation-wise, we use `TabPFNClassifier` as the base estimator for RFE. In each iteration, we calculate the **Permutation Importance** $\mathcal{I}(f_j)$ of each feature $f_j$. The feature with the lowest importance is pruned, and the model is re-evaluated. This recursive process ensures that the retained features $\mathcal{F}^*$ are not only predictive but also stable against the noise inherent in small cohorts. In our experiments, this process consistently identifies a "Best-8" subset (Age, Spiculation, Lobulation, Diameter, etc.) that is robust across hospitals.
+Implementation-wise, we use `TabPFNClassifier` as the base estimator for RFE. In each iteration, we calculate the \textbf{Permutation Importance} $\mathcal{I}(f_j)$ of each feature $f_j$. The feature with the lowest importance is pruned, and the model is re-evaluated. This recursive process ensures that the retained features $\mathcal{F}^*$ are not only predictive but also stable against the noise inherent in small cohorts. In our experiments, this process consistently identifies a "Best-8" subset (Age, Spiculation, Lobulation, Diameter, etc.) that is robust across hospitals.
 
 \subsection{Core Component III: Latent Space TCA Adaptation}
 \label{subsec:sol-tca}
 
-To explicitly align the source and target distributions, we apply Transfer Component Analysis (TCA) in the latent space induced by TabPFN.
-Standard TCA is often applied to raw features, but this is suboptimal for complex medical data where the manifold structure is non-linear. Instead, we construct the kernel matrix $\mathbf{K}$ using the contextual embeddings $\mathbf{z} = \phi(\mathbf{x})$. Specifically, we employ a **Linear Kernel** on these embeddings:
+To explicitly align the source and target distributions, we apply Transfer Component Analysis (TCA) to the feature space reduced by RFE (Stage 2). Standard TCA is often applied to raw features, but this is suboptimal for complex medical data where the manifold structure might be noisy or high-dimensional. Instead, we construct the kernel matrix $\mathbf{K}$ using the RFE-selected features $\mathbf{x}$. Specifically, we employ a \textbf{Linear Kernel} on these features:
 \begin{equation}
-    K_{ij} = \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}_j) \rangle
+    K_{ij} = \langle \mathbf{x}_i, \mathbf{x}_j \rangle
 \end{equation}
+This projection, $\mathbf{x}' = \mathbf{W}^\top \mathbf{x}$, learns a domain-invariant feature representation that is then fed into the TabPFN Classifier (Stage 4).
 
-**Justification for Linear Kernel on Embeddings:**
-The TabPFN encoder $\phi$ already performs highly non-linear disentanglement of the input space via its multi-head attention layers. The resulting embedding space $\mathbb{R}^{128}$ is designed such that classes are linearly separable. Therefore, a simple linear alignment in this space is sufficient to match the first-order moments of the distributions, avoiding the complexity and hyperparameter sensitivity (e.g., $\gamma$ in RBF kernels) that plagues kernel methods on small datasets.
+\textbf{Justification for Linear Kernel on RFE-Selected Features:}
+After Cross-Domain RFE, the selected features are assumed to reside in a more disentangled and clinically relevant space. In this context, a simple linear alignment via TCA is often sufficient to match the first-order moments of the distributions, thereby reducing covariate shift. This approach avoids the complexity and hyperparameter sensitivity (e.g., $\gamma$ in RBF kernels) that often plagues non-linear kernel methods, especially on small datasets. The subsequent TabPFN Classifier is then capable of modeling complex non-linear relationships within this linearly adapted feature space.
 
 The optimization objective minimizes the Maximum Mean Discrepancy (MMD) trace:
 \begin{equation}
     \min_{\mathbf{W}} \quad \text{tr}(\mathbf{W}^\top \mathbf{K} \mathbf{L} \mathbf{K} \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W})
 \end{equation}
-where $\mathbf{L}$ is the MMD matrix defined block-wise as $L_{ij} = 1/n_s^2$ if $x_i, x_j \in \mathcal{D}_S$, $1/n_t^2$ if $x_i, x_j \in \mathcal{D}_T$, and $-1/(n_s n_t)$ otherwise. The projection $\mathbf{W}$ aligns the marginals $P_S(\mathbf{z})$ and $P_T(\mathbf{z})$, directly addressing the Covariate Shift challenge.
+where $\mathbf{L}$ is the MMD matrix defined block-wise as $L_{ij} = 1/n_s^2$ if $x_i, x_j \in S$, $1/n_t^2$ if $x_i, x_j \in T$, and $-1/(n_s n_t)$ otherwise. The projection $\mathbf{W}$ aligns the marginals $P_S(\mathbf{z})$ and $P_T(\mathbf{z})$, directly addressing the Covariate Shift challenge.
 
-\subsection{Core Component IV: Multi-Branch Ensemble and Calibration}
+\subsection{Core Component IV: Multi-View Ensemble and Calibration}
 \label{subsec:sol-ensemble}
 
-To mitigate the variance associated with small-sample learning and label shift, PANDA employs a **Strategic Multi-Branch Ensemble**. Instead of a single model, we construct an ensemble of $N=32$ members, derived from $B=4$ distinct preprocessing strategies expanded by $S=8$ random seeds (which control feature shuffling and rotational invariants).
+To mitigate the variance associated with small-sample learning and label shift, PANDA employs a \textbf{Strategic Multi-Branch Ensemble}. Instead of a single model, we construct an ensemble of $N=32$ members, derived from $B=4$ distinct preprocessing strategies expanded by $S=8$ random seeds (which control feature shuffling and rotational invariants).
 
 The four strategic branches are designed to present different "views" of the data to the foundation model:
 \begin{enumerate}
-    \item **High-Complexity Ordinal (Raw+Quantile):** Features are mapped to a uniform distribution via `QuantileTransformer` (handling outliers) and concatenated with raw features. Categorical variables are Ordinal Encoded.
-    \item **Low-Complexity Ordinal (Raw):** Raw features are used directly (relying on TabPFN's internal robustness). Categorical variables are Ordinal Encoded.
-    \item **High-Complexity Numeric:** Similar to Branch 1, but categorical variables are treated as numeric (useful for ordered grades like "Spiculation 1-5").
-    \item **Low-Complexity Numeric:** Raw features with numeric encoding for categoricals.
+    \item \textbf{High-Complexity Ordinal (Raw+Quantile):} Features are mapped to a uniform distribution via `QuantileTransformer` (handling outliers) and concatenated with raw features. Categorical variables are Ordinal Encoded.
+    \item \textbf{Low-Complexity Ordinal (Raw):} Raw features are used directly (relying on TabPFN's internal robustness). Categorical variables are Ordinal Encoded.
+    \item \textbf{High-Complexity Numeric:} Similar to Branch 1, but categorical variables are treated as numeric (useful for ordered grades like "Spiculation 1-5").
+    \item \textbf{Low-Complexity Numeric:} Raw features with numeric encoding for categoricals.
 \end{enumerate}
 
-**Rotational Invariance:**
+\textbf{Rotational Invariance:}
 For each branch, we train 8 versions. In each version, the feature columns are cyclically permuted (Rotated). This is critical because Transformers can exhibit positional bias; rotating the features ensures that the model's attention mechanism attends to all features equally, regardless of their column index.
 
-**Temperature Scaling & Aggregation:**
-The final probability is obtained via **Temperature Scaling** to calibrate the predictions. This is crucial when the target domain prevalence differs from the source (Label Shift), as uncalibrated models often produce overconfident probabilities. The aggregated prediction is:
+\textbf{Temperature Scaling and Aggregation:}
+The final probability is obtained via \textbf{Temperature Scaling} to calibrate the predictions from the ensemble of TabPFN Classifiers. This is crucial when the target domain prevalence differs from the source (Label Shift), as uncalibrated models often produce overconfident probabilities. The aggregated prediction is:
 \begin{equation}
     \hat{p}(y=1|\mathbf{x}) = \frac{1}{B \times S} \sum_{i=1}^{B \times S} \sigma\left(\frac{z_i(\mathbf{x})}{T}\right)
 \end{equation}
-where $z_i(\mathbf{x})$ is the logit output of the $i$-th member, and $T=0.9$ is the temperature parameter empirically tuned to soften predictions.
+where $z_i(\mathbf{x})$ is the logit output of the $i$-th TabPFN Classifier member, and $T=0.9$ is the temperature parameter empirically tuned to soften predictions.
 
 \subsection{Theoretical Justification and Feasibility}
 \label{subsec:sol-justification}
 
-**Addressing Small Sample Size:**
+\textbf{Addressing Small Sample Size:}
 The use of a frozen, pre-trained encoder $\phi$ avoids the need to train a deep network from scratch on $N \approx 300$ samples. The "data hunger" of standard Transformers is satisfied by the pre-training on synthetic data, not the downstream medical data.
 
-**Addressing Distribution Shift:**
+\textbf{Addressing Distribution Shift:}
 The framework attacks shift at three levels:
-1.  **Feature Level:** `QuantileTransformer` aligns the marginal distributions of individual features (Covariate Shift).
-2.  **Latent Level:** TCA explicitly minimizes the divergence term $d_{\mathcal{H}\Delta\mathcal{H}}$ in the generalization bound by aligning the joint embedding distributions.
-3.  **Output Level:** Temperature scaling calibrates the posterior probabilities against Label Shift.
+1.  \textbf{Feature Level:} `QuantileTransformer` aligns the marginal distributions of individual features (Covariate Shift).
+2.  \textbf{Latent Level:} TCA explicitly minimizes the divergence term $d_{\mathcal{H}\Delta\mathcal{H}}$ in the generalization bound by aligning the joint embedding distributions.
+3.  \textbf{Output Level:} Temperature scaling calibrates the posterior probabilities against Label Shift.
 
-**Real-time Feasibility:**
+\textbf{Real-time Feasibility:}
 Despite the ensemble complexity ($N=32$), the inference involves only forward passes of the Transformer (which are highly parallelizable) and linear projections. Empirical tests on a standard CPU (Intel i7) show an average inference latency of $< 200$ ms per patient. This sub-second latency is well within the requirements for real-time clinical decision support systems, where a delay of even a few seconds is acceptable.
 
 \begin{figure}[htbp]
