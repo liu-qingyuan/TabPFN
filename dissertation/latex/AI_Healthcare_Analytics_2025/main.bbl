@@ -393,6 +393,22 @@ Josh Gardner.
 A multi-center study on the adaptability of a shared foundation model for
   electronic health records {\textbar} npj digital medicine.
 
+\bibitem{rehman_federated_2023}
+Muhammad Habib~ur Rehman, Walter Hugo Lopez~Pinaya, Parashkev Nachev, James~T.
+  Teo, Sebastin Ourselin, and M.~Jorge Cardoso.
+\newblock Federated learning for medical imaging radiology.
+\newblock 96(1150):20220890.
+
+\bibitem{guan_federated_2024}
+Hao Guan, Pew-Thian Yap, Andrea Bozoki, and Mingxia Liu.
+\newblock Federated learning for medical image analysis: A survey.
+\newblock 151:110424.
+
+\bibitem{kahenga_fedfusion_2025}
+Ferdinand Kahenga, Antoine Bagula, Patrick Sello, and Sajal~K. Das.
+\newblock {FedFusion}: Federated learning with diversity- and cluster-aware
+  encoders for robust adaptation under label scarcity.
+
 \bibitem{guyon2002gene}
 Isabelle Guyon, Jason Weston, Stephen Barnhill, and Vladimir Vapnik.
 \newblock Gene selection for cancer classification using support vector
@@ -430,6 +446,47 @@ S.~Chen, W.~L. Lin, W.~T. Liu, L.~Y. Zou, Y.~Chen, and F.~Lu.
   model.
 \newblock 82:106788.
 
+\bibitem{yang_comparison_2018}
+Bumhee Yang, Byung~Woo Jhun, Sun~Hye Shin, Byeong-Ho Jeong, Sang-Won Um, Jae~Il
+  Zo, Ho~Yun Lee, Insoek Sohn, Hojoong Kim, O.~Jung Kwon, and Kyungjong Lee.
+\newblock Comparison of four models predicting the malignancy of pulmonary
+  nodules: A single-center study of korean adults.
+\newblock 13(7):e0201242.
+\newblock Publisher: Public Library of Science.
+
+\bibitem{cui_comparison_2019}
+Xiaonan Cui, Marjolein~A. Heuvelmans, Daiwei Han, Yingru Zhao, Shuxuan Fan,
+  Sunyi Zheng, Grigory Sidorenkov, Harry J.~M. Groen, Monique~D. Dorrius,
+  Matthijs Oudkerk, Geertruida H.~de Bock, Rozemarijn Vliegenthart, and
+  Zhaoxiang Ye.
+\newblock Comparison of veterans affairs, mayo, brock classification models and
+  radiologist diagnosis for classifying the malignancy of pulmonary nodules in
+  chinese clinical population.
+\newblock 8(5).
+\newblock Publisher: {AME} Publishing Company.
+
+\bibitem{li_evaluation_2020}
+You Li, Hui Hu, Ziwei Wu, Ge~Yan, Tangwei Wu, Shuiyi Liu, Weiqun Chen, and
+  Zhongxin Lu.
+\newblock Evaluation of models for predicting the probability of malignancy in
+  patients with pulmonary nodules.
+\newblock 40(2):BSR20193875.
+
+\bibitem{herder_clinical_2005}
+Gerarda~J. Herder, Harm van Tinteren, Richard~P. Golding, Piet~J. Kostense,
+  Emile~F. Comans, Egbert~F. Smit, and Otto~S. Hoekstra.
+\newblock Clinical prediction model to characterize pulmonary nodules:
+  validation and added value of 18f-fluorodeoxyglucose positron emission
+  tomography.
+\newblock 128(4):2490--2496.
+
+\bibitem{perandini_solid_2016}
+Simone Perandini, Gian~Alberto Soardi, Massimiliano Motton, Arianna Rossi,
+  Manuel Signorini, and Stefania Montemezzi.
+\newblock Solid pulmonary nodule risk assessment and decision analysis:
+  comparison of four prediction models in 285 cases.
+\newblock 26(9):3071--3076.
+
 \bibitem{li_predicting_2019}
 Shulong Li, Panpan Xu, Bin Li, Liyuan Chen, Zhiguo Zhou, Hongxia Hao, Yingying
   Duan, Michael Folkert, Jianhua Ma, Shiying Huang, Steve Jiang, and Jing Wang.
@@ -443,6 +500,14 @@ Chia-Ying Lin, Shu-Mei Guo, Jenn-Jier~James Lien, Wen-Tsen Lin, Yi-Sheng Liu,
 \newblock Combined model integrating deep learning, radiomics, and clinical
   data to classify lung nodules at chest {CT}.
 \newblock 129(1):56--69.
+
+\bibitem{causey_highly_2018}
+Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
+  Politte, Fred Prior, Shuzhong Zhang, and Xiuzhen Huang.
+\newblock Highly accurate model for prediction of lung nodule malignancy with
+  {CT} scans.
+\newblock 8(1):9286.
+\newblock Publisher: Nature Publishing Group.
 
 \bibitem{breiman1984classification}
 Leo Breiman, Jerome Friedman, Richard~A Olshen, and Charles~J Stone.
@@ -463,12 +528,5 @@ Leo Breiman.
 Corinna Cortes and Vladimir Vapnik.
 \newblock Support-vector networks.
 \newblock {\em Machine learning}, 20(3):273--297, 1995.
-
-\bibitem{perandini_solid_2016}
-Simone Perandini, Gian~Alberto Soardi, Massimiliano Motton, Arianna Rossi,
-  Manuel Signorini, and Stefania Montemezzi.
-\newblock Solid pulmonary nodule risk assessment and decision analysis:
-  comparison of four prediction models in 285 cases.
-\newblock 26(9):3071--3076.
 
 \end{thebibliography}

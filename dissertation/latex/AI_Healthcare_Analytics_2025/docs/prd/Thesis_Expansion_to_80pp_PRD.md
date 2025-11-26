@@ -24,10 +24,10 @@
 ### 阶段 0b：章节页数缺口追踪（需持续推进，页数为整数、基于 label 定界）
 
 - [X] Introduction：5 / 5 页（缺口 +0）
-- [ ] Related Work：5 / 25 页（缺口 +20）
+- [ ] Related Work：13 / 25 页（缺口 +12）
 - [ ] Problem Formulation：2 / 4 页（缺口 +2）
 - [ ] Solution：2 / 4 页（缺口 +2）
-- [ ] Methods：4 / 10 页（缺口 +6）
+- [ ] Methods：6 / 10 页（缺口 +4）
 - [ ] Analysis：5 / 15 页（缺口 +10）
 - [ ] Evaluation：8 / 13 页（缺口 +5）
 - [ ] Conclusion：1 / 3 页（缺口 +2）
@@ -191,17 +191,121 @@
 - [ ] 2.6.3 引用检查：每次引用先查 `refs.bib`；找不到则换同类或删句，避免悬空引用
 - [ ] 2.6.4 篇幅检查：每完成一大块运行 `wc -w Section/Related_Work.tex`，不足则回对应小节增段落（失败模式/子群差异等）
 
-### 阶段 3A：问题定义扩写（完成）
+### 阶段 3A：问题定义扩写（目标：尽可能详尽，≥6-8 页）
 
-- [X] 3A.1 记号与域定义：在 Problem\_Formulation 中明确 $\mathcal{D}_s=(X_s,Y_s)$、$\mathcal{D}_t=(X_t,Y_t)$、共享特征子集 $\mathcal{F}_{\cap}$、缺失特征集 $\mathcal{F}_{\setminus}$，并用表格/列表区分肺结节 vs.\ BRFSS 任务的变量集。
-- [X] 3A.2 偏移类型与风险：解释 covariate/label/concept shift 在两类任务中的具体表现，附带风险界或误差分解公式，说明为什么需要显式域对齐。
 
-### 阶段 3B：方法细化（完成）
 
-- [X] 3B.1 组件-挑战映射：为 TabPFN、跨域 RFE、TCA/UDA、标签漂移处理分别撰写“挑战→机制→收益”段落，结合 best7/best8 稳定性结果和 BRFSS 设定。
-- [X] 3B.2 训练/推理流程：插入伪代码或流程图，覆盖“特征对齐→RFE→TabPFN 上下文构建→TCA 投影→预测”的步骤，强调各环节的输入/输出、数据依赖、约束（共享特征、病种标签、无标签目标域）以及与肺结节/BRFSS 任务的对应关系。
-- [X] 3B.3 失败模式与假设：罗列闭域假设、特征对齐假设、采样独立性假设等，说明违背时的后果，并设计表格总结潜在风险（特征缺失、新病种、极端标签漂移）及缓解策略（再训练、增量对齐、人工审查）。
-- [X] 3B.4 方法-结果分离：通读 Methods 相关小节，删除或迁移任何带有实验结论/性能评价的语句，确保该章节只描述流程、假设、实现细节，所有结果留在 Analysis/Evaluation。
+- [X] 3A.1 **符号定义与数学基础 (Mathematical Notation)**:
+
+    - [X] 建立统一的符号体系表：特征空间 $\mathcal{X} \in \mathbb{R}^d$，标签空间 $\mathcal{Y}$，源域 $\mathcal{D}_S$，目标域 $\mathcal{D}_T$。
+
+    - [X] 定义表格数据的特殊结构：异构特征（数值/类别）、缺失值掩码 $M$、特征子集 $\mathcal{F}$。
+
+- [X] 3A.2 **表格数据生成过程 (Tabular Data Generation Process - PFN Perspective)**:
+
+    - [X] 形式化描述 TabPFN 的先验假设：将数据集视为从先验分布 $P_{prior}(\mathcal{D})$ 中采样的结果。
+
+    - [X] 定义 PFN 的元学习目标：在合成数据集上最大化后验概率 $P(y_{new} | x_{new}, \mathcal{D}_{train})$。
+
+    - [X] 阐述为何这种生成式视角适合小样本学习（In-context Learning 能力）。
+
+- [X] 3A.3 **域偏移问题的形式化 (Formalizing Domain Shift)**:
+
+    - [X] 数学定义源域与目标域的分布差异：$P_S(X,Y) \neq P_T(X,Y)$。
+
+    - [X] 细分偏移类型并给出数学描述（结合具体临床案例）：
+
+        -   **Covariate Shift**: $P_S(X) \neq P_T(X)$ 但 $P_S(Y|X) = P_T(Y|X)$。*案例：CT 扫描仪差异（Sharp vs Smooth Kernels）导致的纹理特征分布平移。*
+
+        -   **Label Shift**: $P_S(Y) \neq P_T(Y)$。*案例：三级医院（癌症中心，患病率 ~60%）与社区筛查（患病率 ~5%）的先验差异。*
+
+        -   **Concept Shift**: $P_S(Y|X) \neq P_T(Y|X)$。*案例：地域性病理干扰，如 Ohio River Valley 的组织胞浆菌病（Histoplasmosis）或亚洲的结核病（TB）结节模仿恶性肿瘤特征，改变了 $P(Y|X)$。*
+
+    - [X] 引入 Ben-David 的泛化误差上界定理，说明 $\epsilon_T(h) \leq \epsilon_S(h) + d_{\mathcal{H}\Delta\mathcal{H}}(S, T) + \lambda$，论证减小域间距离 $d(S, T)$ 的必要性。
+
+- [ ] 3A.4 **现有模型的理论局限性分析 (Theoretical Constraints of Existing Models)**:
+
+    - [ ] **GBDT (XGBoost/LightGBM)**: 分析其在小样本下的过拟合风险，以及**不可微性 (Non-Differentiability)** 导致无法直接应用梯度反向传播类 DA 方法；指出树模型在特征空间外推（Extrapolation）能力的缺失。
+
+    - [ ] **Deep Tabular Models (TabNet/FT-Transformer)**: 分析其**数据饥饿 (Data Hunger)** 特性（在 $N \approx 300$ 时难以收敛）以及缺乏表格归纳偏置（如旋转不变性在表格数据中的不适用性）。
+
+- [X] 3A.5 **迁移成分分析 (TCA) 的优化目标**:
+
+    - [X] 定义再生核希尔伯特空间 (RKHS) 中的最大均值差异 (MMD)。
+
+    - [X] 形式化 TCA 的优化问题：最小化 $\text{tr}(K L K) + \mu \text{tr}(K)$，同时保持数据方差 $\text{tr}(K H K)$。
+
+    - [X] 说明如何将 TabPFN 的上下文嵌入 (Contextual Embeddings) 作为 TCA 的输入核矩阵 $K$。
+
+- [X] 3A.6 **PANDA 框架的数学统一**:
+
+    - [X] 定义 PANDA 为三阶段函数复合：$f(x) = (h \circ \psi \circ \phi)(x)$。
+
+        -   $\phi$: TabPFN 编码器（Feature Extractor）。
+
+        -   $\psi$: TCA 适配层（Domain Adapter）。
+
+        -   $h$: 最终分类器（Classifier）。
+
+    - [X] **形式化递归特征消除 (RFE) 算法**:
+
+        -   参考 `predict_healthcare_RFE.py`，定义特征重要性评分函数 $\mathcal{I}(f; \mathcal{D}_S, \phi)$ 为基于 TabPFN 的 Permutation Importance。
+
+        -   数学化描述 RFE 的迭代过程：$S_{k-1} = S_k \setminus \{ \text{argmin}_{j \in S_k} \mathcal{I}(f_j) \}$。
+
+- [ ] 3A.7 **临床挑战与 PANDA 组件映射表**:
+
+    - [ ] 插入 "Table: Mathematical Mapping of Clinical Problems to PANDA Components"，明确 Scanner Variance $\to$ Covariate Shift $\to$ TCA；Referral Patterns $\to$ Label Shift $\to$ Ensemble/Temperature Scaling；Biological Confounders $\to$ Concept Shift $\to$ RFE。
+
+- [X] 3A.8 **医疗场景的约束条件**:
+
+    - [X] **小样本约束**: $N_S, N_T \ll 1000$，导致大参数模型过拟合风险。
+
+    - [X] **隐私与联邦约束**: 目标域标签 $Y_T$ 不可见（Unsupervised DA），且源域数据不能直接传输（虽然本论文主要处理集中式 DA，但可提及隐私隐含约束）。
+
+    - [X] **不平衡约束**: 定义不平衡比率 $\rho = N_{neg}/N_{pos}$，引入加权损失函数形式。
+- [ ] 3A.7 **对齐 Dissertation Problem Formulation Expansion.pdf问题设定的缺口**:
+  - [ ] 在 Problem Formulation 增补“盲部署”场景（隐私/无标签目标域）与实际样本规模（$n_s \approx 295$, $n_t \approx 190$），明确 i.i.d. 假设失效。
+  - [ ] 写出 schema mismatch 三分法表格（交集/源特有/目标特有）及映射函数 $\Phi_{schema}$，并给出临床含义示例。
+  - [ ] 为 covariate/label/concept shift 各加至少 1 个肺结节临床例子（扫描协议、TB 高发、转诊率差异），强调对误差和重要性权重的影响。
+  - [ ] 补充 GBDT 与深度表格模型在小样本/跨域下的失败分析，作为选择 TabPFN 的动机。
+  - [ ] 明确 PANDA Stage 4 多视图+温度缩放 ensemble（Raw/Rotated/Quantile/Ordinal × 多随机种子）及其针对标签漂移/方差的作用。
+  - [ ] 在 TCA 描述中写出线性核假设、TabPFN embedding 构造 $K$、分段 $L_{ij}$ 定义，并将其与 Ben-David 界中 $d_{\mathcal{H}\Delta\mathcal{H}}$ 收缩挂钩。
+  - [ ] 增补 open-world/输入范围安全约束与隐私合规表述，删除或弱化复杂度推导，保持仅给实践可行性结论。
+  - [ ] 添加“临床挑战 ↔ PANDA 组件 ↔ 理论依据”对照表的写作占位。
+
+### 阶段 3C：解决方案详解扩写（目标：4-6 页）
+
+- [ ] 3C.1 **PANDA 架构蓝图 (Architectural Overview)**:
+    - [ ] 绘制并描述 PANDA 的整体数据流图（Data Flow Diagram）：从异构原始数据输入，经由 Feature Alignment & RFE，进入 TabPFN Encoder，再通过 TCA Projector，最终由 LogReg/ProtoNet 分类。
+    - [ ] 重点描述数据在各模块间的流转逻辑，而非具体的张量维度。
+- [ ] 3C.2 **核心组件 I：基于 TabPFN 的特征提取器 (TabPFN as a Feature Extractor)**:
+    - [ ] 详细解释为何选择 TabPFN 作为 Backbone：不仅是分类器，更是强力的特征提取器。
+    - [ ] **代码对应**：明确引用 `src/tabpfn/classifier.py` 中的 `get_embeddings` 方法，说明这即是“切除分类头、提取 Transformer 上下文嵌入”的工程实现。
+    - [ ] 理论论证：预训练先验 $P_{prior}$ 如何帮助模型在医疗小样本上快速收敛并提取鲁棒特征。
+- [ ] 3C.3 **核心组件 II：跨域 RFE 特征选择机制与 Cost-Effectiveness Index**:
+    - [ ] 详述 RFE 的具体实施步骤：基于 TabPFN 的 Permutation Importance 进行迭代剔除。
+    - [ ] **关键新增**：形式化定义 **Cost-Effectiveness Index** 优化目标:
+        $ \mathcal{F}^* = \arg\max_{k} ( w_1 S_{perf}(k) + w_2 S_{eff}(k) + w_3 S_{stab}(k) + w_4 S_{simp}(k) ) $
+    - [ ] 定义四个子项：$S_{perf}$ (AUC/Accuracy), $S_{eff}$ (Efficiency), $S_{stab}$ (Stability, 1-CV), $S_{simp}$ (Sparsity, $\exp(-\alpha k)$)。
+    - [ ] 关联代码实现的细节（如 `predict_healthcare_RFE.py` 中的参数设置、交叉验证策略）。
+- [ ] 3C.4 **核心组件 III：隐空间 TCA 适配 (Latent Space TCA Adaptation)**:
+    - [ ] 深入解释为何在 TabPFN 的隐空间（Latent Space）而非原始特征空间做 TCA。
+    - [ ] 阐述 TCA 如何通过核矩阵 $K$ 对齐源域和目标域的分布，并写清线性核 $K_{ij} = \langle \phi(x_i), \phi(x_j) \rangle$ 的选择理由（TabPFN 已处理非线性）。
+    - [ ] 定义 MMD 矩阵 $L_{ij}$ 的分段形式。
+- [ ] 3C.5 **核心组件 IV：多视图集成与校准 (Multi-Branch Ensemble & Calibration)**:
+    - [ ] 描述 **4-Branch Preprocessing Strategy**（参考代码 `preprocessing/uda_processor.py`）：
+        1.  **Raw**: 原始分布。
+        2.  **Rotated**: 循环特征置换（打破 Transformer 位置偏置）。
+        3.  **Quantile Transformed**: 映射至 $N(0,1)$（应对 Covariate Shift，对齐量纲）。
+        4.  **Ordinal Encoded**: 处理类别特征漂移。
+    - [ ] 定义 **Temperature Scaling** 与平均机制:
+        $ \hat{p}(y=1|x) = \frac{1}{B \times S} \sum_{i=1}^{B \times S} \sigma\left(\frac{z_i(x)}{T}\right) $
+        其中 $T=0.9$ (参考 `src/tabpfn/classifier.py`)，$B=4$ (分支数)，$S=8$ (种子数)。
+- [ ] 3C.6 **理论论证与挑战应对 (Theoretical Justification & Challenge Addressing)**:
+    - [ ] 对照 Problem Formulation 中的挑战（小样本、Covariate Shift、Label Shift），逐一说明 PANDA 的组件如何解决这些问题。
+    - [ ] 论证 PANDA 框架的通用性：不仅适用于肺结节分类，也可扩展至其他医疗表格数据任务（如 TableShift）。
+    - [ ] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
 
 ### 阶段 4：实验与讨论扩写（主要增页来源）
 
