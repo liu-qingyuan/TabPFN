@@ -407,8 +407,8 @@
 \newlabel{subsec:sol-tca}{{4.4}{27}{Core Component III: Latent Space TCA Adaptation}{subsection.4.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Core Component IV: Multi-View Ensemble and Calibration}{27}{subsection.4.5}\protected@file@percent }
 \newlabel{subsec:sol-ensemble}{{4.5}{27}{Core Component IV: Multi-View Ensemble and Calibration}{subsection.4.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {TCA dimensionality reduction.} Left: projection of source/target points into the TCA subspace. Right: decreasing MMD divergence as more components are retained.}}{28}{figure.1}\protected@file@percent }
-\newlabel{fig:tca_dimensionality}{{1}{28}{\textbf {TCA dimensionality reduction.} Left: projection of source/target points into the TCA subspace. Right: decreasing MMD divergence as more components are retained}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {TCA-based domain adaptation visualization.} a,b PCA views before and after TCA transformation, showing the tightened alignment between source and target. c,d t-SNE views before and after TCA, demonstrating improved cluster center alignment while preserving local structure.}}{28}{figure.1}\protected@file@percent }
+\newlabel{fig:tca_dimensionality}{{1}{28}{\textbf {TCA-based domain adaptation visualization.} a,b PCA views before and after TCA transformation, showing the tightened alignment between source and target. c,d t-SNE views before and after TCA, demonstrating improved cluster center alignment while preserving local structure}{figure.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Theoretical Justification and Feasibility}{29}{subsection.4.6}\protected@file@percent }
 \newlabel{subsec:sol-justification}{{4.6}{29}{Theoretical Justification and Feasibility}{subsection.4.6}{}}
 \newlabel{sec:sol-end}{{4.6}{29}{Theoretical Justification and Feasibility}{figure.2}{}}
@@ -422,110 +422,112 @@
 \newlabel{subsubsec:rfe_implementation}{{5.2.1}{29}{Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.5.2.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {The PANDA framework architecture.} (a) Compositional pipeline: from original tabular data through ensemble training, prediction aggregation, class imbalance adjustment, to final classification output. (b) Multi-branch ensemble with $B=4$ preprocessing strategies, each generating $S=8$ ensemble members via different random seeds.}}{30}{figure.2}\protected@file@percent }
 \newlabel{fig:model_details}{{2}{30}{\textbf {The PANDA framework architecture.} (a) Compositional pipeline: from original tabular data through ensemble training, prediction aggregation, class imbalance adjustment, to final classification output. (b) Multi-branch ensemble with $\numpreprocessbranches =4$ preprocessing strategies, each generating $\numrandomseeds =8$ ensemble members via different random seeds}{figure.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is reused for pulmonary nodules and the TableShift BRFSS race-shift task.}}{31}{table.9}\protected@file@percent }
-\newlabel{tab:challenge_mapping}{{9}{31}{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is reused for pulmonary nodules and the TableShift BRFSS race-shift task}{table.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task.}}{31}{table.9}\protected@file@percent }
+\newlabel{tab:challenge_mapping}{{9}{31}{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task}{table.9}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Cross-Domain Recursive Feature Elimination (RFE)}}{31}{algorithm.1}\protected@file@percent }
 \newlabel{alg:cross_domain_rfe}{{1}{31}{Cross-Domain Recursive Feature Elimination (RFE)}{algorithm.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Multi-Branch Preprocessing Strategy}{31}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Multi-Branch Preprocessing Strategy}{32}{subsubsection.5.2.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Foundation Model Integration Mechanism}{32}{subsection.5.3}\protected@file@percent }
 \newlabel{subsec:foundation_model_integration}{{5.3}{32}{Foundation Model Integration Mechanism}{subsection.5.3}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}In-Context Serialization and Tokenization}{32}{subsubsection.5.3.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}Ensemble Construction and Inference}{32}{subsubsection.5.3.2}\protected@file@percent }
-\citation{de2021adapt}
-\citation{noauthor_welcome_nodate}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces PANDA Inference with TabPFN Backbone}}{33}{algorithm.2}\protected@file@percent }
 \newlabel{alg:tabpfn_inference}{{2}{33}{Ensemble Construction and Inference}{algorithm.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.3}Transfer Component Analysis (TCA)}{33}{subsubsection.5.3.3}\protected@file@percent }
 \newlabel{subsubsec:tca_implementation}{{5.3.3}{33}{Transfer Component Analysis (TCA)}{subsubsection.5.3.3}{}}
 \@writefile{toc}{\contentsline {paragraph}{Mathematical Formulation}{33}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Data Flow and Transformation}{33}{section*.3}\protected@file@percent }
-\citation{perandini_solid_2016}
-\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces TCA Hyperparameter Configuration in PANDA}}{34}{table.10}\protected@file@percent }
-\newlabel{tab:tca_hyperparams}{{10}{34}{TCA Hyperparameter Configuration in PANDA}{table.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Data Flow and Transformation}{34}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Hyperparameter Configuration and Kernel Choice}{34}{section*.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces TCA hyperparameter configuration in PANDA}}{34}{table.10}\protected@file@percent }
+\newlabel{tab:tca_hyperparams}{{10}{34}{TCA hyperparameter configuration in PANDA}{table.10}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.4}Parameter Sensitivity Diagnostics}{34}{subsubsection.5.3.4}\protected@file@percent }
 \newlabel{sec:param_sensitivity}{{5.3.4}{34}{Parameter Sensitivity Diagnostics}{subsubsection.5.3.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Experimental Configuration}{34}{subsection.5.4}\protected@file@percent }
 \newlabel{subsec:experimental_config}{{5.4}{34}{Experimental Configuration}{subsection.5.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Baseline Hyperparameters}{34}{subsubsection.5.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Clinical Scoring Models}{34}{subsubsection.5.4.2}\protected@file@percent }
-\citation{ben2010theory}
+\citation{perandini_solid_2016}
 \@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Hyperparameter search space for baseline models. Best parameters were selected via 5-fold CV on the source domain.}}{35}{table.11}\protected@file@percent }
 \newlabel{tab:hyperparams}{{11}{35}{Hyperparameter search space for baseline models. Best parameters were selected via 5-fold CV on the source domain}{table.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Clinical Scoring Models}{35}{subsubsection.5.4.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Computational Framework}{35}{subsubsection.5.4.3}\protected@file@percent }
 \newlabel{sec:meth-end}{{5.4.3}{35}{Computational Framework}{subsubsection.5.4.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Theoretical Analysis of Cross-Hospital Generalization}{35}{section.6}\protected@file@percent }
-\newlabel{sec:analysis}{{6}{35}{Theoretical Analysis of Cross-Hospital Generalization}{section.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Theoretical Foundation: The Generalization Bound}{35}{subsection.6.1}\protected@file@percent }
-\newlabel{subsec:generalization_bound}{{6.1}{35}{Theoretical Foundation: The Generalization Bound}{subsection.6.1}{}}
-\newlabel{eq:ben_david_bound}{{25}{35}{Ben-David et al., 2010}{equation.25}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}The $\mathcal  {H}\Delta \mathcal  {H}$-Divergence}{36}{subsubsection.6.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Minimizing Source Risk $\epsilon _S(h)$: The TabPFN Mechanism}{36}{subsection.6.2}\protected@file@percent }
-\newlabel{subsec:analysis_source_risk}{{6.2}{36}{Minimizing Source Risk $\sourceerror $: The TabPFN Mechanism}{subsection.6.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Prior-Data Fitted Networks vs. Parametric Learning}{36}{subsubsection.6.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Minimizing Divergence $d_{\mathcal  {H}\Delta \mathcal  {H}}$: Latent Space TCA}{36}{subsection.6.3}\protected@file@percent }
-\newlabel{subsec:analysis_divergence}{{6.3}{36}{Minimizing Divergence $\domaindivergence $: Latent Space TCA}{subsection.6.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.1}Why Feature Space Alignment?}{36}{subsubsection.6.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.2}The TCA Optimization Objective}{37}{subsubsection.6.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Minimizing Adaptability Error $\lambda $: Cross-Domain RFE}{37}{subsection.6.4}\protected@file@percent }
-\newlabel{subsec:analysis_adaptability}{{6.4}{37}{Minimizing Adaptability Error $\adaptabilityterm $: Cross-Domain RFE}{subsection.6.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Synthesis: Linking Theory to Empirical Results}{37}{subsection.6.5}\protected@file@percent }
-\newlabel{subsec:analysis_synthesis}{{6.5}{37}{Synthesis: Linking Theory to Empirical Results}{subsection.6.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Mapping Theoretical Error Terms to PANDA Components and Empirical Results}}{37}{table.12}\protected@file@percent }
-\newlabel{tab:theory_empirics}{{12}{37}{Mapping Theoretical Error Terms to PANDA Components and Empirical Results}{table.12}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Conclusion}{37}{subsection.6.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Evaluation}{37}{section.7}\protected@file@percent }
-\newlabel{sec:eval-start}{{7}{37}{Evaluation}{section.7}{}}
-\newlabel{sec:evaluation}{{7}{37}{Evaluation}{section.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Evaluation Metrics and Statistical Analysis}{38}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}Classification Performance Metrics}{38}{subsubsection.7.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}Visualization-Based Evaluation}{38}{subsubsection.7.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Experimental Setup and Results}{38}{subsection.7.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces The training (Cohort A) and testing (Cohort B) cohorts.}}{39}{table.13}\protected@file@percent }
-\newlabel{tab:cohort_summary}{{13}{39}{The training (Cohort A) and testing (Cohort B) cohorts}{table.13}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Main Performance Results}{39}{subsection.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.1}Source and Target Domain Performance}{39}{subsubsection.7.3.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Comprehensive performance comparison. Source results are from 10-fold CV; Target results are from external validation on Cohort B. Best values are bolded.}}{39}{table.14}\protected@file@percent }
-\newlabel{tab:main_results_table}{{14}{39}{Comprehensive performance comparison. Source results are from 10-fold CV; Target results are from external validation on Cohort B. Best values are bolded}{table.14}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.2}Stratified Analysis}{39}{subsubsection.7.3.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Performance comparison heatmaps.} \textbf  {a} Source domain 10-fold CV. \textbf  {b} Cross-domain external validation.}}{40}{figure.3}\protected@file@percent }
-\newlabel{fig:performance-heatmaps}{{3}{40}{\textbf {Performance comparison heatmaps.} \textbf {a} Source domain 10-fold CV. \textbf {b} Cross-domain external validation}{figure.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Stratified performance of PANDA+TCA on the target cohort.}}{41}{table.15}\protected@file@percent }
-\newlabel{tab:stratified_analysis}{{15}{41}{Stratified performance of PANDA+TCA on the target cohort}{table.15}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Additional Cross-Domain Validation on TableShift}{41}{subsection.7.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces TableShift BRFSS Diabetes Results (Race Shift). OOD = Out of Distribution (Non-White).}}{41}{table.16}\protected@file@percent }
-\newlabel{tab:tableshift_results}{{16}{41}{TableShift BRFSS Diabetes Results (Race Shift). OOD = Out of Distribution (Non-White)}{table.16}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Interpretability and Stability}{41}{subsection.7.5}\protected@file@percent }
-\newlabel{sec:eval-end}{{7.5}{41}{Interpretability and Stability}{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {TableShift BRFSS Diabetes analysis.} \textbf  {a,b} ROC curves showing PANDA's robustness. \textbf  {c,d} Calibration curves. \textbf  {e,f} Decision curves.}}{42}{figure.4}\protected@file@percent }
-\newlabel{fig:brfss-roc}{{4}{42}{\textbf {TableShift BRFSS Diabetes analysis.} \textbf {a,b} ROC curves showing PANDA's robustness. \textbf {c,d} Calibration curves. \textbf {e,f} Decision curves}{figure.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Feature selection meets UDA.} Selecting features with low pooled variance (left column) reduces the domain gap seen by TCA (right column), keeping cross-domain covariance traces small.}}{43}{figure.5}\protected@file@percent }
-\newlabel{fig:feature_selection_uda}{{5}{43}{\textbf {Feature selection meets UDA.} Selecting features with low pooled variance (left column) reduces the domain gap seen by TCA (right column), keeping cross-domain covariance traces small}{figure.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces RFE performance analysis. \textbf  {a} \text  {AUC}plateaus around 8-10 features. \textbf  {b} Stability improves with smaller subsets.}}{44}{figure.6}\protected@file@percent }
-\newlabel{fig:rfe-performance}{{6}{44}{RFE performance analysis. \textbf {a} \auc plateaus around 8-10 features. \textbf {b} Stability improves with smaller subsets}{figure.6}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces \textbf  {Cross-hospital pulmonary nodule analysis.} \textbf  {a,b} ROC curves. \textbf  {c,d} Calibration plots. \textbf  {e,f} Decision curves.}}{45}{figure.7}\protected@file@percent }
-\newlabel{fig:combined_analysis}{{7}{45}{\textbf {Cross-hospital pulmonary nodule analysis.} \textbf {a,b} ROC curves. \textbf {c,d} Calibration plots. \textbf {e,f} Decision curves}{figure.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{46}{section.8}\protected@file@percent }
-\newlabel{sec:conclusion}{{8}{46}{Conclusion}{section.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Summary of Contributions}{46}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Limitations}{46}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Closed-World Assumption}{46}{subsubsection.8.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Missing Data Mechanisms}{46}{subsubsection.8.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Computational Resource Requirements}{46}{subsubsection.8.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Evaluation}{35}{section.6}\protected@file@percent }
+\newlabel{sec:eval-start}{{6}{35}{Evaluation}{section.6}{}}
+\newlabel{sec:evaluation}{{6}{35}{Evaluation}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Evaluation Metrics and Statistical Analysis}{35}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}Classification Performance Metrics}{35}{subsubsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.2}Visualization-Based Evaluation}{36}{subsubsection.6.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Experimental Setup and Results}{36}{subsection.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Training (Cohort A) and testing (Cohort B) cohorts.}}{36}{table.12}\protected@file@percent }
+\newlabel{tab:cohort_summary}{{12}{36}{Training (Cohort A) and testing (Cohort B) cohorts}{table.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Main Performance Results}{36}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.1}Source and Target Domain Performance}{36}{subsubsection.6.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.2}Stratified Analysis}{37}{subsubsection.6.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Additional Cross-Domain Validation on TableShift}{37}{subsection.6.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Performance comparison across domains.} \textbf  {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf  {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift.}}{38}{figure.3}\protected@file@percent }
+\newlabel{fig:performance-heatmaps}{{3}{38}{\textbf {Performance comparison across domains.} \textbf {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {Performance comparison across domains.} \textbf  {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s strong AUC, accuracy, and precision. \textbf  {b} External validation (OOD) heatmap; the TCA-enhanced PANDA model retains the highest AUC and recall, confirming its resilience under race shift.}}{39}{figure.4}\protected@file@percent }
+\newlabel{fig:tableshift-heatmaps}{{4}{39}{\textbf {Performance comparison across domains.} \textbf {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s strong AUC, accuracy, and precision. \textbf {b} External validation (OOD) heatmap; the TCA-enhanced PANDA model retains the highest AUC and recall, confirming its resilience under race shift}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {TableShift BRFSS Diabetes analysis.} \textbf  {a,b} ROC curves showing PANDA's robustness. \textbf  {c,d} Calibration curves. \textbf  {e,f} Decision curves.}}{40}{figure.5}\protected@file@percent }
+\newlabel{fig:brfss-roc}{{5}{40}{\textbf {TableShift BRFSS Diabetes analysis.} \textbf {a,b} ROC curves showing PANDA's robustness. \textbf {c,d} Calibration curves. \textbf {e,f} Decision curves}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Interpretability and Stability}{40}{subsection.6.5}\protected@file@percent }
+\newlabel{sec:eval-end}{{6.5}{40}{Interpretability and Stability}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations.}}{41}{figure.6}\protected@file@percent }
+\newlabel{fig:rfe-performance}{{6}{41}{\textbf {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces \textbf  {Performance and utility across source and target domains.} \textbf  {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf  {c,d} Calibration plots for the same splits. \textbf  {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension.}}{42}{figure.7}\protected@file@percent }
+\newlabel{fig:combined_analysis}{{7}{42}{\textbf {Performance and utility across source and target domains.} \textbf {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf {c,d} Calibration plots for the same splits. \textbf {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension}{figure.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Evaluation}{43}{section.7}\protected@file@percent }
+\newlabel{sec:eval-start}{{7}{43}{Evaluation}{section.7}{}}
+\newlabel{sec:evaluation}{{7}{43}{Evaluation}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Evaluation Metrics and Statistical Analysis}{43}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}Classification Performance Metrics}{43}{subsubsection.7.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}Visualization-Based Evaluation}{43}{subsubsection.7.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Experimental Setup and Results}{44}{subsection.7.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces The training (Cohort A) and testing (Cohort B) cohorts.}}{44}{table.13}\protected@file@percent }
+\newlabel{tab:cohort_summary}{{13}{44}{The training (Cohort A) and testing (Cohort B) cohorts}{table.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Main Performance Results}{44}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.1}Source and Target Domain Performance}{44}{subsubsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.2}Stratified Analysis}{44}{subsubsection.7.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces \textbf  {Performance comparison across domains.} \textbf  {a} Source-domain 10-fold CV heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf  {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift.}}{45}{figure.8}\protected@file@percent }
+\newlabel{fig:performance-heatmaps}{{8}{45}{\textbf {Performance comparison across domains.} \textbf {a} Source-domain 10-fold CV heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift}{figure.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Comprehensive performance comparison. Source results are from 10-fold CV; Target results are from external validation on Cohort B. Best values are bolded.}}{46}{table.14}\protected@file@percent }
+\newlabel{tab:main_results_table}{{14}{46}{Comprehensive performance comparison. Source results are from 10-fold CV; Target results are from external validation on Cohort B. Best values are bolded}{table.14}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Stratified performance of PANDA+TCA on the target cohort.}}{46}{table.15}\protected@file@percent }
+\newlabel{tab:stratified_analysis}{{15}{46}{Stratified performance of PANDA+TCA on the target cohort}{table.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Additional Cross-Domain Validation on TableShift}{46}{subsection.7.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces TableShift BRFSS Diabetes Results (Race Shift). OOD = Out of Distribution (Non-White).}}{46}{table.16}\protected@file@percent }
+\newlabel{tab:tableshift_results}{{16}{46}{TableShift BRFSS Diabetes Results (Race Shift). OOD = Out of Distribution (Non-White)}{table.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Interpretability and Stability}{47}{subsection.7.5}\protected@file@percent }
+\newlabel{sec:eval-end}{{7.5}{47}{Interpretability and Stability}{figure.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{47}{section.8}\protected@file@percent }
+\newlabel{sec:concl-start}{{8}{47}{Conclusion}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Summary of Contributions}{47}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Limitations}{47}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Closed-World Assumption}{47}{subsubsection.8.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces \textbf  {Performance comparison across domains.} \textbf  {a} Source-domain 10-fold CV heatmap over five metrics, showing PANDA’s strong AUC, accuracy, and precision. \textbf  {b} External validation (OOD) heatmap; the TCA-enhanced PANDA model retains the highest AUC and recall, confirming its resilience under race shift.}}{48}{figure.9}\protected@file@percent }
+\newlabel{fig:tableshift-heatmaps}{{9}{48}{\textbf {Performance comparison across domains.} \textbf {a} Source-domain 10-fold CV heatmap over five metrics, showing PANDA’s strong AUC, accuracy, and precision. \textbf {b} External validation (OOD) heatmap; the TCA-enhanced PANDA model retains the highest AUC and recall, confirming its resilience under race shift}{figure.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces \textbf  {TableShift BRFSS Diabetes analysis.} \textbf  {a,b} ROC curves showing PANDA's robustness. \textbf  {c,d} Calibration curves. \textbf  {e,f} Decision curves.}}{49}{figure.10}\protected@file@percent }
+\newlabel{fig:brfss-roc}{{10}{49}{\textbf {TableShift BRFSS Diabetes analysis.} \textbf {a,b} ROC curves showing PANDA's robustness. \textbf {c,d} Calibration curves. \textbf {e,f} Decision curves}{figure.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces \textbf  {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9–13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations.}}{50}{figure.11}\protected@file@percent }
+\newlabel{fig:rfe-performance}{{11}{50}{\textbf {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9–13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations}{figure.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces \textbf  {Performance and utility across source and target domains.} \textbf  {a,b} ROC curves showing source (Cohort A) vs. external (Cohort B) behavior. \textbf  {c,d} Calibration plots for the same splits. \textbf  {e,f} Decision curves highlighting the net clinical benefit of PANDA and its TCA extension.}}{51}{figure.12}\protected@file@percent }
+\newlabel{fig:combined_analysis}{{12}{51}{\textbf {Performance and utility across source and target domains.} \textbf {a,b} ROC curves showing source (Cohort A) vs. external (Cohort B) behavior. \textbf {c,d} Calibration plots for the same splits. \textbf {e,f} Decision curves highlighting the net clinical benefit of PANDA and its TCA extension}{figure.12}{}}
 \bibstyle{unsrt}
 \bibdata{refs}
 \bibcite{swensen1997chest}{1}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Missing Data Mechanisms}{52}{subsubsection.8.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Computational Resource Requirements}{52}{subsubsection.8.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Future Directions}{52}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}Federated Domain Adaptation}{52}{subsubsection.8.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}Multimodal Integration}{52}{subsubsection.8.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.3}Continual Learning for Temporal Drift}{52}{subsubsection.8.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Final Remarks}{52}{subsection.8.4}\protected@file@percent }
+\newlabel{sec:concl-end}{{8.4}{52}{Final Remarks}{subsection.8.4}{}}
+\newlabel{sec:ack-start}{{8.4}{52}{Acknowledgements}{section*.5}{}}
+\newlabel{sec:ack-end}{{8.4}{52}{Acknowledgements}{section*.5}{}}
 \bibcite{mcwilliams2013probability}{2}
 \bibcite{li2011development}{3}
 \bibcite{he2021novel}{4}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Future Directions}{47}{subsection.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}Federated Domain Adaptation}{47}{subsubsection.8.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}Multimodal Integration}{47}{subsubsection.8.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.3}Continual Learning for Temporal Drift}{47}{subsubsection.8.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Final Remarks}{47}{subsection.8.4}\protected@file@percent }
-\newlabel{sec:concl-end}{{8.4}{47}{Final Remarks}{subsection.8.4}{}}
-\newlabel{sec:ack-start}{{8.4}{47}{Acknowledgements}{section*.5}{}}
-\newlabel{sec:ack-end}{{8.4}{47}{Acknowledgements}{section*.5}{}}
 \bibcite{garau_external_2020}{5}
 \bibcite{zhang_comprehensive_2022}{6}
 \bibcite{liu_establishment_2024}{7}
@@ -608,7 +610,4 @@
 \bibcite{li_predicting_2019}{84}
 \bibcite{lin_combined_2024}{85}
 \bibcite{causey_highly_2018}{86}
-\bibcite{de2021adapt}{87}
-\bibcite{noauthor_welcome_nodate}{88}
-\bibcite{ben2010theory}{89}
-\gdef \@abspage@last{52}
+\gdef \@abspage@last{57}

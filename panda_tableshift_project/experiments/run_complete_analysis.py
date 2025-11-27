@@ -289,6 +289,51 @@ def save_metrics_table(rows: List[Dict[str, Any]], output_path: Path) -> None:
     df.to_csv(output_path, index=False)
 
 
+def save_tableshift_results(
+    cv_results: Dict[str, Dict[str, Any]],
+    uda_results: Dict[str, Dict[str, Any]],
+    output_path: Path,
+) -> None:
+    """Persist the summary table used in the manuscript (ID vs OOD)."""
+
+    label_map = {
+        "PANDA_TCA": "PANDA + TCA",
+        "PANDA_NoUDA": "PANDA (No UDA)",
+        "RF": "Random Forest",
+        "GBDT": "Gradient Boosting (GBDT)",
+        "XGBoost": "XGBoost",
+        "SVM": "SVM",
+        "DT": "Decision Tree",
+    }
+
+    rows: List[Dict[str, Any]] = []
+    for key in ["PANDA_TCA", "PANDA_NoUDA", "RF", "GBDT", "XGBoost", "SVM", "DT"]:
+        ood = uda_results.get(key)
+        if ood is None:
+            continue
+        if key == "PANDA_TCA":
+            source = cv_results.get("PANDA_NoUDA")
+        else:
+            source = cv_results.get(key)
+        if source is None:
+            continue
+
+        id_auc = source["summary"]["auc_mean"]
+        ood_auc = ood["auc"]
+        rows.append(
+            {
+                "Model": label_map.get(key, key),
+                "ID_AUC": round(id_auc, 3),
+                "OOD_AUC": round(ood_auc, 3),
+                "OOD_Accuracy": round(ood["accuracy"], 3),
+                "Gap": round(id_auc - ood_auc, 3),
+            }
+        )
+
+    df = pd.DataFrame(rows)
+    df.to_csv(output_path, index=False)
+
+
 # ------------------------------ Runner ------------------------------ #
 
 
@@ -320,6 +365,7 @@ def run_analysis(dataset: str, n_train: int, n_test: int, device: str, output_ro
     uda_results: Dict[str, Dict[str, Any]] = {}
     cv_predictions: Dict[str, Dict[str, Any]] = {}
     uda_predictions: Dict[str, Dict[str, Any]] = {}
+    source_rows: List[Dict[str, Any]] = []
 
     create_visualizer = load_visualizer_factory()
     visualizer = create_visualizer(output_dir=str(run_dir), save_plots=True, show_plots=False)
@@ -332,6 +378,20 @@ def run_analysis(dataset: str, n_train: int, n_test: int, device: str, output_ro
         cv_summary, cv_pred = cross_val_evaluate(cfg, X_train_sub, y_train_sub, device=device)
         cv_results[method_key] = {"summary": cv_summary, "config": cfg.params}
         cv_predictions[method_key] = cv_pred
+
+        source_rows.append(
+            {
+                "dataset": dataset,
+                "split": "source_cv",
+                "model": method_key,
+                "AUC": cv_summary["auc_mean"],
+                "Accuracy": cv_summary["accuracy_mean"],
+                "F1": cv_summary["f1_mean"],
+                "Precision": cv_summary["precision_mean"],
+                "Recall": cv_summary["recall_mean"],
+                "params": json.dumps(cfg.params),
+            }
+        )
 
         # 2) Target (OOD) evaluation for target/UDA panel
         model = instantiate_model(cfg, device=device)
@@ -410,8 +470,10 @@ def run_analysis(dataset: str, n_train: int, n_test: int, device: str, output_ro
     )
 
     # Save metrics table
-    metrics_path = run_dir / "metrics_summary.csv"
-    save_metrics_table(metrics_rows, metrics_path)
+    combined_metrics = metrics_rows + source_rows
+    save_metrics_table(combined_metrics, run_dir / "metrics_summary.csv")
+    save_metrics_table(source_rows, run_dir / "source_cv_summary.csv")
+    save_tableshift_results(cv_results, uda_results, run_dir / "tableshift_results.csv")
 
     # Save config snapshot
     config_snapshot = {

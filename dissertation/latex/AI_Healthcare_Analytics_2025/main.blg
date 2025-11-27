@@ -21,8 +21,6 @@ Warning--entry type for "gardner_tableshift_nodate" isn't style-file defined
 --line 2030 of file refs.bib
 Warning--entry type for "khoeini_fttransformer_2024" isn't style-file defined
 --line 2075 of file refs.bib
-Warning--entry type for "noauthor_welcome_nodate" isn't style-file defined
---line 2088 of file refs.bib
 Warning--empty journal in garau_external_2020
 Warning--empty year in garau_external_2020
 Warning--empty journal in zhang_comprehensive_2022
@@ -83,45 +81,45 @@ Warning--empty journal in lin_combined_2024
 Warning--empty year in lin_combined_2024
 Warning--empty journal in causey_highly_2018
 Warning--empty year in causey_highly_2018
-You've used 89 entries,
+You've used 86 entries,
             1791 wiz_defined-function locations,
-            877 strings with 22088 characters,
-and the built_in function-call counts, 21368 in all, are:
-= -- 1532
-> -- 1460
+            866 strings with 21636 characters,
+and the built_in function-call counts, 20801 in all, are:
+= -- 1491
+> -- 1422
 < -- 8
-+ -- 520
-- -- 431
-* -- 1721
-:= -- 3415
-add.period$ -- 244
-call.type$ -- 89
-change.case$ -- 90
++ -- 506
+- -- 420
+* -- 1681
+:= -- 3324
+add.period$ -- 237
+call.type$ -- 86
+change.case$ -- 87
 chr.to.int$ -- 0
-cite$ -- 149
-duplicate$ -- 748
-empty$ -- 1977
-format.name$ -- 431
-if$ -- 4527
+cite$ -- 146
+duplicate$ -- 726
+empty$ -- 1921
+format.name$ -- 420
+if$ -- 4405
 int.to.chr$ -- 0
-int.to.str$ -- 89
-missing$ -- 59
-newline$ -- 424
-num.names$ -- 81
-pop$ -- 354
+int.to.str$ -- 86
+missing$ -- 57
+newline$ -- 411
+num.names$ -- 79
+pop$ -- 344
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 439
+skip$ -- 425
 stack$ -- 0
-substring$ -- 1309
-swap$ -- 124
+substring$ -- 1284
+swap$ -- 121
 text.length$ -- 8
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 60
-while$ -- 169
-width$ -- 91
-write$ -- 818
-(There were 70 warnings)
+while$ -- 165
+width$ -- 88
+write$ -- 792
+(There were 69 warnings)

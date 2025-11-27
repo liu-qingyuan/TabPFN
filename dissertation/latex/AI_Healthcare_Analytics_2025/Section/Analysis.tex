@@ -1,109 +1,113 @@
-\section{Theoretical Analysis of Cross-Hospital Generalization}
+\section{Analysis}
+
 \label{sec:analysis}
 
-This chapter moves beyond the phenomenological reporting of performance metrics to establish a rigorous theoretical understanding of \textit{why} the PANDA framework succeeds where traditional methods falter. We posit that the failure of classical models (e.g., GBDTs, CNNs) in cross-hospital deployment is not merely an engineering oversight but a violation of the fundamental assumptions of statistical learning theory—specifically, the assumption that training and test data are drawn independent and identically distributed (i.i.d.) from the same joint distribution $P(\inputspace, \labelspace)$.
+This chapter moves beyond descriptive reporting of performance metrics to develop a rigorous theoretical account of \textit{why} the PANDA framework succeeds where traditional methods fail. The failure of classical models (e.g., GBDTs, CNNs) in cross-hospital deployment is interpreted not as an engineering artifact, but as a violation of a core assumption in statistical learning theory, namely that training and test data are independently and identically distributed (i.i.d.) samples from the same joint distribution $P(\inputspace, \labelspace)$.
 
-By dissecting PANDA through the lens of the Ben-David et al. generalization bound for domain adaptation, we demonstrate that the architecture is a direct algorithmic response to the theoretical decomposition of target error.
+By analyzing PANDA under the generalization bound of Ben-David et al. for domain adaptation, we show that its architecture constitutes a direct algorithmic response to the theoretical decomposition of target error.
 
 \subsection{Theoretical Foundation: The Generalization Bound}
 \label{subsec:generalization_bound}
 
-To analyze the generalization capability of PANDA, we adopt the seminal learning-theoretic framework established by Shai Ben-David et al. (2010), a cornerstone of domain adaptation theory \cite{ben2010theory}. Their work provides a rigorous upper bound on the target domain error, decomposing it into observable and optimizable quantities. This bound explains why minimizing source error alone is insufficient and necessitates explicit domain alignment strategies like TCA.
+To study the generalization properties of PANDA, we adopt the seminal learning-theoretic framework of Shai Ben-David et al. (2010), which is a cornerstone of domain adaptation theory \cite{ben2010theory}. This framework provides a rigorous upper bound on the target domain error and decomposes it into observable and optimizable components. The bound clarifies why minimizing the source error alone is insufficient and why explicit domain-alignment mechanisms such as TCA are required.
 
 \begin{theorem}[Ben-David et al., 2010]
 Let $\hypothesisclass$ be a hypothesis space of VC-dimension $\vcdim$. If $\sourcedata$ and $\targetdata$ are samples of size $n$ drawn from source distribution $\sourcedomaindist$ and target distribution $\targetdomaindist$ respectively, then for any $\confidence \in (0, 1)$, with probability at least $1 - \confidence$, for every $\hypothesis \in \hypothesisclass$:
 \begin{equation}
-    \label{eq:ben_david_bound}
-    \targeterror \leq \sourceerror + \frac{1}{2} \domaindivergence(\sourcedomaindist, \targetdomaindist) + \adaptabilityterm + \mathcal{O}\left(\sqrt{\frac{\vcdim \log n}{n} + \log \frac{1}{\confidence}}\right)
+\label{eq:ben_david_bound}
+\targeterror \leq \sourceerror + \frac{1}{2} \domaindivergence(\sourcedomaindist, \targetdomaindist) + \adaptabilityterm + \mathcal{O}\left(\sqrt{\frac{\vcdim \log n}{n} + \log \frac{1}{\confidence}}\right)
 \end{equation}
 \end{theorem}
 
-This inequality dictates that minimizing target error $\targeterror$ requires simultaneously minimizing three distinct terms:
+Inequality~\eqref{eq:ben_david_bound} shows that reducing the target error $\targeterror$ requires the simultaneous control of three terms:
 \begin{enumerate}
-    \item \textbf{Source Risk} $\sourceerror$: The expected error on the source domain.
-    \item \textbf{Domain Divergence} $\domaindivergence(\sourcedomaindist, \targetdomaindist)$: The $\mathcal{H}\Delta\mathcal{H}$-divergence, measuring the discrepancy between the marginal feature distributions.
-    \item \textbf{Adaptability Term} $\adaptabilityterm$: The error of the ideal joint hypothesis, $\adaptabilityterm = \min_{\hypothesis \in \hypothesisclass} (\sourceerror + \targeterror)$, which captures irreducible error due to concept shift (mismatch in conditional distributions $P(Y|X)$).
+\item \textbf{Source Risk} $\sourceerror$: The expected error on the source domain.
+\item \textbf{Domain Divergence} $\domaindivergence(\sourcedomaindist, \targetdomaindist)$: The $\mathcal{H}\Delta\mathcal{H}$-divergence, which measures the discrepancy between the marginal feature distributions.
+\item \textbf{Adaptability Term} $\adaptabilityterm$: The error of the ideal joint hypothesis, $\adaptabilityterm = \min_{\hypothesis \in \hypothesisclass} (\sourceerror + \targeterror)$, which captures irreducible error due to concept shift, that is, mismatch in the conditional distributions $P(Y\mid X)$.
 \end{enumerate}
 
 \subsubsection{The $\mathcal{H}\Delta\mathcal{H}$-Divergence}
-A key contribution of Ben-David's theory is the $\mathcal{H}\Delta\mathcal{H}$-divergence, which quantifies domain distance with respect to the hypothesis class $\mathcal{H}$. It is defined as:
+A central quantity in the theory of Ben-David et al. is the $\mathcal{H}\Delta\mathcal{H}$-divergence, which quantifies domain distance with respect to the hypothesis class $\mathcal{H}$. It is defined as
 \begin{equation}
-    \domaindivergence(\sourcedomaindist, \targetdomaindist) = 2 \sup_{h, h' \in \mathcal{H}} \left| \Pr_{x \sim \sourcedomaindist}[h(x) \neq h'(x)] - \Pr_{x \sim \targetdomaindist}[h(x) \neq h'(x)] \right|
+\domaindivergence(\sourcedomaindist, \targetdomaindist) = 2 \sup_{h, h' \in \mathcal{H}} \left| \Pr_{x \sim \sourcedomaindist}[h(x) \neq h'(x)] - \Pr_{x \sim \targetdomaindist}[h(x) \neq h'(x)] \right|.
 \end{equation}
-Intuitively, this metric measures the maximal discrepancy in the "disagreement" between any two classifiers in the hypothesis space across the two domains. If there exist two classifiers $h, h'$ that make similar predictions on the source domain (low disagreement) but make widely different predictions on the target domain (high disagreement), the divergence is high. This implies that the source domain does not adequately constrain the behavior of classifiers on the target domain, leading to potential negative transfer. Alignment methods like TCA and CORAL aim to transform the feature space such that this divergence is minimized.
+Intuitively, this metric measures the maximal discrepancy in classifier disagreement across the two domains. If there exist two classifiers $h, h'$ that exhibit low disagreement on the source domain but high disagreement on the target domain, the divergence is large. In this case, the source domain does not sufficiently constrain classifier behavior on the target domain, which can lead to negative transfer. Alignment methods such as TCA and CORAL aim to transform the feature space so that this divergence is reduced.
 
 \subsection{Minimizing Source Risk $\sourceerror$: The TabPFN Mechanism}
 \label{subsec:analysis_source_risk}
 
-The first challenge is the small sample size ($\sourcedatasize \approx 295$). In this regime, standard Empirical Risk Minimization (ERM) is prone to high variance. Deep neural networks typically require $n > 10^4$ to generalize, while GBDTs often overfit, effectively "memorizing" the noise in $\sourcedata$ rather than learning the structure of $\sourcedomaindist$.
+The first challenge is the small sample size ($\sourcedatasize \approx 295$). In this regime, standard Empirical Risk Minimization (ERM) is prone to high variance. Deep neural networks typically require $n > 10^4$ to generalize reliably, while GBDTs often overfit, effectively memorizing noise in $\sourcedata$ rather than learning the structure of $\sourcedomaindist$.
 
 \subsubsection{Prior-Data Fitted Networks vs. Parametric Learning}
-Traditional parametric learning optimizes weights $\modelparams$ to minimize loss on $\sourcedata$: $\hat{\modelparams} = \arg\min_{\modelparams} \sum_{({\featurevec},{\labelval}) \in \sourcedata} \loss(f_{\modelparams}(\featurevec), {\labelval})$. This process is data-hungry because it starts with uninformative priors.
-
-In contrast, PANDA uses TabPFN, a \textbf{Prior-Data Fitted Network (PFN)}. It minimizes $\sourceerror$ not by gradient descent on $\sourcedata$, but by approximating the \textbf{Posterior Predictive Distribution (PPD)} using a Transformer pre-trained on millions of synthetic causal models:
+Traditional parametric learning optimizes weights $\modelparams$ to minimize loss on $\sourcedata$,
 \begin{equation}
-    P({\labelval}_{\text{query}} \mid \queryvec, \sourcedata) \approx \int P({\labelval} \mid \featurevec, M) P(M \mid \sourcedata) \, dM
+\hat{\modelparams} = \arg\min_{\modelparams} \sum_{({\featurevec},{\labelval}) \in \sourcedata} \loss(f_{\modelparams}({\featurevec}), {\labelval}),
 \end{equation}
-By treating the source dataset $\sourcedata$ as a \textit{context} for Bayesian inference rather than a training set for parameter optimization, TabPFN acts as a massive regularizer. It enforces inductive biases favoring sparsity and piecewise smoothness.
+starting from largely uninformative priors and therefore requiring substantial data.
 
-\textbf{Empirical Consequence:} As shown in our results, TabPFN achieves a source AUC of \textbf{0.829}, significantly outperforming Random Forest (0.752) and XGBoost (0.742). This establishes a strictly lower starting point for the $\sourceerror$ term in the bound.
+In contrast, PANDA uses TabPFN, a \textbf{Prior-Data Fitted Network (PFN)}. It reduces $\sourceerror$ not by performing gradient descent on $\sourcedata$, but by approximating the \textbf{Posterior Predictive Distribution (PPD)} using a Transformer pre-trained on millions of synthetic causal models:
+\begin{equation}
+P({\labelval}_{\text{query}} \mid \queryvec, \sourcedata) \approx \int P({\labelval} \mid \featurevec, M) P(M \mid \sourcedata) , dM.
+\end{equation}
+TabPFN treats the source dataset $\sourcedata$ as context for Bayesian inference rather than as a training set for parameter optimization, and thus acts as a strong regularizer that imposes inductive biases favoring sparsity and piecewise smoothness.
+
+\textbf{Empirical Consequence:} As shown in our results, TabPFN attains a source AUC of \textbf{0.829}, substantially higher than Random Forest (0.752) and XGBoost (0.742). This establishes a strictly lower starting point for the $\sourceerror$ term in the bound.
 
 \subsection{Minimizing Divergence $\domaindivergence$: Latent Space TCA}
 \label{subsec:analysis_divergence}
 
-The second term, $\domaindivergence$, measures the discrepancy between domains. In our setting, scanner heterogeneity causes \textbf{Covariate Shift}: $\marginalsourcedist(\featurevec) \neq \marginaltargetdist(\featurevec)$.
+The second term, $\domaindivergence$, measures the discrepancy between domains. In our setting, scanner heterogeneity induces \textbf{covariate shift}, so that $\marginalsourcedist(\featurevec) \neq \marginaltargetdist(\featurevec)$.
 
 \subsubsection{Why Feature Space Alignment?}
-Aligning raw features is often suboptimal due to the complexity and non-linear dependencies of medical variables. Instead, PANDA applies TCA directly to the $\rfeselectedfeatures$. This is motivated by the observation that after RFE, the features are already a more robust and relevant subset, making them more amenable to linear alignment. The goal of this step is to directly align the marginal distributions of these pre-selected features between the source and target domains.
-
+Aligning raw features is often suboptimal because medical variables exhibit complex, nonlinear dependencies. PANDA therefore applies TCA directly to $\rfeselectedfeatures$. After RFE, the retained features form a more robust and relevant subset, which makes them more amenable to linear alignment. The goal of this step is to align the marginal distributions of these preselected features between the source and target domains.
 
 \subsubsection{The TCA Optimization Objective}
-We employ Transfer Component Analysis (TCA) to find a projection $\tcaprojectionmatrix \in \mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target features (after RFE). The objective is:
+We employ Transfer Component Analysis (TCA) to find a projection $\tcaprojectionmatrix \in \mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target features (after RFE). The objective is
 \begin{equation}
-    \begin{aligned}
-    \min_{\tcaprojectionmatrix} \quad & \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \regularizationparam \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \\
-    \text{s.t.} \quad & {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix
-    \end{aligned}
+\begin{aligned}
+\min_{\tcaprojectionmatrix} \quad & \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \regularizationparam , \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \
+\text{s.t.} \quad & {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix,
+\end{aligned}
 \end{equation}
-where $\kernelmatrix$ is the kernel matrix of RFE-selected features ($K_{ij} = \langle \featurevec_i, \featurevec_j \rangle$), $\mmdmatrix$ is the MMD indicator matrix, and $\centeringmatrix$ is the centering matrix. The constraint ${\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix$ preserves data variance, ensuring the projection does not collapse informative signals while aligning means. Here, $\rfecurrentdim$ represents the dimensionality of the RFE-selected features.
+where $\kernelmatrix$ is the kernel matrix of the RFE-selected features ($K_{ij} = \langle \featurevec_i, \featurevec_j \rangle$), $\mmdmatrix$ is the MMD indicator matrix, and $\centeringmatrix$ is the centering matrix. The constraint ${\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix$ preserves data variance, ensuring that the projection does not collapse informative signal while aligning means. Here, $\rfecurrentdim$ denotes the dimensionality of the RFE-selected features.
 
 \subsection{Minimizing Adaptability Error $\adaptabilityterm$: Cross-Domain RFE}
 \label{subsec:analysis_adaptability}
 
-The third term, $\adaptabilityterm$, represents the irreducible error of the best joint hypothesis. A large $\adaptabilityterm$ implies \textbf{Concept Shift} ($\conditionalps({\labelval}|\featurevec) \neq \conditionalpt({\labelval}|\featurevec)$), where the same feature value implies different risks across hospitals (e.g., "spiculation" caused by cancer in Hospital A vs. tuberculosis in Hospital B).
+The third term, $\adaptabilityterm$, represents the irreducible error of the best joint hypothesis. A large $\adaptabilityterm$ indicates \textbf{concept shift} ($\conditionalps({\labelval}\mid\featurevec) \neq \conditionalpt({\labelval}\mid\featurevec)$), where the same feature value corresponds to different risks across hospitals (for example, ``spiculation'' due to cancer in Hospital A versus tuberculosis in Hospital B).
 
-PANDA minimizes $\adaptabilityterm$ via \textbf{Cross-Domain Recursive Feature Elimination (RFE)}. By intersecting feature importance rankings from the source with availability and stability constraints, we effectively restrict the hypothesis class $\hypothesisclass$ to a subspace $\rfeselectedfeatures$ where the conditional distributions are approximately invariant:
+PANDA reduces $\adaptabilityterm$ through \textbf{Cross-Domain Recursive Feature Elimination (RFE)}. By intersecting feature-importance rankings from the source with availability and stability constraints, it effectively restricts the hypothesis class $\hypothesisclass$ to a subspace $\rfeselectedfeatures$ in which the conditional distributions are approximately invariant:
 \begin{equation}
-    \conditionalps({\labelval} \mid \featurevec_{\rfeselectedfeatures}) \approx \conditionalpt({\labelval} \mid \featurevec_{\rfeselectedfeatures})
+\conditionalps({\labelval} \mid \featurevec_{\rfeselectedfeatures}) \approx \conditionalpt({\labelval} \mid \featurevec_{\rfeselectedfeatures}).
 \end{equation}
-Discarding unstable features (like subjective morphological scores) might slightly increase intrinsic source error $\sourceerror$ (bias), but it drastically reduces $\adaptabilityterm$, resulting in a tighter overall bound on target error.
+Discarding unstable features (such as subjective morphological scores) can slightly increase the intrinsic source error $\sourceerror$ (bias), but it substantially reduces $\adaptabilityterm$, yielding a tighter overall bound on the target error.
 
 \subsection{Synthesis: Linking Theory to Empirical Results}
 \label{subsec:analysis_synthesis}
 
-Table~\ref{tab:theory_empirics} synthesizes the theoretical components with our experimental findings, demonstrating how each PANDA component targets a specific term in the Ben-David bound.
+Table~\ref{tab:theory_empirics} summarizes the connection between the theoretical components and our experimental findings, and illustrates how each PANDA component targets a specific term in the Ben-David bound.
 
 \begin{table}[htbp]
-  \centering
-  \caption{Mapping Theoretical Error Terms to PANDA Components and Empirical Results}
-  \label{tab:theory_empirics}
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{llll}
-    \toprule
-    \textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \\
-    \midrule
-    $\sourceerror$ & Small Sample Size & TabPFN Backbone & Source AUC: $0.829$ vs $0.742$ (XGBoost) \\
-    & Overfitting & (Meta-learned Priors) & (High sample efficiency) \\
-    \midrule
-    $\domaindivergence$ & Covariate Shift & TCA on RFE-Selected Features & Target Recall: $0.944$ vs $0.888$ (No-TCA) \\
-    & (Scanner variation) & (MMD Minimization) & (Boundary correction) \\
-    \midrule
-    $\adaptabilityterm$ & Concept Shift & Cross-Domain RFE & Target AUC Gap: $<0.01$ (TableShift) \\
-    & (TB vs Cancer) & (Stability Filtering) & (Robustness to population shift) \\
-    \bottomrule
-  \end{tabular}%
-  }
+\centering
+\caption{Mapping theoretical error terms to PANDA components and empirical results.}
+\label{tab:theory_empirics}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llll}
+\toprule
+\textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \
+\midrule
+$\sourceerror$ & Small sample size & TabPFN backbone & Source AUC: $0.829$ vs $0.742$ (XGBoost) \
+& Overfitting & (Meta-learned priors) & (High sample efficiency) \
+\midrule
+$\domaindivergence$ & Covariate shift & TCA on RFE-selected features & Target recall: $0.944$ vs $0.888$ (No-TCA) \
+& (Scanner variation) & (MMD minimization) & (Boundary correction) \
+\midrule
+$\adaptabilityterm$ & Concept shift & Cross-domain RFE & Target AUC gap: $<0.01$ (TableShift) \
+& (TB vs cancer) & (Stability filtering) & (Robustness to population shift) \
+\bottomrule
+\end{tabular}%
+}
 \end{table}
 
-\subsection{Conclusion}
- The PANDA framework is not merely an ensemble of heuristics but a theoretically grounded solution to the domain adaptation bound. TabPFN secures the source risk $\sourceerror$ via priors; TCA minimizes divergence $\domaindivergence$ via spectral alignment; and RFE minimizes adaptability error $\adaptabilityterm$ via stability-based pruning. Together, they ensure generalization in the challenging regime of small, heterogeneous medical datasets.
+\subsection{Summary of Theoretical Insights}
+The PANDA framework is not an ad hoc ensemble of heuristics, but a theoretically grounded response to the domain adaptation bound. TabPFN controls the source risk $\sourceerror$ through informative priors; TCA reduces divergence $\domaindivergence$ via spectral alignment; and RFE decreases the adaptability error $\adaptabilityterm$ through stability-based feature pruning. Together, these components support reliable generalization in the challenging regime of small, heterogeneous medical datasets.

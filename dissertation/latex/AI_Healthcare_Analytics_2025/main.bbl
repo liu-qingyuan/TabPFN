@@ -509,19 +509,4 @@ Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
 \newblock 8(1):9286.
 \newblock Publisher: Nature Publishing Group.
 
-\bibitem{de2021adapt}
-Antoine de~Mathelin, Fran{\c{c}}ois Deheeger, Guillaume Richard, Mathilde
-  Mougeot, and Nicolas Vayatis.
-\newblock Adapt: Awesome domain adaptation python toolbox.
-\newblock {\em arXiv preprint arXiv:2107.03049}, 2021.
-
-\bibitem{noauthor_welcome_nodate}
-Welcome! — adapt 0.1.0 documentation.
-
-\bibitem{ben2010theory}
-Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and
-  Jennifer~Wortman Vaughan.
-\newblock A theory of learning from different domains.
-\newblock {\em Machine learning}, 79(1):151--175, 2010.
-
 \end{thebibliography}

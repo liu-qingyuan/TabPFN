@@ -257,7 +257,31 @@ INPUT ./Section/Analysis.tex
 INPUT ./Section/Analysis.tex
 INPUT ./Section/Analysis.tex
 INPUT Section/Analysis.tex
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
+INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
+INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
+INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
+INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
+INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
+INPUT ./img/cross_hospital/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/combined_analysis_figure.pdf
 INPUT ./Section/Evaluation.tex
 INPUT ./Section/Evaluation.tex
 INPUT ./Section/Evaluation.tex
@@ -267,23 +291,19 @@ INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
-INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
+INPUT ./img/tableshift/combined_heatmaps_nature.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
-INPUT ./img/tableshift/combined_analysis_figure.pdf
-INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
-INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
-INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
-INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
-INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
-INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
-INPUT ./img/cross_hospital/combined_analysis_figure.pdf
 INPUT ./img/cross_hospital/combined_analysis_figure.pdf
 INPUT ./img/cross_hospital/combined_analysis_figure.pdf
 INPUT ./img/cross_hospital/combined_analysis_figure.pdf
@@ -311,12 +331,10 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/publi
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb

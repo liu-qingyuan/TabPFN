@@ -1,39 +1,40 @@
 \section{Conclusion}
-\label{sec:conclusion}
+
+\label{sec:concl-start}
 
 \subsection{Summary of Contributions}
-This dissertation presented PANDA, a framework that bridges the gap between pre-trained foundation models and the practical realities of medical tabular data—namely, small sample sizes, feature heterogeneity, and distribution shift. Our experiments across private cross-hospital cohorts and public benchmarks demonstrate that:
+This dissertation introduced PANDA, a framework that connects pre-trained tabular foundation models with the practical constraints of medical tabular data, including small sample sizes, feature heterogeneity, and distribution shifts. Experiments on private cross-hospital cohorts and public benchmarks show that:
 
 \begin{enumerate}
-    \item \textbf{Foundation Models as Robust Priors}: The pre-trained TabPFN backbone significantly outperforms traditional baselines (Random Forest, XGBoost) on small datasets ($n < 300$) by leveraging priors learned from millions of synthetic tasks. This "in-context learning" capability provides a strong initialization that is inherently more resistant to overfitting than empirical risk minimization.
-    \item \textbf{Stability via Selection}: The Cross-Domain Recursive Feature Elimination (RFE) protocol proved essential for filtering out site-specific artifacts. By converging on a minimal set of 8 stable predictors, we reduced the dimensionality of the adaptation problem, allowing linear alignment methods to succeed where non-linear ones failed.
-    \item \textbf{Latent Space Alignment}: Transfer Component Analysis (TCA) applied in the embedding space of the Transformer effectively minimized the Maximum Mean Discrepancy (MMD) between domains. This alignment yielded a consistent performance gain (AUC +0.007) and, more importantly, improved calibration in the target domain.
+\item \textbf{Foundation Models as Robust Priors}: The pre-trained TabPFN backbone substantially outperforms traditional baselines (Random Forest, XGBoost) on small datasets ($n < 300$) by leveraging priors learned from millions of synthetic tasks. This in-context learning capability provides a strong initialization that is inherently more resistant to overfitting than standard empirical risk minimization.
+\item \textbf{Stability via Selection}: The Cross-Domain Recursive Feature Elimination (RFE) protocol is essential for filtering site-specific artifacts. By converging on a compact set of eight stable predictors, it reduces the dimensionality of the adaptation problem and enables linear alignment methods to succeed where non-linear approaches failed.
+\item \textbf{Latent Space Alignment}: Transfer Component Analysis (TCA) applied in the Transformer embedding space effectively reduces the Maximum Mean Discrepancy (MMD) between domains. This alignment yields a consistent performance gain (AUC +0.007) and, more importantly, improves calibration in the target domain.
 \end{enumerate}
 
 \subsection{Limitations}
-While PANDA advances the state of the art, several limitations must be acknowledged:
+Although PANDA advances the state of the art, several limitations remain.
 
 \subsubsection{Closed-World Assumption}
-PANDA assumes that the source and target domains share a common feature schema (the intersection set). It cannot handle "open-world" shifts where the target domain introduces entirely new, highly predictive features that were absent in the source. For instance, if a new hospital introduces a molecular biomarker (e.g., DNA methylation) that was not collected in the training cohort, PANDA cannot leverage it without re-training. This "lowest common denominator" approach to feature selection ensures stability but may cap the ceiling of performance compared to models trained on richer, site-specific schemas.
+PANDA assumes that the source and target domains share a common feature schema given by their intersection. It does not address open-world shifts in which the target domain introduces entirely new, highly predictive features that are absent in the source. For example, if a new hospital collects a molecular biomarker (such as DNA methylation) that is not available in the training cohort, PANDA cannot exploit this information without retraining. This lowest-common-denominator strategy in feature selection promotes stability but may limit the achievable performance relative to models trained on richer, site-specific schemas.
 
 \subsubsection{Missing Data Mechanisms}
-Our current approach assumes that missing values are either Missing Completely At Random (MCAR) or Missing At Random (MAR). The \texttt{best8} feature set was chosen partly for its high completeness. However, in clinical practice, data is often Missing Not At Random (MNAR)—for example, a test is not ordered because the doctor suspects the patient is too healthy or too sick. PANDA's current imputation strategies (mean/median/contextual) do not explicitly model this informative missingness, potentially introducing bias.
+The current approach assumes that missing values are either Missing Completely At Random (MCAR) or Missing At Random (MAR). The \texttt{best8} feature set was selected partly for its high completeness. However, in clinical practice data are often Missing Not At Random (MNAR); for instance, a test may not be ordered because the clinician believes that the patient is either too healthy or too sick. PANDA's current imputation strategies (mean, median, and contextual imputation) do not explicitly model such informative missingness and may therefore introduce bias.
 
 \subsubsection{Computational Resource Requirements}
-Unlike decision trees which can run on embedded CPUs, TabPFN requires a GPU for efficient inference (approx. 20ms per patient). While this is negligible for a cloud-based service, it poses a barrier for deployment on edge devices (e.g., older hospital PCs) without dedicated hardware acceleration. The $O(N^2)$ complexity of the Transformer attention mechanism also limits the context size, requiring subsampling strategies for larger datasets (like BRFSS).
+In contrast to decision trees, which can run on embedded central processing units, TabPFN requires a graphical processing unit for efficient inference (approximately 20 ms per patient). While this cost is negligible for a cloud-based service, it creates a barrier to deployment on edge devices, such as older hospital workstations without dedicated hardware acceleration. The $O(N^2)$ complexity of the Transformer attention mechanism also limits the context size and necessitates subsampling strategies for larger datasets such as BRFSS.
 
 \subsection{Future Directions}
 
 \subsubsection{Federated Domain Adaptation}
-Privacy regulations (GDPR, HIPAA) often prevent the centralization of medical data. A promising extension of PANDA is "Federated Domain Adaptation," where the feature extractor (TabPFN) is frozen and shared, while the alignment matrix (TCA) is learned via secure multi-party computation. Since TCA only requires second-order statistics (covariance matrices), these sufficient statistics can be aggregated across hospitals without ever sharing patient-level records.
+Privacy regulations (such as GDPR and HIPAA) often prevent the centralization of medical data. A natural extension of PANDA is federated domain adaptation, in which the feature extractor (TabPFN) remains frozen and shared, while the alignment matrix (TCA) is learned through secure multi-party computation. Because TCA only requires second-order statistics (covariance matrices), participating hospitals can aggregate these sufficient statistics without sharing patient-level records.
 
 \subsubsection{Multimodal Integration}
-Pulmonary nodule diagnosis inherently involves imaging (CT scans) alongside clinical data. Future work should explore a "Multimodal PANDA" that aligns tabular embeddings from TabPFN with visual embeddings from a CNN or Vision Transformer. The cross-attention mechanism could weigh the contribution of clinical history vs. radiological appearance based on the domain shift—relying more on the stable modality when the other is prone to artifacts.
+Pulmonary nodule diagnosis inherently combines imaging (computed tomography scans) with clinical data. Future work should investigate a multimodal variant of PANDA that aligns tabular embeddings from TabPFN with visual embeddings from a convolutional neural network or Vision Transformer. A cross-attention mechanism could then weight the relative contributions of clinical history and radiological appearance in a domain-aware manner, placing greater emphasis on the modality that remains stable when the other is affected by artifacts.
 
 \subsubsection{Continual Learning for Temporal Drift}
-Our BRFSS analysis showed that models degrade over time (2015 $\to$ 2022) as populations and coding standards evolve. Extending PANDA to a "Continual Learning" setting, where the alignment matrix $\mathbf{W}$ is updated incrementally as new batches of data arrive (Online TCA), would allow the system to adapt to temporal drift without catastrophic forgetting of the original source knowledge.
+The BRFSS analysis indicated that model performance degrades over time (2015 $\to$ 2022) as populations and coding standards evolve. Extending PANDA to a continual learning setting, in which the alignment matrix $\mathbf{W}$ is updated incrementally as new data arrive (online TCA), would allow the system to adapt to temporal drift while avoiding catastrophic forgetting of the original source knowledge.
 
 \subsection{Final Remarks}
-The deployment gap in medical AI is rarely due to a lack of sophisticated architectures but rather a failure to handle the messy, shifted nature of real-world data. PANDA offers a pragmatic blueprint for this challenge: \textit{Don't learn everything from scratch; select only what is stable; and align what remains.} By treating pre-trained representations as portable priors and statistical alignment as a safety net, we move closer to reliable, cross-institutional AI systems that can safely scale beyond their initial training sites.
+The deployment gap in medical AI seldom arises from a lack of sophisticated architectures; it is more often caused by a failure to accommodate the noisy and shifted nature of real-world data. PANDA provides a pragmatic blueprint for this challenge: \textit{do not learn everything from scratch, select only what is stable, and align what remains}. By treating pre-trained representations as portable priors and statistical alignment as a safety mechanism, this framework moves the field closer to reliable cross-institutional AI systems that can safely scale beyond their initial training sites.
 
 \label{sec:concl-end}

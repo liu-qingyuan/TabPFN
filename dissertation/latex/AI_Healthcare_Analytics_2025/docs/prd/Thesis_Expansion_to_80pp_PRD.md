@@ -342,15 +342,29 @@ latexmk -pdf main.tex
 
     - [X] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
 
-### 阶段 3D：TCA 公式与实现 TODO（基于 `adapt.feature_based._tca`）
+- [ ] 3C.7 **TCA 实现深度揭秘 (Based on `adapt.feature_based._tca`)**:
 
-- [X] 用数学形式描述 `TCA.fit_transform` 中的核矩阵 `K = [[Kss, Kst], [Kstᵀ, Ktt]]`、散度矩阵 `L`、中心矩阵 `H = I - 11ᵀ/(n+m)`，以及求解目标 `a = I + μ K L K`、`b = K H K`、`sol = a^{-1} b` 并选取前 `n_components` 个 `vectors_`。
-- [X] 增设一段描述 `transform` 的数据流：TabPFN latent 作为 `Xs/Xt` 输入，`vectors_` 与新样本的 `K(X, [Xs,Xt])` 相乘即可得到共享子空间 embedding，以无监督方式对齐源/目标分布。
-- [X] 比较两类核：线性 `k(x,x') = x^⊤ x'` 与 RBF `k(x,x') = exp(-γ‖x-x'‖²)`，并说明 `_tca` 如何通过 `pairwise_kernels` 与 `KERNEL_PARAMS` 把 `gamma` 传递进去；在 TODO 里列出 `kernel`、`gamma`、`mu`、`n_components` 的默认值与调优建议（`μ` 控制对齐力度、`γ` 控制 RBF 宽度、`n_components` 决定投影维度）。
-- [X] 在 Methods 章节中新增“基于 ADAPT 的 TCA 实现”段落，直接引用本地路径 `/Users/lqy/work/TabPFN/adapt/adapt/feature_based/_tca.py` 以便追踪代码，并补上 `TCA.transform` 用法的叙述。
-- [X] 添一个“TCA 超参数表”补全结构：列出 `kernel`、`gamma`、`mu`、`n_components`、`random_state` 等字段，说明当前 config/experiment_config 中的设置及对泛化的影响。
-- [X] 对照 `dissertation/latex/AI_Healthcare_Analytics_2025/notation.tex` 的 Table 6，确保 `ϕ`、`K`、`L`、`H`、`W`、`μ`、`γ` 等符号都有描述，必要时更新 notation 文件并在 PRD 中使用同一符号。
-- [X] 在 PRD 的引用清单中注明 `de2021adapt` 与 `noauthor_welcome_nodate`，TCA 描述段落引用这两个文献以说明 ADAPT 的来源与文档依据。
+    - [ ] 用数学形式描述 `TCA.fit_transform` 中的核矩阵 $\mathbf{K} = \begin{bmatrix} K_{SS} & K_{ST} \\ K_{TS} & K_{TT} \end{bmatrix}$、散度矩阵 $\mathbf{L}$（源/目标/混合块）、中心矩阵 $\mathbf{H} = \mathbf{I} - \frac{11^\top}{n+m}$，并写出目标矩阵 $\mathbf{A} = \mathbf{I} + \mu \mathbf{K L K}$、$\mathbf{B} = \mathbf{K H K}$、解 $ \mathbf{sol} = \mathbf{A}^{-1}\mathbf{B}$ 以及前 $n_{\text{components}}$ 个特征向量组成的 $\mathbf{vectors\_}$。
+
+    - [ ] 增设一段描述 `TCA.transform` 的数据流：TabPFN latent embedding 作为 $X_s$/$X_t$，将 $\mathbf{k}_{\text{new}} = K(x, [X_s, X_t])$ 与 $\mathbf{vectors\_}$ 相乘得到共享子空间表示，并对齐源/目标分布。
+
+    - [ ] 比较线性核 $k(x,x') = x^\top x'$ 与 RBF kernel $k(x,x') = \exp(-\gamma \|x - x'\|^2)$；说明 `_tca` 如何通过 `pairwise_kernels` 与 `KERNEL_PARAMS` 把 $\gamma$ 等超参数传递进去；补充 config/experiment_config 中的默认值及调优建议（$\mu$ 控制适配强度、$\gamma$ 决定 RBF 宽度、$n_{\text{components}}$ 决定投影维度）。
+
+    - [ ] 在 Methods 章节新增“基于 ADAPT 的 TCA 实现”段落，直接指向 `/Users/lqy/work/TabPFN/adapt/adapt/feature_based/_tca.py`，并简要说明 `fit_transform`/`transform` 分别做了什么。
+
+    - [ ] 添一个“TCA 超参数表”：列出 `kernel`、`gamma`、`mu`、`n_components`、`random_state` 等字段，说明它们目前在 `config/experiment_config.py` 或调参表中的取值与泛化影响。
+
+    - [ ] 确保 Table 6（`dissertation/latex/AI_Healthcare_Analytics_2025/notation.tex`）涵盖 $\phi, \mathbf{K}, \mathbf{L}, \mathbf{H}, \mathbf{W}, \mu, \gamma$ 等符号，并在 PRD/TCA段落中使用一致的命名；如须补充 notation 定义，先扩展notation.tex再引用新符号。
+
+    - [ ] 在 TCA 描述中引用 `de2021adapt` 与 `noauthor_welcome_nodate`，说明 ADAPT/TCA 的来源与文档依据。
+
+- [ ] 3C.8 **Figure Consistency with `PANDA.pdf` and Local Assets**:
+
+    - [ ] 对照 `dissertation/word/AI_Healthcare_Analytics_2025/PANDA.pdf`，验证 `img/cross_hospital/combined_analysis_figure.pdf`、`combined_heatmaps_nature.pdf`、`Feature Selection and UDA.pdf`、`feature_performance_comparison_comprehensive.pdf`、`Pre-trained Tabular Foundation Model Pipeline_new.pdf`、`TCA_dimensionality_reduction.pdf` 的说明，确保 LaTeX 里的图注与 PDF 中的 Figure 3/4/6 或其他图号一致。
+
+    - [ ] 同理核查 TableShift 相关图 `img/tableshift/combined_analysis_figure.pdf` 与 `img/tableshift/combined_heatmaps_nature.pdf`，使 Figure 4/5/6 的说明（如 “Source-domain 10-fold CV heatmap…” vs “TableShift heatmaps…）与 PDF 描述吻合，并把 caption 中的语义（PANDA+TCA 稳定性/recall/precision 强度）写清。
+
+    - [ ] 确保文中每张图的引用覆盖了对应 PDF 的图号，避免遗漏（特别是 cross_hospital 与 tableshift 图的命名/引用）。
 
 ### 阶段 4：方法实现细节扩写 (Phase 4: Methods Expansion)
 
@@ -372,7 +386,7 @@ latexmk -pdf main.tex
 
   - [X] 引用 `uda/adapt_methods.py` 包装器结构。
   - [X] **TCA Implementation**: 详述基于 `adapt` 库的实现，特别是 Embedding 上的线性核构建。
-  - [X] **Baselines**: 简述 SA 和 CORAL 的实现逻辑。
+  - [X] **Baselines Cleanup**: 说明不再在正文中详述 SA/CORAL，解释其移除原因（实验中未使用且数据未报告），并让 Methods 仅聚焦 PANDA+TCA 的实现。
 - [X] 4.4 **Ensemble & Calibration Logic**:
 
   - [X] **Temperature Scaling**: 校准公式 ($T=0.9$)。
@@ -418,6 +432,7 @@ latexmk -pdf main.tex
 
   - [X] 详述 BRFSS 任务设置与 Race Shift 定义。
   - [X] 报告 OOD 性能统计。
+  - [ ] 确保 Table 16 的 ID/OOD \auc、Acc、Gap 数据来自 `results/tableshift_summary.csv`（由 `panda_tableshift_project/scripts/compute_tableshift_table.py` 生成），并在文本中解释 ID = source CV、OOD = race-shifted target 的含义。
 - [X] 6.3 **Main Comparison Tables (主对比表)**:
 
   - [X] 提供包含精确数值（AUC/Acc/F1/Prec/Recall）的综合对比表，作为可视化图表的补充证据。

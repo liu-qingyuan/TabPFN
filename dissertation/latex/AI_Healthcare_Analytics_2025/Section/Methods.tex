@@ -3,33 +3,33 @@
 \label{sec:meth-start}
 
 \subsection{Motivating Challenges and Methodological Response}
-Cross-hospital malignancy prediction and public-health surveillance generate intertwined constraints: tiny labeled cohorts, label imbalance, feature mismatch, and multiple forms of distribution shift. PANDA is organized around these constraints rather than around model novelty. Table~\ref{tab:challenge_mapping} distills the major obstacles and the mechanisms assigned to them.
+Cross-hospital malignancy prediction and public health surveillance pose intertwined constraints, including small labeled cohorts, label imbalance, feature mismatch, and multiple forms of distribution shift. PANDA is structured to address these constraints rather than to introduce architectural novelty. In this section, we explicitly link each methodological component to the specific failure mode it is designed to mitigate. Table~\ref{tab:challenge_mapping} summarizes the main obstacles and the mechanisms assigned to each of them.
 
 \begin{table}[htbp]
   \centering
-  \caption{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is reused for pulmonary nodules and the TableShift BRFSS race-shift task.}
+  \caption{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task.}
   \label{tab:challenge_mapping}
   \begin{tabular}{p{0.22\textwidth}p{0.32\textwidth}p{0.33\textwidth}}
     \toprule
     Challenge & Mechanism & Expected benefit \\ \midrule
-    Small $\sourcedatasize$ with high-dimensional covariates & TabPFN prior-data fitted network performs in-context learning with frozen weights & Transfers structural priors from millions of synthetic tasks, reducing estimation variance without local fine-tuning \\ 
-    Feature heterogeneity across institutions/demographics & Cross-domain RFE surfaces stable subsets (``best8'') definable in every site, plus schema alignment utilities & Removes site-specific artefacts before adaptation and guarantees that downstream models only consume shared attributes \\ 
-    Covariate shift and mixed acquisition protocols & TCA applied to RFE-selected features realigns marginal distributions before the TabPFN classifier & Shrinks the $\domaindivergence$ divergence so that context examples remain relevant to target queries \\ 
+    Small $\sourcedatasize$ with high-dimensional covariates & TabPFN prior-data-fitted network that performs in-context learning with frozen weights & Transfers structural priors from millions of synthetic tasks and reduces estimation variance without local fine-tuning \\ 
+    Feature heterogeneity across institutions/demographics & Cross-domain RFE identifies stable subsets (``best8'') that are definable at every site, together with schema-alignment utilities & Removes site-specific artifacts before adaptation and ensures that downstream models operate only on shared attributes \\ 
+    Covariate shift and mixed acquisition protocols & TCA applied to RFE-selected features realigns marginal distributions before the TabPFN classifier & Reduces the $\domaindivergence$ divergence so that context examples remain relevant to target queries \\ 
     Label prevalence drift and class imbalance & Class-balanced sampling, calibrated decision thresholds, and ensemble temperature scaling & Maintains sensitivity for malignant/SPN-positive cohorts and accounts for higher diabetes rates in non-White BRFSS respondents \\ 
-    Variance from preprocessing choices & Multi-branch preprocessing (ordering, quantile transforms, ordinal encoding) with ensemble averaging & Injects diversity without retraining new weights and stabilizes predictions under minor data perturbations \\ \bottomrule
+    Variance from preprocessing choices & Multi-branch preprocessing (ordering, quantile transforms, ordinal encoding) with ensemble averaging & Introduces diversity without retraining new weights and stabilizes predictions under minor data perturbations \\ \bottomrule
   \end{tabular}
 \end{table}
 
-This architecture ensures that every component answers a crisp question: why do small-sample medical deployments fail, and what prior or alignment tool counters that failure?
+This architecture is explicitly designed so that each component addresses a specific question: why do small-sample medical deployments fail, and which prior or alignment mechanism mitigates that failure? Specifically, the TabPFN backbone addresses the small-sample, high-dimensional regime; cross-domain RFE addresses feature mismatch and feature heterogeneity across institutions; the TCA module addresses covariate shift and mixed acquisition protocols; the calibration and sampling utilities address label prevalence drift and class imbalance; and the multi-branch preprocessing ensemble addresses instability arising from preprocessing choices.
 
 \subsection{Feature Engineering and Selection Implementation}
 \label{subsec:feature_engineering}
 
-The feature engineering pipeline in PANDA is designed to handle the heterogeneity of medical data sources while preserving domain-invariant signals. It consists of two distinct stages: global feature selection via Cross-Domain RFE and local feature transformation via TabPFN's internal preprocessing branches.
+The feature engineering pipeline in PANDA is designed to accommodate the heterogeneity of medical data sources while preserving domain-invariant signals. This component directly targets the feature mismatch and feature heterogeneity challenges by enforcing that downstream models operate only on features that are consistently available and stable across hospitals. It comprises two stages: global feature selection via Cross-Domain RFE and local feature transformation via TabPFN's internal preprocessing branches.
 
 \subsubsection{Cross-Domain Recursive Feature Elimination (RFE)}
 \label{subsubsec:rfe_implementation}
-To address the "feature mismatch" challenge, we implement a Cross-Domain Recursive Feature Elimination (RFE) strategy. Unlike standard RFE which optimizes for a single dataset, our approach seeks a feature subset $\rfeselectedfeatures$ that maximizes predictive performance on the source domain $\sourcedomaindist$ while satisfying availability constraints in the target domain $\targetdomaindist$.
+To address the \emph{feature mismatch} challenge, we implement a Cross-Domain Recursive Feature Elimination (RFE) strategy. Unlike standard RFE, which optimizes for a single dataset, this approach seeks a feature subset $\rfeselectedfeatures$ that maximizes predictive performance on the source domain $\sourcedomaindist$ while satisfying availability constraints in the target domain $\targetdomaindist$.
 
 The process, implemented in \texttt{predict\_healthcare\_RFE.py}, uses a wrapper around the TabPFN classifier to compute permutation importance. We define the importance of feature $j$ as the degradation in \auc when its values are randomly shuffled:
 \begin{equation}
@@ -46,9 +46,9 @@ where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the it
 \STATE \textbf{Initialize:} $\mathcal{S} \leftarrow \text{features}(\sourcedatafeatures) \cap \targetfeatureschema$ \COMMENT{Intersect with target availability}
 \WHILE{$|\mathcal{S}| > \targetfeaturecount$}
     \STATE Train TabPFN classifier $\mathcal{M}$ on $\sourcedatafeatures[\mathcal{S}], \sourcedatalabels$
-    \STATE Compute Permutation Importance vector $\featureimportancevec \in \mathbb{R}^{|\mathcal{S}|}$ using 5 repeats
-    \STATE Identify feature with minimum importance: $\minfeature \leftarrow \argmin_{f \in \mathcal{S}} \featureimportancevec[f]$
-    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{\minfeature\}$ \COMMENT{Eliminate weakest feature}
+    \STATE Compute permutation importance vector $\featureimportancevec \in \mathbb{R}^{|\mathcal{S}|}$ using 5 repeats
+    \STATE Identify feature with minimum importance: $\minfeature \leftarrow \arg\min_{f \in \mathcal{S}} \featureimportancevec[f]$
+    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{\minfeature\}$ \COMMENT{Remove least important feature}
     \STATE Record performance metric $\metrick(|\mathcal{S}|)$ (\auc) via 10-fold CV
 \ENDWHILE
 \STATE \textbf{Select} $\rfeselectedfeatures$ based on Cost-Effectiveness Index (CEI):
@@ -57,25 +57,25 @@ where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the it
 \end{algorithmic}
 \end{algorithm}
 
-This algorithm produces the standard subsets referenced throughout the study: ``best8''.
+This algorithm yields the standard feature subsets referenced throughout the study (for example, ``best8'').
 
 \subsubsection{Multi-Branch Preprocessing Strategy}
-Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechanism to handle distribution shifts in feature scaling and encoding. This is effectively a "test-time augmentation" for tabular data. The \texttt{EnsembleConfig} generates 32 distinct views of the data through four preprocessing pipelines:
+Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechanism to handle distribution shifts in feature scaling and encoding. This step primarily addresses the variance introduced by different preprocessing choices and minor covariate shifts in the marginal feature distributions. This mechanism can be viewed as a form of test-time augmentation for tabular data. The \texttt{EnsembleConfig} generates 32 distinct views of the data through four preprocessing pipelines:
 \begin{enumerate}
-    \item \textbf{No-Op Branch:} Raw features are passed directly, preserving original distributions (useful for tree-based logic).
-    \item \textbf{Quantile Branch:} Features are transformed via $F^{-1}(\Phi(\featurevec))$, mapping the empirical CDF to a standard Normal $\mathcal{N}(0,1)$. This handles extreme outliers and skewed distributions common in medical markers (e.g., CEA levels).
-    \item \textbf{Ordinal Branch:} All unique values are ranked and replaced by their integer rank. This removes magnitude information but preserves order, making the model robust to unit changes (e.g., cm vs mm).
-    \item \textbf{Power Transform Branch:} Applies $\featurevec \mapsto \featurevec^\adaptabilityterm$ (e.g., square root or log) to stabilize variance.
+    \item \textbf{No-Op Branch:} Raw features are passed directly, preserving their original distributions, which is useful for tree-like decision logic.
+    \item \textbf{Quantile Branch:} Features are transformed via $F^{-1}(\Phi(\featurevec))$, mapping the empirical CDF to a standard Normal $\mathcal{N}(0,1)$. This transformation mitigates extreme outliers and skewed distributions common in medical markers (for example, CEA levels).
+    \item \textbf{Ordinal Branch:} All unique values are ranked and replaced by their integer rank. This transformation removes magnitude information but preserves order, making the model robust to unit changes (for example, centimetres vs millimetres).
+    \item \textbf{Power Transform Branch:} Applies $\featurevec \mapsto \featurevec^\adaptabilityterm$ (for example, square root or logarithm) to stabilize variance.
 \end{enumerate}
-Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring consistent mapping.
+Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring a consistent mapping.
 
 \subsection{Foundation Model Integration Mechanism}
 \label{subsec:foundation_model_integration}
 
-PANDA utilizes TabPFN as a robust probabilistic classifier within an integrated framework. While TabPFN internally processes features, its role in PANDA is to provide final, confident predictions on adapted tabular data. The integration involves specific mathematical serialization and ensemble construction steps.
+PANDA employs TabPFN as a probabilistic classifier within an integrated framework. This module directly addresses the challenge of training in small, high-dimensional clinical cohorts by reusing structural priors learned from synthetic tasks and producing calibrated probability estimates that can subsequently be adjusted for label imbalance. While TabPFN internally processes features, its role in PANDA is to produce calibrated predictions on adapted tabular data. The integration involves specific in-context serialization and ensemble construction steps.
 
 \subsubsection{In-Context Serialization and Tokenization}
-Unlike BERT-style models that require text, TabPFN consumes raw numerical and categorical values. The serialization process, defined in \texttt{src/tabpfn/model/encoders.py}, maps a heterogeneous row $\featurevec \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
+Unlike BERT-style models, which require textual input, TabPFN operates directly on raw numerical and categorical values. The serialization process, defined in \texttt{src/tabpfn/model/encoders.py}, maps a heterogeneous row $\featurevec \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
 
 For a numerical feature $\featurevec^{(j)}$, the embedding is a linear projection:
 \begin{equation}
@@ -89,37 +89,35 @@ Missing values are handled by a specialized learnable token $\nanembed$. The ful
 \begin{equation}
     \samplesembed = \mlp(\concat(\mathbf{e}^{(1)}, \dots, \mathbf{e}^{(\featuredim)})) + \posencoding
 \end{equation}
-This allows the Transformer to attend to "patient A" vs "patient B" distinctively within the context window.
+This representation allows the Transformer to attend to distinct patients within the context window.
 
 \subsubsection{Ensemble Construction and Inference}
-The final prediction is an average over 32 diverse forward passes. Let $\preprocessingbranches = \{P_1, \dots, P_4\}$ be the set of preprocessing functions and $\randomseeds = \{s_1, \dots, s_8\}$ be a set of random seeds that control the subsampling of the context set (the "support set" of labeled examples). The ensemble probability estimate is:
-
+The final prediction is obtained by averaging over 32 diverse forward passes. Let $\preprocessingbranches = \{P_1, \dots, P_4\}$ denote the set of preprocessing functions and $\randomseeds = \{s_1, \dots, s_8\}$ a set of random seeds that control the subsampling of the context set (the \emph{support set} of labeled examples). The ensemble probability estimate is
 \begin{equation}
     \ensembleprob = \frac{1}{32} \sum_{P \in \preprocessingbranches} \sum_{s \in \randomseeds} \activation\left( \frac{\transformerbackbone(P(\querypatient) \mid P(\contextdata))}{\temperature} \right)
 \end{equation}
-
-where:
+where
 \begin{itemize}
-    \item $\querypatient$ is the target query (patient).
-    \item $\contextdata$ is the subset of training data selected by seed $s$ (typically 1024 samples).
-    \item $\transformerbackbone$ is the frozen TabPFN Transformer backbone.
+    \item $\querypatient$ is the target query (patient),
+    \item $\contextdata$ is the subset of training data selected by seed $s$ (typically 1024 samples),
+    \item $\transformerbackbone$ is the frozen TabPFN Transformer backbone, and
     \item $\temperature=0.9$ is the temperature scaling parameter calibrated for small-sample confidence.
 \end{itemize}
 
-Algorithm~\ref{alg:tabpfn_inference} summarizes the inference pass.
+Algorithm~\ref{alg:tabpfn_inference} summarizes the inference procedure.
 
 \begin{algorithm}[H]
 \caption{PANDA Inference with TabPFN Backbone}
 \label{alg:tabpfn_inference}
 \begin{algorithmic}[1]
 \REQUIRE Query $\querypatient$, Context $\mathcal{D}_{\text{train}}$, Ensemble $N=32$
-\ENSURE Malignancy Probability $\hat{\labelval}$
+\ENSURE Malignancy probability $\hat{\labelval}$
 \STATE $\text{Logits} \leftarrow []$
 \FOR{$i=1$ \TO $N$}
     \STATE Sample preprocessing $P \sim \preprocessingbranches$ and context subset $\mathcal{D}_i \subset \mathcal{D}_{\text{train}}$
-    \STATE $\mathbf{x}'_q, \mathcal{D}'_i \leftarrow P(\querypatient), P(\mathcal{D}_i)$ \COMMENT{Apply Branch}
+    \STATE $\mathbf{x}'_q, \mathcal{D}'_i \leftarrow P(\querypatient), P(\mathcal{D}_i)$ \COMMENT{Apply branch}
     \STATE $\mathbf{E} \leftarrow \text{Serialize}(\mathbf{x}'_q, \mathcal{D}'_i)$ \COMMENT{Tokenize}
-    \STATE $\mathbf{z} \leftarrow \text{Transformer}(\mathbf{E})$ \COMMENT{Forward Pass}
+    \STATE $\mathbf{z} \leftarrow \text{Transformer}(\mathbf{E})$ \COMMENT{Forward pass}
     \STATE $\ceilogit \leftarrow \text{ClassifierHead}(\mathbf{z})$
     \STATE $\text{Logits}.\text{append}(\ceilogit)$
 \ENDFOR
@@ -131,73 +129,71 @@ Algorithm~\ref{alg:tabpfn_inference} summarizes the inference pass.
 \subsubsection{Transfer Component Analysis (TCA)}
 \label{subsubsec:tca_implementation}
 
-TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. We implement this alignment via the \texttt{adapt.feature\_based.TCA} module (specifically \texttt{adapt/adapt/feature\_based/\_tca.py}), which wraps the optimization problem into a scikit-learn compatible estimator.
+TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. This module directly targets the covariate shift and mixed acquisition-protocol challenges highlighted in Table~\ref{tab:challenge_mapping} by enforcing a shared latent representation across hospitals. We implement this alignment via the \texttt{adapt.feature\_based.TCA} module (specifically \texttt{adapt/adapt/feature\_based/\_tca.py}), which wraps the optimization problem in a scikit-learn compatible estimator.
 
 \paragraph{Mathematical Formulation}
-The core optimization problem seeks a projection matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that maps the kernel matrix $\kernelmatrix$ to a low-dimensional latent space. The objective is to minimize the Maximum Mean Discrepancy (MMD) between domains while preserving the data variance \cite{de2021adapt, noauthor_welcome_nodate}.
+The core optimization problem seeks a projection matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that maps the kernel matrix $\kernelmatrix$ to a low-dimensional latent space. The objective is to minimize the Maximum Mean Discrepancy (MMD) between domains while preserving data variance.
 
 The kernel matrix $\kernelmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times (\sourcedatasize+\targetdatasize)}$ is constructed as a block matrix:
 \begin{equation}
     \kernelmatrix = \begin{bmatrix} \kernelmatrix_{SS} & \kernelmatrix_{ST} \\ \kernelmatrix_{TS} & \kernelmatrix_{TT} \end{bmatrix}
 \end{equation}
-where $\kernelmatrix_{SS}, \kernelmatrix_{TT}, \kernelmatrix_{ST}$ represent the kernel evaluations within source, within target, and between source-target samples, respectively.
+where $\kernelmatrix_{SS}, \kernelmatrix_{TT}, \kernelmatrix_{ST}$ represent the kernel evaluations within the source domain, within the target domain, and between source and target samples, respectively.
 
-The MMD matrix $\mmdmatrix$ and Centering matrix $\centeringmatrix$ are defined as:
+The MMD matrix $\mmdmatrix$ and centering matrix $\centeringmatrix$ are defined as
 \begin{equation}
     \mmdmatrix_{ij} = \begin{cases} \frac{1}{\sourcedatasize^2} & x_i, x_j \in \sourcedata \\ \frac{1}{\targetdatasize^2} & x_i, x_j \in \targetdata \\ -\frac{1}{\sourcedatasize \targetdatasize} & \text{otherwise} \end{cases}, \quad
     \centeringmatrix = \identitymatrix - \frac{1}{\sourcedatasize+\targetdatasize}\onesvec\onesvec^\top
 \end{equation}
 
-The ADAPT implementation solves for the projection $\tcaprojectionmatrix$ by addressing the generalized eigenvalue problem. Specifically, it computes:
+The ADAPT implementation solves for the projection $\tcaprojectionmatrix$ by addressing a generalized eigenvalue problem. Specifically, it computes
 \begin{equation}
     \mathbf{A} = \identitymatrix + \regularizationparam \kernelmatrix \mmdmatrix \kernelmatrix, \quad \mathbf{B} = \kernelmatrix \centeringmatrix \kernelmatrix
 \end{equation}
-and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. This formulation maximizes the ratio of data variance ($\tr(\tcaprojectionmatrix^\top \mathbf{B} \tcaprojectionmatrix)$) to the regularized domain divergence ($\tr(\tcaprojectionmatrix^\top \mathbf{A} \tcaprojectionmatrix)$). The top $\tcaprojectdim$ eigenvectors form the projection matrix $\tcaprojectionmatrix$.
+and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. This formulation maximizes the ratio of data variance ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{B} \tcaprojectionmatrix)$) to the regularized domain divergence ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{A} \tcaprojectionmatrix)$). The top $\tcaprojectdim$ eigenvectors form the projection matrix $\tcaprojectionmatrix$.
 
 \paragraph{Data Flow and Transformation}
-In the \texttt{fit\_transform} phase, the TabPFN latent embeddings for both source ($\sourcedatafeatures$) and target ($\targetfeatureschema$) are concatenated. The solver computes $\tcaprojectionmatrix$ using the combined kernel matrix.
-For a new query sample $\queryvec$, the transformation projects it into the shared subspace via:
+In the \texttt{fit\_transform} phase, the TabPFN latent embeddings for both source ($\sourcedatafeatures$) and target ($\targetfeatureschema$) are concatenated. The solver then computes $\tcaprojectionmatrix$ using the combined kernel matrix. For a new query sample $\queryvec$, the transformation projects it into the shared subspace as
 \begin{equation}
     \mathbf{z}_{\text{new}} = \mathbf{k}_{\text{new}}^\top \tcaprojectionmatrix
 \end{equation}
-where $\mathbf{k}_{\text{new}} = [k(\queryvec, x_1), \dots, k(\queryvec, x_{n+m})]^\top$ is the kernel vector between the query and all training samples. This allows the model to map unseen target samples into the aligned space using the learned support vectors.
+where $\mathbf{k}_{\text{new}} = [k(\queryvec, x_1), \dots, k(\queryvec, x_{n+m})]^\top$ is the kernel vector between the query and all training samples. This mapping allows the model to embed unseen target samples into the aligned space using the learned support vectors.
 
 \paragraph{Hyperparameter Configuration and Kernel Choice}
-The behavior of TCA is governed by the hyperparameters listed in Table~\ref{tab:tca_hyperparams}.
+The behaviour of TCA is governed by the hyperparameters listed in Table~\ref{tab:tca_hyperparams}.
 
 \begin{table}[htbp]
 \centering
-\caption{TCA Hyperparameter Configuration in PANDA}
+\caption{TCA hyperparameter configuration in PANDA}
 \label{tab:tca_hyperparams}
 \begin{tabular}{lp{0.5\textwidth}l}
 \toprule
-\textbf{Parameter} & \textbf{Description \& Role} & \textbf{Value} \\ \midrule
+\textbf{Parameter} & \textbf{Description and role} & \textbf{Value} \\ \midrule
 \texttt{kernel} & Kernel function type. Controls the implicit feature map $\featuremap(\featurevec)$. & 'linear' \\
 \texttt{n\_components} ($\tcaprojectdim$) & Dimensionality of the projected subspace. & 10 \\
-\texttt{mu} ($\regularizationparam$) & Regularization parameter. Balances alignment (MMD) vs. variance preservation. Higher $\regularizationparam$ reduces adaptation. & 1.0 \\
+\texttt{mu} ($\regularizationparam$) & Regularization parameter. Balances alignment (MMD) against variance preservation. Higher $\regularizationparam$ reduces adaptation. & 1.0 \\
 \texttt{gamma} ($\gammaK$) & Kernel coefficient for RBF ($e^{-\gamma \|x-y\|^2}$). Passed via \texttt{kernel\_params}. & N/A \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-We explicitly choose a \textbf{Linear Kernel} ($\linearK(x, y) = x^\top y$) over the Radial Basis Function (RBF) kernel ($\rbfK(x, y) = \exp(-\gammaK \|x-y\|^2)$) for the following reasons:
+We explicitly choose a \textbf{linear kernel} ($\linearK(x, y) = x^\top y$) over the radial basis function (RBF) kernel ($\rbfK(x, y) = \exp(-\gammaK \|x-y\|^2)$) for the following reasons:
 \begin{enumerate}
-    \item \textbf{Feature Disentanglement:} The RFE-selected features are already a robust, low-dimensional subset. A linear alignment of their first-order moments is sufficient and less prone to overfitting than the infinite-dimensional mapping of RBF.
-    \item \textbf{Stability on Small Samples:} RBF kernels require tuning the bandwidth $\gammaK$, which is unstable on small cohorts ($N \approx 300$). An improper $\gammaK$ can lead to a degenerate Gram matrix.
-    \item \textbf{Negative Transfer Avoidance:} Empirical tests showed that RBF-TCA often collapsed the TabPFN classifier to the majority class due to noise amplification in the high-dimensional RBF space.
+    \item \textbf{Feature disentanglement:} The RFE-selected features already form a robust, low-dimensional subset. A linear alignment of their first-order moments is sufficient and less prone to overfitting than the infinite-dimensional mapping induced by the RBF kernel.
+    \item \textbf{Stability on small samples:} RBF kernels require tuning the bandwidth $\gammaK$, which can be unstable on small cohorts ($N \approx 300$). An improper choice of $\gammaK$ can lead to a degenerate Gram matrix.
+    \item \textbf{Negative transfer avoidance:} Empirical tests indicated that RBF-TCA often collapsed the TabPFN classifier to the majority class because of noise amplification in the high-dimensional RBF space.
 \end{enumerate}
-This ensures that PANDA benefits from domain alignment without succumbing to the instability often associated with kernel methods on small datasets.
+This configuration allows PANDA to benefit from domain alignment without incurring the instability often associated with kernel methods on small datasets.
 
 \subsubsection{Parameter Sensitivity Diagnostics}
 \label{sec:param_sensitivity}
-To ensure the chosen defaults are numerically stable, the automated regression test suite exercises the same Adapt wrapper on the Mayo~$\rightarrow$~PKUPH split with stress configurations (letting Adapt infer \texttt{n\_components=None} and shrinking $\mu$ to $0.1$). The test reports $\accuracy$, $\auc$, $\fonescore$, $\precision$, and $\recall$ and asserts that the probabilities remain in $[0,1]$. Because both the production path and the test harness rely on the identical Adapt pipeline, these executions provide our practical parameter-sensitivity verification for PANDA.
-
+To ensure that the chosen defaults are numerically stable and that the TCA hyperparameters do not introduce hidden instabilities or negative transfer, the automated regression test suite exercises the same Adapt wrapper on the Mayo~$\rightarrow$~PKUPH split with stress configurations (letting Adapt infer \texttt{n\_components=None} and shrinking $\mu$ to $0.1$). The test reports $\accuracy$, $\auc$, $\fonescore$, $\precision$, and $\recall$ and asserts that the predicted probabilities remain in $[0,1]$. Because both the production path and the test harness rely on the identical Adapt pipeline, these executions provide our practical parameter-sensitivity verification for PANDA.
 
 \subsection{Experimental Configuration}
 \label{subsec:experimental_config}
 
 \subsubsection{Baseline Hyperparameters}
-To ensure fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. The \texttt{MLBaselineModel} class in \texttt{modeling/ml\_baseline\_models.py} manages these configurations.
+To enable fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. This configuration step addresses the methodological challenge of unfair or under-tuned baselines by ensuring that competing models operate near their best-performing settings on the source domain. The \texttt{MLBaselineModel} class in \texttt{modeling/ml\_baseline\_models.py} manages these configurations.
 
 \begin{table}[htbp]
 \centering
@@ -205,14 +201,14 @@ To ensure fair comparison, all baseline models were tuned using grid search with
 \label{tab:hyperparams}
 \begin{tabular}{lll}
 \toprule
-\textbf{Model} & \textbf{Parameter} & \textbf{Search Space / Value} \\ \midrule
-\multirow{3}{*}{XGBoost} & Learning Rate & [0.01, 0.05, 0.1] \\
- & Max Depth & [3, 4, 5, 6] \\
- & N Estimators & [50, 100, 200] \\ \midrule
-\multirow{3}{*}{Random Forest} & N Estimators & [100, 200, 500] \\
- & Max Features & ['sqrt', 'log2'] \\
- & Class Weight & 'balanced' \\ \midrule
-\multirow{2}{*}{SVM} & C (Regularization) & [0.1, 1, 10, 100] \\
+\textbf{Model} & \textbf{Parameter} & \textbf{Search space / value} \\ \midrule
+\multirow{3}{*}{XGBoost} & Learning rate & [0.01, 0.05, 0.1] \\
+ & Max depth & [3, 4, 5, 6] \\
+ & N estimators & [50, 100, 200] \\ \midrule
+\multirow{3}{*}{Random Forest} & N estimators & [100, 200, 500] \\
+ & Max features & ['sqrt', 'log2'] \\
+ & Class weight & 'balanced' \\ \midrule
+\multirow{2}{*}{SVM} & C (regularization) & [0.1, 1, 10, 100] \\
  & Kernel & ['rbf', 'linear'] \\ \midrule
 \multirow{1}{*}{Logistic Regression} & Penalty & ['l1', 'l2', 'elasticnet'] \\ \bottomrule
 \end{tabular}
@@ -221,14 +217,14 @@ To ensure fair comparison, all baseline models were tuned using grid search with
 \subsubsection{Clinical Scoring Models}
 We implemented three established clinical calculators for pulmonary nodule malignancy:
 \begin{itemize}
-    \item \textbf{Mayo Model}: $\text{Probability} = \activation(-6.8 + 0.039 \cdot \text{Age} + 0.79 \cdot \text{Smoker} + 1.33 \cdot \text{CancerHx} + \dots)$
-    \item \textbf{Brock (PanCan) Model}: Includes spiculation and nodule count.
-    \item \textbf{PKUPH Model}: A regression model specifically developed for Chinese populations \cite{perandini_solid_2016}.
+    \item \textbf{Mayo model}: $\text{Probability} = \activation(-6.8 + 0.039 \cdot \text{Age} + 0.79 \cdot \text{Smoker} + 1.33 \cdot \text{CancerHx} + \dots)$.
+    \item \textbf{Brock (PanCan) model}: Includes spiculation and nodule count.
+    \item \textbf{PKUPH model}: A regression model specifically developed for Chinese populations \cite{perandini_solid_2016}.
 \end{itemize}
-These models are applied using their published coefficients without re-training, representing the standard of care.
+These models are applied using their published coefficients without re-training and represent the standard of care.
 
 \subsubsection{Computational Framework}
-All experiments were conducted on a workstation equipped with:
+All experiments were conducted on a workstation equipped with
 \begin{itemize}
     \item \textbf{Hardware}: NVIDIA RTX 4090 GPU (24GB VRAM), AMD Ryzen 9 7950X CPU, 64GB DDR5 RAM.
     \item \textbf{Software}: PyTorch 2.1.2 (CUDA 12.1), Scikit-learn 1.3.2, Adapt 0.4.4.
