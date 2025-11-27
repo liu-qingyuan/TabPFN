@@ -94,16 +94,16 @@ Table~\ref{tab:theory_empirics} summarizes the connection between the theoretica
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llll}
 \toprule
-\textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \
+\textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \\
 \midrule
-$\sourceerror$ & Small sample size & TabPFN backbone & Source AUC: $0.829$ vs $0.742$ (XGBoost) \
-& Overfitting & (Meta-learned priors) & (High sample efficiency) \
+$\sourceerror$ & Small sample size & TabPFN backbone & Source AUC: $0.829$ vs $0.742$ (XGBoost) \\
+& Overfitting & (Meta-learned priors) & (High sample efficiency) \\
 \midrule
-$\domaindivergence$ & Covariate shift & TCA on RFE-selected features & Target recall: $0.944$ vs $0.888$ (No-TCA) \
-& (Scanner variation) & (MMD minimization) & (Boundary correction) \
+$\domaindivergence$ & Covariate shift & TCA on RFE-selected features & Target recall: $0.944$ vs $0.888$ (No-TCA) \\
+& (Scanner variation) & (MMD minimization) & (Boundary correction) \\
 \midrule
-$\adaptabilityterm$ & Concept shift & Cross-domain RFE & Target AUC gap: $<0.01$ (TableShift) \
-& (TB vs cancer) & (Stability filtering) & (Robustness to population shift) \
+$\adaptabilityterm$ & Concept shift & Cross-domain RFE & Target AUC gap: $<0.01$ (TableShift) \\
+& (TB vs cancer) & (Stability filtering) & (Robustness to population shift) \\
 \bottomrule
 \end{tabular}%
 }

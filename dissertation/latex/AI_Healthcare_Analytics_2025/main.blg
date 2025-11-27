@@ -81,45 +81,45 @@ Warning--empty journal in lin_combined_2024
 Warning--empty year in lin_combined_2024
 Warning--empty journal in causey_highly_2018
 Warning--empty year in causey_highly_2018
-You've used 86 entries,
+You've used 87 entries,
             1791 wiz_defined-function locations,
-            866 strings with 21636 characters,
-and the built_in function-call counts, 20801 in all, are:
-= -- 1491
-> -- 1422
+            871 strings with 21823 characters,
+and the built_in function-call counts, 21093 in all, are:
+= -- 1515
+> -- 1442
 < -- 8
-+ -- 506
-- -- 420
-* -- 1681
-:= -- 3324
-add.period$ -- 237
-call.type$ -- 86
-change.case$ -- 87
++ -- 513
+- -- 426
+* -- 1709
+:= -- 3373
+add.period$ -- 240
+call.type$ -- 87
+change.case$ -- 88
 chr.to.int$ -- 0
-cite$ -- 146
-duplicate$ -- 726
-empty$ -- 1921
-format.name$ -- 420
-if$ -- 4405
+cite$ -- 147
+duplicate$ -- 735
+empty$ -- 1945
+format.name$ -- 426
+if$ -- 4465
 int.to.chr$ -- 0
-int.to.str$ -- 86
-missing$ -- 57
-newline$ -- 411
-num.names$ -- 79
-pop$ -- 344
+int.to.str$ -- 87
+missing$ -- 58
+newline$ -- 416
+num.names$ -- 80
+pop$ -- 345
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 425
+skip$ -- 428
 stack$ -- 0
-substring$ -- 1284
-swap$ -- 121
+substring$ -- 1309
+swap$ -- 122
 text.length$ -- 8
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 60
-while$ -- 165
-width$ -- 88
-write$ -- 792
+while$ -- 168
+width$ -- 89
+write$ -- 803
 (There were 69 warnings)

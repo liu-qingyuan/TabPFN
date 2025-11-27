@@ -65,7 +65,7 @@ Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechan
     \item \textbf{No-Op Branch:} Raw features are passed directly, preserving their original distributions, which is useful for tree-like decision logic.
     \item \textbf{Quantile Branch:} Features are transformed via $F^{-1}(\Phi(\featurevec))$, mapping the empirical CDF to a standard Normal $\mathcal{N}(0,1)$. This transformation mitigates extreme outliers and skewed distributions common in medical markers (for example, CEA levels).
     \item \textbf{Ordinal Branch:} All unique values are ranked and replaced by their integer rank. This transformation removes magnitude information but preserves order, making the model robust to unit changes (for example, centimetres vs millimetres).
-    \item \textbf{Power Transform Branch:} Applies $\featurevec \mapsto \featurevec^\adaptabilityterm$ (for example, square root or logarithm) to stabilize variance.
+    \item \textbf{Power Transform Branch:} Applies $\featurevec \mapsto \featurevec^\powertransformparam$ (for example, square root or logarithm) to stabilize variance.
 \end{enumerate}
 Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring a consistent mapping.
 
@@ -129,7 +129,7 @@ Algorithm~\ref{alg:tabpfn_inference} summarizes the inference procedure.
 \subsubsection{Transfer Component Analysis (TCA)}
 \label{subsubsec:tca_implementation}
 
-TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. This module directly targets the covariate shift and mixed acquisition-protocol challenges highlighted in Table~\ref{tab:challenge_mapping} by enforcing a shared latent representation across hospitals. We implement this alignment via the \texttt{adapt.feature\_based.TCA} module (specifically \texttt{adapt/adapt/feature\_based/\_tca.py}), which wraps the optimization problem in a scikit-learn compatible estimator.
+TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. This module directly targets the covariate shift and mixed acquisition-protocol challenges highlighted in Table~\ref{tab:challenge_mapping} by enforcing a shared latent representation across hospitals. We implement this alignment via the \texttt{adapt.feature\_based.TCA} module (specifically \texttt{adapt/adapt/feature\_based/\_tca.py}), which wraps the optimization problem in a scikit-learn compatible estimator \cite{de2021adapt, noauthor_welcome_nodate}.
 
 \paragraph{Mathematical Formulation}
 The core optimization problem seeks a projection matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that maps the kernel matrix $\kernelmatrix$ to a low-dimensional latent space. The objective is to minimize the Maximum Mean Discrepancy (MMD) between domains while preserving data variance.
@@ -150,14 +150,14 @@ The ADAPT implementation solves for the projection $\tcaprojectionmatrix$ by add
 \begin{equation}
     \mathbf{A} = \identitymatrix + \regularizationparam \kernelmatrix \mmdmatrix \kernelmatrix, \quad \mathbf{B} = \kernelmatrix \centeringmatrix \kernelmatrix
 \end{equation}
-and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. This formulation maximizes the ratio of data variance ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{B} \tcaprojectionmatrix)$) to the regularized domain divergence ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{A} \tcaprojectionmatrix)$). The top $\tcaprojectdim$ eigenvectors form the projection matrix $\tcaprojectionmatrix$.
+and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. The optimal projection matrix $\tcaprojectionmatrix$ consists of the $\tcaprojectdim$ eigenvectors corresponding to the largest eigenvalues of $\mathbf{A}^{-1}\mathbf{B}$, which we denote as $\tcaprojectionmatrix = \texttt{vectors\_}[:\tcaprojectdim]$. This formulation maximizes the ratio of data variance ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{B} \tcaprojectionmatrix)$) to the regularized domain divergence ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{A} \tcaprojectionmatrix)$). The top $\tcaprojectdim$ eigenvectors form the projection matrix $\tcaprojectionmatrix$.
 
 \paragraph{Data Flow and Transformation}
-In the \texttt{fit\_transform} phase, the TabPFN latent embeddings for both source ($\sourcedatafeatures$) and target ($\targetfeatureschema$) are concatenated. The solver then computes $\tcaprojectionmatrix$ using the combined kernel matrix. For a new query sample $\queryvec$, the transformation projects it into the shared subspace as
+In the \texttt{fit\_transform} phase, we utilize the \textbf{RFE-selected feature vectors} as the input representations for both the source ($\sourcedatafeatures$) and target ($\targetfeatureschema$) domains. These feature matrices are concatenated to compute the kernel matrix. The solver then computes $\tcaprojectionmatrix$ using the top $\tcaprojectdim$ eigenvectors (`vectors\_`) of the matrix product. For a new query sample $\queryvec$, the transformation projects it into the shared subspace by computing the inner product of the query's kernel vector with these eigenvectors:
 \begin{equation}
     \mathbf{z}_{\text{new}} = \mathbf{k}_{\text{new}}^\top \tcaprojectionmatrix
 \end{equation}
-where $\mathbf{k}_{\text{new}} = [k(\queryvec, x_1), \dots, k(\queryvec, x_{n+m})]^\top$ is the kernel vector between the query and all training samples. This mapping allows the model to embed unseen target samples into the aligned space using the learned support vectors.
+where $\mathbf{k}_{\text{new}} = [k(\queryvec, x_1), \dots, k(\queryvec, x_{n+m})]^\top$ is the kernel vector between the query and all training samples, and $\tcaprojectionmatrix$ contains the learned alignment directions. This mapping allows the model to embed unseen target samples into the aligned space using the learned support vectors.
 
 \paragraph{Hyperparameter Configuration and Kernel Choice}
 The behaviour of TCA is governed by the hyperparameters listed in Table~\ref{tab:tca_hyperparams}.

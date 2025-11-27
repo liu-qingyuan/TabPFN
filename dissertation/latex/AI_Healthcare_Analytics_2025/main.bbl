@@ -509,4 +509,10 @@ Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
 \newblock 8(1):9286.
 \newblock Publisher: Nature Publishing Group.
 
+\bibitem{ben2010theory}
+Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and
+  Jennifer~Wortman Vaughan.
+\newblock A theory of learning from different domains.
+\newblock {\em Machine learning}, 79(1):151--175, 2010.
+
 \end{thebibliography}

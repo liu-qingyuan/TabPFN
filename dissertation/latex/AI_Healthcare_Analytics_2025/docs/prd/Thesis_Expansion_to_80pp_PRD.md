@@ -284,87 +284,57 @@ latexmk -pdf main.tex
 
 - [X] 3C.1 **PANDA 架构蓝图 (Architectural Overview)**:
 
-    - [X] 使用结构化表格描述 PANDA 的整体数据流处理过程（Data Flow Table）：从异构原始数据输入，经由 Feature Alignment & RFE，进入 TabPFN Encoder，再通过 TCA Projector，最终由 LogReg/ProtoNet 分类。
-
-    - [X] 表格应包含阶段名称、输入数据形态、核心操作（Operation）及输出数据形态，重点描述数据在各模块间的流转逻辑。
-
+  - [X] 使用结构化表格描述 PANDA 的整体数据流处理过程（Data Flow Table）：从异构原始数据输入，经由 Feature Alignment & RFE，进入 TabPFN Encoder，再通过 TCA Projector，最终由 LogReg/ProtoNet 分类。
+  - [X] 表格应包含阶段名称、输入数据形态、核心操作（Operation）及输出数据形态，重点描述数据在各模块间的流转逻辑。
 - [X] 3C.2 **核心组件 I：基于 TabPFN 的特征提取器 (TabPFN as a Feature Extractor)**:
 
-    - [X] 详细解释为何选择 TabPFN 作为 Backbone：不仅是分类器，更是强力的特征提取器。
-
-    - [X] **数学形式化 (Mathematical Formulation)**：不用直接引用代码路径，而是用数学语言描述 `get_embeddings` 的逻辑：定义特征提取器 $\phi(\cdot)$ 为 Transformer 的输出层（切除分类头 $W_{head}$），即 $\mathbf{z} = \text{Transformer}_{\theta \setminus W_{head}}(\mathbf{x})$。说明这等价于提取 Transformer 的上下文嵌入 (Contextual Embeddings)。
-
-    - [X] 理论论证：预训练先验 $P_{prior}$ 如何帮助模型在医疗小样本上快速收敛并提取鲁棒特征。
-
+  - [X] 详细解释为何选择 TabPFN 作为 Backbone：不仅是分类器，更是强力的特征提取器。
+  - [X] **数学形式化 (Mathematical Formulation)**：不用直接引用代码路径，而是用数学语言描述 `get_embeddings` 的逻辑：定义特征提取器 $\phi(\cdot)$ 为 Transformer 的输出层（切除分类头 $W_{head}$），即 $\mathbf{z} = \text{Transformer}_{\theta \setminus W_{head}}(\mathbf{x})$。说明这等价于提取 Transformer 的上下文嵌入 (Contextual Embeddings)。
+  - [X] 理论论证：预训练先验 $P_{prior}$ 如何帮助模型在医疗小样本上快速收敛并提取鲁棒特征。
 - [X] 3C.3 **核心组件 II：跨域 RFE 特征选择机制与 Cost-Effectiveness Index**:
 
-    - [X] 详述 RFE 的具体实施步骤：基于 TabPFN 的 Permutation Importance 进行迭代剔除。
+  - [X] 详述 RFE 的具体实施步骤：基于 TabPFN 的 Permutation Importance 进行迭代剔除。
+  - [X] **关键新增**：形式化定义 **Cost-Effectiveness Index** 优化目标:
 
-    - [X] **关键新增**：形式化定义 **Cost-Effectiveness Index** 优化目标:
-
-        $ \mathcal{F}^* = \arg\max_{k} ( w_1 S_{perf}(k) + w_2 S_{eff}(k) + w_3 S_{stab}(k) + w_4 S_{simp}(k) ) $
-
-    - [X] 定义四个子项：$S_{perf}$ (AUC/Accuracy), $S_{eff}$ (Efficiency), $S_{stab}$ (Stability, 1-CV), $S_{simp}$ (Sparsity, $\exp(-\alpha k)$)。
-
-    - [X] 关联代码实现的细节（如 `predict_healthcare_RFE.py` 中的参数设置、交叉验证策略）。
-
+    $ \mathcal{F}^* = \arg\max_{k} ( w_1 S_{perf}(k) + w_2 S_{eff}(k) + w_3 S_{stab}(k) + w_4 S_{simp}(k) ) $
+  - [X] 定义四个子项：$S_{perf}$ (AUC/Accuracy), $S_{eff}$ (Efficiency), $S_{stab}$ (Stability, 1-CV), $S_{simp}$ (Sparsity, $\exp(-\alpha k)$)。
+  - [X] 关联代码实现的细节（如 `predict_healthcare_RFE.py` 中的参数设置、交叉验证策略）。
 - [X] 3C.4 **核心组件 III：隐空间 TCA 适配 (Latent Space TCA Adaptation)**:
 
-    - [X] 深入解释为何在 TabPFN 的隐空间（Latent Space）而非原始特征空间做 TCA。
-
-    - [X] 阐述 TCA 如何通过核矩阵 $K$ 对齐源域和目标域的分布，并写清线性核 $K_{ij} = \langle \phi(x_i), \phi(x_j) \rangle$ 的选择理由（TabPFN 已处理非线性）。
-
-    - [X] 定义 MMD 矩阵 $L_{ij}$ 的分段形式。
-
+  - [X] 深入解释为何在 TabPFN 的隐空间（Latent Space）而非原始特征空间做 TCA。
+  - [X] 阐述 TCA 如何通过核矩阵 $K$ 对齐源域和目标域的分布，并写清线性核 $K_{ij} = \langle \phi(x_i), \phi(x_j) \rangle$ 的选择理由（TabPFN 已处理非线性）。
+  - [X] 定义 MMD 矩阵 $L_{ij}$ 的分段形式。
 - [X] 3C.5 **核心组件 IV：多视图集成与校准 (Multi-Branch Ensemble & Calibration)**:
 
-    - [X] 描述 **4-Branch Preprocessing Strategy**（参考代码 `preprocessing/uda_processor.py`）：
+  - [X] 描述 **4-Branch Preprocessing Strategy**（参考代码 `preprocessing/uda_processor.py`）：
 
-        1.  **Raw**: 原始分布。
+    1. **Raw**: 原始分布。
+    2. **Rotated**: 循环特征置换（打破 Transformer 位置偏置）。
+    3. **Quantile Transformed**: 映射至 $N(0,1)$（应对 Covariate Shift，对齐量纲）。
+    4. **Ordinal Encoded**: 处理类别特征漂移。
+  - [X] 定义 **Temperature Scaling** 与平均机制:
 
-        2.  **Rotated**: 循环特征置换（打破 Transformer 位置偏置）。
+    $ \hat{p}(y=1|x) = \frac{1}{B \times S} \sum_{i=1}^{B \times S} \sigma\left(\frac{z_i(x)}{T}\right) $
 
-        3.  **Quantile Transformed**: 映射至 $N(0,1)$（应对 Covariate Shift，对齐量纲）。
-
-        4.  **Ordinal Encoded**: 处理类别特征漂移。
-
-    - [X] 定义 **Temperature Scaling** 与平均机制:
-
-        $ \hat{p}(y=1|x) = \frac{1}{B \times S} \sum_{i=1}^{B \times S} \sigma\left(\frac{z_i(x)}{T}\right) $
-
-        其中 $T=0.9$ (参考 `src/tabpfn/classifier.py`)，$B=4$ (分支数)，$S=8$ (种子数)。
-
+    其中 $T=0.9$ (参考 `src/tabpfn/classifier.py`)，$B=4$ (分支数)，$S=8$ (种子数)。
 - [X] 3C.6 **理论论证与挑战应对 (Theoretical Justification & Challenge Addressing)**:
 
-    - [X] 对照 Problem Formulation 中的挑战（小样本、Covariate Shift、Label Shift），逐一说明 PANDA 的组件如何解决这些问题。
+  - [X] 对照 Problem Formulation 中的挑战（小样本、Covariate Shift、Label Shift），逐一说明 PANDA 的组件如何解决这些问题。
+  - [X] 论证 PANDA 框架的通用性：不仅适用于肺结节分类，也可扩展至其他医疗表格数据任务（如 TableShift）。
+  - [X] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
+- [X] 3C.7 **TCA 实现深度揭秘 (Based on `adapt.feature_based._tca`)**:
 
-    - [X] 论证 PANDA 框架的通用性：不仅适用于肺结节分类，也可扩展至其他医疗表格数据任务（如 TableShift）。
+  - [X] 用数学形式描述 `TCA.fit_transform` 中的核矩阵 $\mathbf{K} = \begin{bmatrix} K_{SS} & K_{ST} \\ K_{TS} & K_{TT} \end{bmatrix}$、散度矩阵 $\mathbf{L}$（源/目标/混合块）、中心矩阵 $\mathbf{H} = \mathbf{I} - \frac{11^\top}{n+m}$，并写出目标矩阵 $\mathbf{A} = \mathbf{I} + \mu \mathbf{K L K}$、$\mathbf{B} = \mathbf{K H K}$、解 $ \mathbf{sol} = \mathbf{A}^{-1}\mathbf{B}$ 以及前 $n_{\text{components}}$ 个特征向量组成的 $\mathbf{vectors\_}$。
+  - [X] 增设一段描述 `TCA.transform` 的数据流：TabPFN latent embedding 作为 $X_s$/$X_t$，将 $\mathbf{k}_{\text{new}} = K(x, [X_s, X_t])$ 与 $\mathbf{vectors\_}$ 相乘得到共享子空间表示，并对齐源/目标分布。
+  - [X] 比较线性核 $k(x,x') = x^\top x'$ 与 RBF kernel $k(x,x') = \exp(-\gamma \|x - x'\|^2)$；说明 `_tca` 如何通过 `pairwise_kernels` 与 `KERNEL_PARAMS` 把 $\gamma$ 等超参数传递进去；补充 config/experiment_config 中的默认值及调优建议（$\mu$ 控制适配强度、$\gamma$ 决定 RBF 宽度、$n_{\text{components}}$ 决定投影维度）。
+  - [X] 在 Methods 章节新增“基于 ADAPT 的 TCA 实现”段落，直接指向 `/Users/lqy/work/TabPFN/adapt/adapt/feature_based/_tca.py`，并简要说明 `fit_transform`/`transform` 分别做了什么。
+  - [X] 确保 Table 6（`dissertation/latex/AI_Healthcare_Analytics_2025/notation.tex`）涵盖 $\phi, \mathbf{K}, \mathbf{L}, \mathbf{H}, \mathbf{W}, \mu, \gamma$ 等符号，并在 PRD/TCA段落中使用一致的命名；如须补充 notation 定义，先扩展notation.tex再引用新符号。
+  - [X] 在 TCA 描述中引用 `de2021adapt` 与 `noauthor_welcome_nodate`，说明 ADAPT的来源与文档依据。
+- [X] 3C.8 **Figure Consistency with `PANDA.pdf` and Local Assets**:
 
-    - [X] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
-
-- [ ] 3C.7 **TCA 实现深度揭秘 (Based on `adapt.feature_based._tca`)**:
-
-    - [ ] 用数学形式描述 `TCA.fit_transform` 中的核矩阵 $\mathbf{K} = \begin{bmatrix} K_{SS} & K_{ST} \\ K_{TS} & K_{TT} \end{bmatrix}$、散度矩阵 $\mathbf{L}$（源/目标/混合块）、中心矩阵 $\mathbf{H} = \mathbf{I} - \frac{11^\top}{n+m}$，并写出目标矩阵 $\mathbf{A} = \mathbf{I} + \mu \mathbf{K L K}$、$\mathbf{B} = \mathbf{K H K}$、解 $ \mathbf{sol} = \mathbf{A}^{-1}\mathbf{B}$ 以及前 $n_{\text{components}}$ 个特征向量组成的 $\mathbf{vectors\_}$。
-
-    - [ ] 增设一段描述 `TCA.transform` 的数据流：TabPFN latent embedding 作为 $X_s$/$X_t$，将 $\mathbf{k}_{\text{new}} = K(x, [X_s, X_t])$ 与 $\mathbf{vectors\_}$ 相乘得到共享子空间表示，并对齐源/目标分布。
-
-    - [ ] 比较线性核 $k(x,x') = x^\top x'$ 与 RBF kernel $k(x,x') = \exp(-\gamma \|x - x'\|^2)$；说明 `_tca` 如何通过 `pairwise_kernels` 与 `KERNEL_PARAMS` 把 $\gamma$ 等超参数传递进去；补充 config/experiment_config 中的默认值及调优建议（$\mu$ 控制适配强度、$\gamma$ 决定 RBF 宽度、$n_{\text{components}}$ 决定投影维度）。
-
-    - [ ] 在 Methods 章节新增“基于 ADAPT 的 TCA 实现”段落，直接指向 `/Users/lqy/work/TabPFN/adapt/adapt/feature_based/_tca.py`，并简要说明 `fit_transform`/`transform` 分别做了什么。
-
-    - [ ] 添一个“TCA 超参数表”：列出 `kernel`、`gamma`、`mu`、`n_components`、`random_state` 等字段，说明它们目前在 `config/experiment_config.py` 或调参表中的取值与泛化影响。
-
-    - [ ] 确保 Table 6（`dissertation/latex/AI_Healthcare_Analytics_2025/notation.tex`）涵盖 $\phi, \mathbf{K}, \mathbf{L}, \mathbf{H}, \mathbf{W}, \mu, \gamma$ 等符号，并在 PRD/TCA段落中使用一致的命名；如须补充 notation 定义，先扩展notation.tex再引用新符号。
-
-    - [ ] 在 TCA 描述中引用 `de2021adapt` 与 `noauthor_welcome_nodate`，说明 ADAPT/TCA 的来源与文档依据。
-
-- [ ] 3C.8 **Figure Consistency with `PANDA.pdf` and Local Assets**:
-
-    - [ ] 对照 `dissertation/word/AI_Healthcare_Analytics_2025/PANDA.pdf`，验证 `img/cross_hospital/combined_analysis_figure.pdf`、`combined_heatmaps_nature.pdf`、`Feature Selection and UDA.pdf`、`feature_performance_comparison_comprehensive.pdf`、`Pre-trained Tabular Foundation Model Pipeline_new.pdf`、`TCA_dimensionality_reduction.pdf` 的说明，确保 LaTeX 里的图注与 PDF 中的 Figure 3/4/6 或其他图号一致。
-
-    - [ ] 同理核查 TableShift 相关图 `img/tableshift/combined_analysis_figure.pdf` 与 `img/tableshift/combined_heatmaps_nature.pdf`，使 Figure 4/5/6 的说明（如 “Source-domain 10-fold CV heatmap…” vs “TableShift heatmaps…）与 PDF 描述吻合，并把 caption 中的语义（PANDA+TCA 稳定性/recall/precision 强度）写清。
-
-    - [ ] 确保文中每张图的引用覆盖了对应 PDF 的图号，避免遗漏（特别是 cross_hospital 与 tableshift 图的命名/引用）。
+  - [X] 对照 `dissertation/word/AI_Healthcare_Analytics_2025/PANDA.pdf`，验证 `img/cross_hospital/combined_analysis_figure.pdf`、`combined_heatmaps_nature.pdf`、`Feature Selection and UDA.pdf`、`feature_performance_comparison_comprehensive.pdf`、`Pre-trained Tabular Foundation Model Pipeline_new.pdf`、`TCA_dimensionality_reduction.pdf` 的说明，确保 LaTeX 里的图注与 PDF 中的 Figure 3/4/6 或其他图号一致。
+  - [X] 同理核查 TableShift 相关图 `img/tableshift/combined_analysis_figure.pdf` 与 `img/tableshift/combined_heatmaps_nature.pdf`，使 Figure 4/5/6 的说明（如 “Source-domain 10-fold CV heatmap…” vs “TableShift heatmaps…）与 PDF 描述吻合，并把 caption 中的语义（PANDA+TCA 稳定性/recall/precision 强度）写清。
+  - [X] 确保文中每张图的引用覆盖了对应 PDF 的图号，避免遗漏（特别是 cross_hospital 与 tableshift 图的命名/引用）。
 
 ### 阶段 4：方法实现细节扩写 (Phase 4: Methods Expansion)
 
