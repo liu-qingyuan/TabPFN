@@ -1,0 +1,146 @@
+% notation.tex
+% Unified Mathematical Notation System
+
+% Define common symbols and their meanings here.
+
+% Domains and Data
+\newcommand{\inputspace}{\mathcal{X}} % Input feature space (mixed numerical/categorical)
+\newcommand{\labelspace}{\mathcal{Y}} % Label space (0: Benign, 1: Malignant)
+\newcommand{\sourcedomaindist}{\mathcal{D}_S} % Source domain distribution
+\newcommand{\targetdomaindist}{\mathcal{D}_T} % Target domain distribution
+\newcommand{\sourcedata}{S} % Empirical dataset from D_S
+\newcommand{\targetdata}{T} % Empirical dataset from D_T
+\newcommand{\featurevec}{\mathbf{x}} % Feature vector
+\newcommand{\labelval}{y} % Corresponding label
+\newcommand{\sharedfeatures}{\mathcal{F}_{\cap}} % Shared feature schema
+\newcommand{\rfeselectedfeatures}{\mathcal{F}^*} % RFE-selected subset of features
+\newcommand{\sourcedatasize}{n_s} % Number of labeled samples in source
+\newcommand{\targetdatasize}{n_t} % Number of unlabeled samples in target
+\newcommand{\rawdim}{d_{\text{raw}}} % Raw input feature dimensionality
+\newcommand{\intersectdim}{d_{\cap}} % Intersected feature dimensionality
+\newcommand{\featuredim}{d} % Dimensionality of input feature space
+\newcommand{\sourcedatafeatures}{X_s} % Source data features
+\newcommand{\sourcedatalabels}{y_s} % Source data labels
+\newcommand{\targetfeatureschema}{\mathcal{F}_t} % Target schema (set of available features in target domain)
+\newcommand{\targetfeaturecount}{k_{\text{target}}} % Target feature count
+\newcommand{\targetlabels}{Y_T} % Target labels (unobserved)
+\newcommand{\featurevecj}{\featurevec_j} % j-th component of feature vector
+\newcommand{\featurevecs}{\featurevec^s} % Feature vector from source
+\newcommand{\featurevect}{\featurevec^t} % Feature vector from target
+\newcommand{\labelvalq}{y_{\text{query}}} % Query label
+
+% Learning Theory
+\newcommand{\hypothesis}{h} % Hypothesis function (classifier)
+\newcommand{\hypothesisclass}{\mathcal{H}} % Hypothesis class
+\newcommand{\sourceerror}{\epsilon_S(\hypothesis)} % Expected risk (error) on Source distribution
+\newcommand{\targeterror}{\epsilon_T(\hypothesis)} % Expected risk (error) on Target distribution
+\newcommand{\sourcesampleerror}{\hat{\epsilon}_S(\hypothesis)} % Empirical risk on dataset S
+\newcommand{\targetsampleerror}{\hat{\epsilon}_T(\hypothesis)} % Empirical risk on dataset T
+\newcommand{\domaindivergence}{d_{\mathcal{H}\Delta\mathcal{H}}} % HDeltaH-Divergence (Domain Discrepancy)
+\newcommand{\adaptabilityterm}{\lambda} % Ideal joint hypothesis error (Adaptability term)
+\newcommand{\threshold}{\theta} % Threshold (e.g., in GBDT)
+\newcommand{\featuremap}{\varphi} % Feature map to RKHS
+\newcommand{\rkhs}{\mathcal{H}_{RKHS}} % Reproducing Kernel Hilbert Space
+\newcommand{\hypothesissubset}{h_{S^{(t)}}} % Hypothesis trained on feature subset
+\newcommand{\featurevectexture}{\featurevec_{\text{texture}}} % Texture feature vector component
+\newcommand{\vcdim}{d_{VC}} % VC Dimension
+\newcommand{\confidence}{\delta} % Confidence parameter
+\newcommand{\loss}{\mathcal{L}} % Generic Loss function
+\newcommand{\modelparams}{\boldsymbol{\theta}} % Model parameters (weights)
+
+% PANDA Architecture
+\newcommand{\adaptmap}{\psi} % Domain adaptation mapping (TCA projection)
+\newcommand{\tcaprojectionmatrix}{\mathbf{W}} % TCA Projection Matrix
+\newcommand{\kernelmatrix}{\mathbf{K}} % Kernel Matrix
+\newcommand{\mmdmatrix}{\mathbf{L}} % MMD Indicator Matrix
+\newcommand{\centeringmatrix}{\mathbf{H}} % Centering Matrix
+\newcommand{\regularizationparam}{\mu} % Regularization parameter for TCA
+\newcommand{\ppd}{PPD} % Posterior Predictive Distribution
+\newcommand{\priorfunc}{P_{\text{prior}}} % Prior distribution over functions
+\newcommand{\func}{f} % Structural equation model or data-generating function
+\newcommand{\noise}{\epsilon} % Noise term
+\newcommand{\queryvec}{\mathbf{x}_{\text{query}}} % Query sample feature vector
+\newcommand{\sourcequeryvec}{\mathbf{x}_{\text{query}}^s} % Query sample from source domain
+\newcommand{\targetqueryvec}{\mathbf{x}_{\text{query}}^t} % Query sample from target domain
+\newcommand{\marginalsourcedist}{P_S(X)} % Marginal feature distribution for source
+\newcommand{\marginaltargetdist}{P_T(X)} % Marginal feature distribution for target
+\newcommand{\conditionalps}{P_S(Y|X)} % Conditional probability of label given features for source
+\newcommand{\conditionalpt}{P_T(Y|X)} % Conditional probability of label given features for target
+\newcommand{\marginalsourcelabel}{P_S(Y)} % Marginal label distribution for source
+\newcommand{\marginaltargetlabel}{P_T(Y)} % Marginal label distribution for target
+\newcommand{\prevalence}{\pi} % Prevalence of positive class
+\DeclareMathOperator*{\argmin}{argmin} % Argmin operator
+\DeclareMathOperator*{\argmax}{argmax} % Argmax operator
+\DeclareMathOperator{\tr}{tr} % Trace operator
+\newcommand{\identitymatrix}{\mathbf{I}} % Identity matrix
+\newcommand{\rfeimportance}{\mathcal{I}} % Permutation Importance
+\newcommand{\lossauc}{\mathcal{L}_{\text{AUC}}} % AUC Loss
+\newcommand{\featureimportancevec}{\mathbf{I}} % Permutation Importance vector
+\newcommand{\minfeature}{f_{\text{min}}} % Feature with minimum importance
+\newcommand{\rfeset}{S} % Base symbol for feature subsets
+\newcommand{\rfeiterateset}{\rfeset^{(t)}} % Feature subset at iteration t
+\newcommand{\rfecurrentdim}{k} % Dimensionality after RFE (approx. 8)
+\newcommand{\tcaprojectdim}{m} % Dimensionality after TCA (approx. 15)
+\newcommand{\ensembleprob}{\hat{P}(y=1|\mathbf{x}_q)} % Ensemble probability estimate
+\newcommand{\querypatient}{\mathbf{x}_q} % Target query (patient)
+\newcommand{\contextdata}{\mathbf{X}_{\text{ctx}}^s} % Subset of training data selected by seed s
+\newcommand{\transformerbackbone}{f_\theta} % Frozen TabPFN Transformer backbone
+\newcommand{\temperature}{T} % Temperature scaling parameter
+\newcommand{\logitoutput}{z_i(\mathbf{x})} % Logit output of i-th TabPFN classifier member
+\newcommand{\activation}{\sigma} % Activation function (e.g., sigmoid)
+\newcommand{\pandafunc}{f_{\text{PANDA}}} % PANDA composite function
+\newcommand{\tabpfnfunc}{f_{\text{TabPFN}}} % TabPFN classifier function
+\newcommand{\ceilogit}{l_i} % Logit for CEI calculation (generic)
+\newcommand{\numfeatureembed}{\mathbf{e}^{(j)}} % Embedding for j-th numerical feature
+\newcommand{\numweightmat}{\mathbf{W}_{\text{num}}^{(j)}} % Weight matrix for j-th numerical feature
+\newcommand{\numbiasvec}{\mathbf{b}_{\text{num}}^{(j)}} % Bias vector for j-th numerical feature
+\newcommand{\catelembedmat}{\text{EmbeddingMatrix}^{(j)}} % Embedding matrix for j-th categorical feature
+\newcommand{\catindex}{c} % Categorical feature index
+\newcommand{\nanembed}{\mathbf{e}_{\text{nan}}} % Learnable token for missing values
+\newcommand{\samplesembed}{\mathbf{E}_{\text{sample}}} % Full sample embedding
+\newcommand{\mlp}{\text{MLP}} % Multi-Layer Perceptron
+\newcommand{\concat}{\text{Concat}} % Concatenation operation
+\newcommand{\posencoding}{\mathbf{P}_{\text{pos}}} % Positional encoding
+\newcommand{\preprocessingbranches}{\mathcal{B}} % Set of preprocessing functions
+\newcommand{\randomseeds}{\mathcal{S}} % Set of random seeds
+\newcommand{\numpreprocessbranches}{B} % Number of preprocessing branches
+\newcommand{\numrandomseeds}{S} % Number of random seeds
+\newcommand{\rfecomponentweights}{w} % Generic weight for RFE components
+\newcommand{\rfeperformance}{S_{\text{perf}}} % Performance score for RFE
+\newcommand{\rfeefficiency}{S_{\text{eff}}} % Efficiency score for RFE
+\newcommand{\rfestability}{S_{\text{stab}}} % Stability score for RFE
+\newcommand{\rfesimplicity}{S_{\text{simp}}} % Simplicity score for RFE
+\newcommand{\featsetcost}{\text{Cost}(\mathcal{F}_k)} % Cost of feature subset
+\newcommand{\totalfeatcost}{\text{Cost}(\mathcal{F}_{\text{total}})} % Cost of total features
+\newcommand{\aucsd}{\text{Std}(\text{AUC})} % Standard deviation of AUC
+\newcommand{\sparsityparam}{\alpha} % Sparsity penalty coefficient
+\newcommand{\linearK}{K_{\text{linear}}} % Linear Kernel
+\newcommand{\rbfK}{K_{\text{RBF}}} % RBF Kernel
+\newcommand{\gammaK}{\gamma} % Bandwidth hyperparameter for RBF kernel
+\newcommand{\onesvec}{\mathbf{1}} % Vector of ones
+
+% Evaluation Metrics
+\newcommand{\tpr}{\text{TPR}} % True Positive Rate
+\newcommand{\fpr}{\text{FPR}} % False Positive Rate
+\newcommand{\tp}{\text{TP}} % True Positives
+\newcommand{\fn}{\text{FN}} % False Negatives
+\newcommand{\fp}{\text{FP}} % False Positives
+\newcommand{\tn}{\text{TN}} % True Negatives
+\newcommand{\auc}{\text{AUC}} % Area Under the Curve
+\newcommand{\accuracy}{\text{Accuracy}} % Accuracy
+\newcommand{\precision}{\text{Precision}} % Precision
+\newcommand{\recall}{\text{Recall}} % Recall (Sensitivity)
+\newcommand{\fonescore}{\text{F1 Score}} % F1 Score
+\newcommand{\specificity}{\text{Specificity}} % Specificity
+\newcommand{\meanmetric}{\bar{M}} % Mean of metric M
+\newcommand{\metrick}{M_k} % Metric M for k-th fold
+\newcommand{\numfolds}{K} % Number of folds
+\newcommand{\stdmetric}{\sigma_M} % Standard deviation of metric M
+\newcommand{\predprob}{\hat{p}_i} % Predicted probability for i-th sample
+\newcommand{\calibbin}{B_k} % k-th bin for calibration curve
+\newcommand{\meanpredprob}{\bar{p}_k} % Mean predicted probability in bin B_k
+\newcommand{\meanobservedfreq}{\bar{y}_k} % Mean observed frequency in bin B_k
+\newcommand{\netbenefit}{\text{NB}(p_t)} % Net Benefit at probability threshold p_t
+\newcommand{\probthreshold}{p_t} % Probability threshold
+\newcommand{\nball}{\text{NB}_{\text{all}}} % Net Benefit of "treat all" strategy
+\newcommand{\nbnone}{\text{NB}_{\text{none}}} % Net Benefit of "treat none" strategy

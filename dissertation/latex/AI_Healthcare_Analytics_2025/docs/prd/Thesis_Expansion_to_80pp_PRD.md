@@ -342,6 +342,16 @@ latexmk -pdf main.tex
 
     - [X] **实时推理可行性**: 给出实验中的实际推理耗时（ms级），证明满足临床实时要求。
 
+### 阶段 3D：TCA 公式与实现 TODO（基于 `adapt.feature_based._tca`）
+
+- [X] 用数学形式描述 `TCA.fit_transform` 中的核矩阵 `K = [[Kss, Kst], [Kstᵀ, Ktt]]`、散度矩阵 `L`、中心矩阵 `H = I - 11ᵀ/(n+m)`，以及求解目标 `a = I + μ K L K`、`b = K H K`、`sol = a^{-1} b` 并选取前 `n_components` 个 `vectors_`。
+- [X] 增设一段描述 `transform` 的数据流：TabPFN latent 作为 `Xs/Xt` 输入，`vectors_` 与新样本的 `K(X, [Xs,Xt])` 相乘即可得到共享子空间 embedding，以无监督方式对齐源/目标分布。
+- [X] 比较两类核：线性 `k(x,x') = x^⊤ x'` 与 RBF `k(x,x') = exp(-γ‖x-x'‖²)`，并说明 `_tca` 如何通过 `pairwise_kernels` 与 `KERNEL_PARAMS` 把 `gamma` 传递进去；在 TODO 里列出 `kernel`、`gamma`、`mu`、`n_components` 的默认值与调优建议（`μ` 控制对齐力度、`γ` 控制 RBF 宽度、`n_components` 决定投影维度）。
+- [X] 在 Methods 章节中新增“基于 ADAPT 的 TCA 实现”段落，直接引用本地路径 `/Users/lqy/work/TabPFN/adapt/adapt/feature_based/_tca.py` 以便追踪代码，并补上 `TCA.transform` 用法的叙述。
+- [X] 添一个“TCA 超参数表”补全结构：列出 `kernel`、`gamma`、`mu`、`n_components`、`random_state` 等字段，说明当前 config/experiment_config 中的设置及对泛化的影响。
+- [X] 对照 `dissertation/latex/AI_Healthcare_Analytics_2025/notation.tex` 的 Table 6，确保 `ϕ`、`K`、`L`、`H`、`W`、`μ`、`γ` 等符号都有描述，必要时更新 notation 文件并在 PRD 中使用同一符号。
+- [X] 在 PRD 的引用清单中注明 `de2021adapt` 与 `noauthor_welcome_nodate`，TCA 描述段落引用这两个文献以说明 ADAPT 的来源与文档依据。
+
 ### 阶段 4：方法实现细节扩写 (Phase 4: Methods Expansion)
 
 **Target**: `Section/Methods.tex` (Gap +4 pages)

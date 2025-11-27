@@ -180,14 +180,15 @@ instead of relying on any single paradigm.
 \centering
 \caption{Comparative strengths and weaknesses of tabular model families in medical AI.}
 \label{tab:model_summary}
-\begin{tabular}{p{2.7cm}p{3.4cm}p{4.4cm}p{4.4cm}}
-\hline
+\footnotesize
+\begin{tabular}{p{2.5cm}p{3.2cm}p{3.9cm}p{3.9cm}}
+\toprule
 \textbf{Model Class} & \textbf{Representative Algorithms} & \textbf{Strengths in Medical AI} & \textbf{Limitations in Cross-Hospital Tasks} \\
-\hline
+\midrule
 Tree Ensembles & XGBoost, LightGBM, CatBoost & Interpretable, robust to missingness/outliers, encode clinical constraints & Overfit small cohorts, non-differentiable, no inherent transfer learning, require full retraining per site \\
 Deep Tabular & TabNet, TabTransformer, FT-Transformer, SAINT, NODE & Differentiable, capture complex interactions, allow multimodal fusion & Data hungry, extensive tuning, high compute cost, brittle without alignment \\
 Foundation Models & TabPFN, TabPFN-2.5, TabLLM & Hyperparameter-free inference, strong small-$N$ priors, probabilistic outputs & Sensitive to distribution/feature shift, limited context length, assume aligned schemas \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -312,16 +313,17 @@ their implications for cross-hospital tabular deployment.
 \centering
 \caption{Representative domain-adaptation strategies in medical AI and their relevance to cross-hospital tabular risk prediction.}
 \label{tab:da_strategies}
-\begin{tabular}{p{3.2cm}p{2.4cm}p{3.8cm}p{3.8cm}p{3.8cm}}
-\hline
+\footnotesize
+\begin{tabular}{p{2.5cm}p{1.5cm}p{3.1cm}p{3.2cm}p{3.2cm}}
+\toprule
 \textbf{Method family} & \textbf{Typical modality} & \textbf{Key assumptions} & \textbf{Pros} & \textbf{Limitations for small cross-hospital tabular cohorts} \\
-\hline
+\midrule
 Statistical alignment (MMD, TCA, CORAL, transport) & Tabular, EHR, imaging & Shared feature schema; access to source data and unlabeled target samples; primarily covariate shift & Closed-form or deterministic mappings; stable when target labels are absent; easy to plug into existing pipelines~\cite{pan2010domain,sun2016correlationalignmentunsuperviseddomain,grubinger2015domain,li_transport-based_2024} & Does not directly correct label or concept shift; assumes overlapping feature sets; may misalign rare subgroups without additional calibration~\cite{gardner_benchmarking_2024,koch2024distribution,guo_evaluation_2022} \\
 Adversarial representation learning (DANN-style) & Imaging, EHR sequences & Access to source and target data with domain labels; discriminator encouraged to remove site identity & Learns domain-invariant representations jointly with task loss; flexible for complex modalities~\cite{guo_evaluation_2022,zhang_adadiag_2022} & Unstable on tiny cohorts; discriminators exploit missingness patterns, causing encoders to discard predictive features; can underperform ERM in ICU-style tasks~\cite{zhang_adadiag_2022,guan2021domain} \\
 Feature-space DA and domain-aware FS (FSDA, DomainATM) & Tabular, EHR & At least partially shared feature space; access to both domains during training & Selects features that are predictive and stable across sites; reduces reliance on site-specific surrogates and noisy biomarkers~\cite{luo2021fsda,guan2021domain,guan_domainatm_2023,guan_domain_2022} & Still assumes sizable overlap in measured variables; does not natively handle missing entire feature blocks or unlabeled target hospitals with severe schema mismatch \\
 Domain generalization and temporal adaptation (TableShift, Wild-Tab, Wild-Time) & Tabular & Multiple labeled source distributions; no target labels during training & Reveal failure modes under temporal, demographic, and institutional shift; provide standardized evaluation suites~\cite{gardner_benchmarking_2024,gardner_tableshift_nodate,kolesnikov_wild-tab_2023,ahn_unsupervised_2023} & Many domain-generalization objectives (e.g., GroupDRO, IRM, VREx) rarely beat strong ERM or GBDT baselines; benchmarks show label shift and calibration drift dominate what feature matching can fix~\cite{gardner_benchmarking_2024,noauthor_mlfoundationstableshift_nodate} \\
 Federated and federated-DA frameworks (FL, FedFusion-style) & Imaging, tabular & Multiple compute-capable hospitals; communication budget; typically some local labels and shared model architecture~\cite{rehman_federated_2023,guan_federated_2024,kahenga_fedfusion_2025} & Preserve data privacy while learning from distributed cohorts; can combine personalization with domain adaptation and label efficiency & Often require significant local computation and labeled target data; focus on large imaging or EHR tasks; do not directly address very small tabular cohorts with feature mismatch and strict label scarcity \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -400,8 +402,8 @@ studies on EHR and imaging data show that such cross-domain criteria can discard
 site-specific surrogates (e.g., local procedure codes) while preserving clinically
 meaningful biomarkers. PANDA adopts this philosophy in a pragmatic way: TabPFN is
 used as a strong scoring model, but feature elimination is guided jointly by
-source-site performance and cross-site stability, leading to compact ``best7'' and
-``best8'' subsets that are consistently informative in both hospitals. These
+source-site performance and cross-site stability, leading to a compact
+``best8'' subset that is consistently informative in both hospitals. These
 domain-aware subsets provide low-dimensional, harmonized inputs to TCA, reducing
 the risk of negative transfer and making the subsequent alignment problem better
 posed.
@@ -420,17 +422,18 @@ thereby coupling representation learning with domain-aware feature governance.
 \centering
 \caption{Representative feature selection methods for small, imbalanced, high-dimensional biomedical tabular data.}
 \label{tab:fs_methods}
-\begin{tabular}{p{3cm}p{3cm}p{3.6cm}p{3.8cm}p{3.8cm}}
-\hline
+\scriptsize
+\begin{tabular}{p{2.0cm}p{2.0cm}p{2.8cm}p{3.2cm}p{3.2cm}}
+\toprule
 \textbf{Method} & \textbf{Model family} & \textbf{Small-sample / imbalance handling} & \textbf{Interpretability characteristics} & \textbf{Representative biomedical use cases} \\
-\hline
+\midrule
 Recursive feature elimination (RFE) with linear or tree models & Wrapper around SVM, logistic regression, or tree ensembles & Wrapper search over feature subsets can overfit when $N$ is small and features are correlated; often combined with cross-validation and class-balanced sampling & Produces explicit ranked feature lists and compact subsets; easy to inspect and map to clinical variables~\cite{guyon2002gene} & Widely used in early gene-expression and biomarker panels; basis for many clinical risk-score and radiomics pipelines \\
 LASSO / elastic-net logistic regression & Embedded linear models & $\ell_1$ or $\ell_1{+}\ell_2$ penalties shrink coefficients, providing some robustness to high dimensionality; still assumes linear log-odds and can be unstable under heavy collinearity & Sparse coefficients directly indicate selected features; compatible with odds-ratio interpretation familiar to clinicians~\cite{guyon2002gene} & Common in radiomics and EHR risk models where interpretability and coefficient-based reporting are required \\
 GRACES & Graph-convolutional-network-based FS~\cite{chen2023graces} & Specifically targets high-dimensional, low-sample-size data by modeling feature relations on a graph; alleviates overfitting compared with independent filters & Outputs a compact subset informed by graph structure; can be visualized as a network of interacting biomarkers & Demonstrated on omics-style datasets; suitable when prior knowledge or correlations between biomarkers are important \\
 DeepFS & Deep feature screening with autoencoders~\cite{liu2022deepfs,li2023deep} & Uses deep encoders to learn low-dimensional representations and rank features, handling ultra-high-dimensional, sparse, and potentially imbalanced data & Provides importance scores for each original feature; retains flexibility to operate in supervised or unsupervised mode & Evaluated on synthetic and biomedical high-dimensional datasets; useful when the number of variables far exceeds the number of patients \\
 Domain-aware FS (FSDA-style) & Feature selection for domain adaptation~\cite{luo2021fsda} & Encourages selection of features that remain predictive across domains, implicitly handling covariate shift between sites & Produces subsets that are jointly predictive and domain-stable, supporting cross-hospital deployment & Applied to benchmark DA tasks; conceptually aligned with cross-hospital biomarker selection in multi-center medical studies \\
 Transformer / foundation-model-based FS & Attention- or score-based selection using TabNet, TabTransformer, and tabular foundation models~\cite{arik2021tabnet,huang2020tabtransformer,somvanshi2024survey} & Leverages high-capacity or pre-trained models to estimate nonlinear feature importance; can be combined with RFE to mitigate small-sample overfitting & Attention weights, feature masks, or permutation-based scores yield ranked features; aligns with explainable-AI practices & Increasingly used in biomedical tabular and omics datasets; PANDA's cross-cohort RFE uses a tabular foundation model as the scoring backbone \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -502,15 +505,16 @@ systematic underestimation or overestimation of risk in particular subgroups.
 \centering
 \caption{Representative pulmonary nodule malignancy scores and common external-validation issues.}
 \label{tab:nodule_scores}
-\begin{tabular}{p{2.7cm}p{3.6cm}p{4.2cm}p{4.4cm}}
-\hline
+\footnotesize
+\begin{tabular}{p{2.2cm}p{3.2cm}p{4.0cm}p{4.0cm}}
+\toprule
 \textbf{Score} & \textbf{Development cohort} & \textbf{Key variables} & \textbf{External-validation observations} \\
-\hline
+\midrule
 Mayo Clinic & Clinic-referred indeterminate nodules in smokers & Age, smoking history, nodule size, spiculation, upper-lobe location & Internal AUC in the high-0.80s; frequent overestimation of risk and AUC drops to $\approx$0.6--0.7 in screening and non-U.S. cohorts \\
 Veterans Affairs & Predominantly male veterans with larger nodules & Age, smoking, nodule diameter, location & Good performance in veterans; miscalibration when transported to mixed-gender or lower-risk populations \\
 Brock (PanCan) & CT screening cohort with many small nodules & Age, sex, family history, emphysema, size, type, location & Meta-analytic pooled AUC $\approx 0.80$; markedly lower AUC in Asian, solitary, and subsolid nodules~\cite{chen_pulmonary_2025} \\
 PKUPH / Li & Chinese tertiary-hospital and screening cohorts & Age, smoking, nodule size and type, lobulation, spiculation & High internal AUC but drops in external series; performance depends strongly on CT protocol and case mix~\cite{li2011development,he2021novel,liu_establishment_2024} \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -555,14 +559,15 @@ and domain-aware alignment rather than assuming reproducibility across hospitals
 \centering
 \caption{Representative radiomics-based pulmonary nodule malignancy models and reported generalization behavior.}
 \label{tab:radiomics_models}
-\begin{tabular}{p{3.1cm}p{3.1cm}p{2.6cm}p{2.8cm}p{2.4cm}p{2.6cm}p{3.4cm}}
-\hline
+\scriptsize
+\begin{tabular}{p{2.2cm}p{2.0cm}p{1.5cm}p{2.0cm}p{1.0cm}p{1.0cm}p{2.8cm}}
+\toprule
 \textbf{Study / model} & \textbf{Imaging data} & \textbf{Centers / nodules} & \textbf{Classifier} & \textbf{Internal AUC} & \textbf{External AUC} & \textbf{Harmonization / scanner sensitivity} \\
-\hline
-Generic radiomics pipelines & 2D/3D chest CT or low-dose CT nodules & Single- or few-center cohorts (sizes vary) & LASSO- or stability-selected features with SVM, RF, or GBDT & Typically 0.75--0.90 on internal validation cohorts & Often 0.10--0.20 lower on external scanners or hospitals & Performance degrades when kernel, slice thickness, or vendor changes; ComBat-style harmonization can reduce but not eliminate scanner effects~\cite{garau_external_2020,hellin2024unraveling} \\
+\midrule
+Generic radiomics pipelines & 2D/3D chest CT or low-dose CT nodules & Single- or few-center cohorts (sizes vary) & LASSO- or stability-selected features with SVM, RF, or GBDT & Typically 0.75--0.90 & 0.10--0.20 lower & Performance degrades when kernel, slice thickness, or vendor changes; ComBat-style harmonization can reduce but not eliminate scanner effects~\cite{garau_external_2020,hellin2024unraveling} \\
 Multi-center reproducibility analyses & 3D CT radiomics features across scanners & Multi-center CT datasets & -- & -- & -- & Many texture features show intraclass correlation coefficients $<0.5$ across vendors and protocols; harmonization helps but cannot fully restore stability~\cite{hellin2024unraveling} \\
-Radiomics + clinical scoring models & Radiomics signatures combined with clinical descriptors & Hospital-specific or regional nodule cohorts & Elastic-net / logistic regression, RF, or GBDT & High AUC in derivation cohorts (often $\geq 0.80$) & External AUC can drop to the mid-0.70s or lower & External validations report double-digit AUC loss and sensitivity to case mix and acquisition protocol~\cite{garau_external_2020} \\
-\hline
+Radiomics + clinical scoring models & Radiomics signatures combined with clinical descriptors & Hospital-specific or regional nodule cohorts & Elastic-net / logistic regression, RF, or GBDT & High ($\geq 0.80$) & Mid-0.70s or lower & External validations report double-digit AUC loss and sensitivity to case mix and acquisition protocol~\cite{garau_external_2020} \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -715,8 +720,8 @@ compete with every prior line of work. By treating a tabular foundation model as
 plug-in prior, PANDA inherits strong small-sample performance without hand-tuning
 but augments it with cross-domain RFE that explicitly searches for a compact subset
 of biomarkers stable across hospitals. This step operationalizes domain-aware
-feature selection, yielding shared feature sets (``best7'', ``best8'') that remain
-predictive in both institutions and provide harmonized inputs for subsequent
+feature selection, yielding a shared feature set (``best8'') that remains
+predictive in both institutions and provides harmonized inputs for subsequent
 alignment. TCA is then applied in the latent space induced by TabPFN, combining the
 representation power of foundation models with the stability of kernel-based
 alignment to handle unlabeled target data. The same pipeline is evaluated both on a

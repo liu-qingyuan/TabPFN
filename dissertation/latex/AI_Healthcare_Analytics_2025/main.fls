@@ -131,6 +131,11 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/graphic
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
+INPUT ./notation.tex
+INPUT ./notation.tex
+INPUT ./notation.tex
+INPUT ./notation.tex
+INPUT notation.tex
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT ./main.aux
@@ -207,20 +212,32 @@ INPUT ./Section/Related_Work.tex
 INPUT Section/Related_Work.tex
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT ./Section/Problem_Formulation.tex
 INPUT ./Section/Problem_Formulation.tex
 INPUT ./Section/Problem_Formulation.tex
 INPUT ./Section/Problem_Formulation.tex
 INPUT Section/Problem_Formulation.tex
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmmib7.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmmib5.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT ./Section/Solution.tex
 INPUT Section/Solution.tex
+INPUT ./img/cross_hospital/TCA_dimensionality_reduction.pdf
+INPUT ./img/cross_hospital/TCA_dimensionality_reduction.pdf
+INPUT ./img/cross_hospital/TCA_dimensionality_reduction.pdf
+INPUT ./img/cross_hospital/TCA_dimensionality_reduction.pdf
+INPUT ./img/cross_hospital/TCA_dimensionality_reduction.pdf
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf
 INPUT ./img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf
@@ -240,7 +257,6 @@ INPUT ./Section/Analysis.tex
 INPUT ./Section/Analysis.tex
 INPUT ./Section/Analysis.tex
 INPUT Section/Analysis.tex
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
 INPUT ./Section/Evaluation.tex
 INPUT ./Section/Evaluation.tex
@@ -257,6 +273,11 @@ INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
 INPUT ./img/tableshift/combined_analysis_figure.pdf
+INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
+INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
+INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
+INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
+INPUT ./img/cross_hospital/Feature Selection and UDA.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
 INPUT ./img/cross_hospital/feature_performance_comparison_comprehensive.pdf
@@ -286,6 +307,7 @@ INPUT ./main.out
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
@@ -293,6 +315,8 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/publi
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb

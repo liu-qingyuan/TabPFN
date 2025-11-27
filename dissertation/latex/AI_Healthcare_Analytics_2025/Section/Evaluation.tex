@@ -12,50 +12,50 @@ Results are averaged over 10-fold stratified cross-validation to temper label im
 
 \[
 \begin{aligned}
-&\text{True Positive Rate:} && TPR(\tau) = \frac{TP(\tau)}{TP(\tau) + FN(\tau)} \\
-&\text{False Positive Rate:} && FPR(\tau) = \frac{FP(\tau)}{FP(\tau) + TN(\tau)} \\
-&\text{AUC:} && AUC = \int_0^1 TPR(\tau)\, d(FPR(\tau)) \\
-&\text{Accuracy:} && \frac{TP + TN}{TP + TN + FP + FN} \\
-&\text{Precision:} && \frac{TP}{TP + FP} \\
-&\text{Recall (Sensitivity):} && \frac{TP}{TP + FN} \\
+&\text{True Positive Rate:} && \tpr(\tau) = \frac{\tp(\tau)}{\tp(\tau) + \fn(\tau)} \\
+&\text{False Positive Rate:} && \fpr(\tau) = \frac{\fp(\tau)}{\fp(\tau) + \tn(\tau)} \\
+&\text{AUC:} && \auc = \int_0^1 \tpr(\tau)\, d(\fpr(\tau)) \\
+&\text{Accuracy:} && \frac{\tp + \tn}{\tp + \tn + \fp + \fn} \\
+&\text{Precision:} && \frac{\tp}{\tp + \fp} \\
+&\text{Recall (Sensitivity):} && \frac{\tp}{\tp + \fn} \\
 &\text{F1 Score:} && \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} \\
-&\text{Specificity:} && \frac{TN}{TN + FP}
+&\text{Specificity:} && \frac{\tn}{\tn + \fp}
 \end{aligned}
 \]
 
-Let $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n$ denote the full dataset, and $\mathcal{D}_k$ be the $k$-th fold. For metric $M$, the mean and standard deviation over $K=10$ folds are:
+Let $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^n$ denote the full dataset, and $\mathcal{D}_k$ be the $k$-th fold. For metric $M$, the mean and standard deviation over $\numfolds=10$ folds are:
 
 \[
-\bar{M} = \frac{1}{K}\sum_{k=1}^K M_k, \quad \sigma_M = \sqrt{\frac{1}{K-1} \sum_{k=1}^K (M_k - \bar{M})^2}
+\meanmetric = \frac{1}{\numfolds}\sum_{k=1}^{\numfolds} \metrick, \quad \stdmetric = \sqrt{\frac{1}{\numfolds-1} \sum_{k=1}^{\numfolds} (\metrick - \meanmetric)^2}
 \]
 
 \subsubsection{Visualization-Based Evaluation}
 
 \begin{itemize}
-\item \textbf{ROC Curves:} Plot $TPR(\tau)$ versus $FPR(\tau)$ for $\tau \in [0,1]$ to see the sensitivity-specificity trade-off. 
+\item \textbf{ROC Curves:} Plot $\tpr(\tau)$ versus $\fpr(\tau)$ for $\tau \in [0,1]$ to see the sensitivity-specificity trade-off. 
 
-\item \textbf{Calibration Curves:} Check agreement between predicted probability $\hat{p}_i$ and observed frequency $y_i$. For $K$ equal-width bins $B_k = [k/K, (k+1)/K)$:
+\item \textbf{Calibration Curves:} Check agreement between predicted probability $\predprob$ and observed frequency $\labelval_i$. For $\numfolds$ equal-width bins $\calibbin = [k/\numfolds, (k+1)/\numfolds)$:
 
 \[
-\bar{p}_k = \frac{1}{|B_k|} \sum_{i \in B_k} \hat{p}_i, \quad \bar{y}_k = \frac{1}{|B_k|} \sum_{i \in B_k} y_i
+\meanpredprob = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \predprob, \quad \meanobservedfreq = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \labelval_i
 \]
 
 \item \textbf{Decision Curve Analysis (DCA):}
 
 \[
-NB(p_t) = \frac{TP(p_t)}{n} - \frac{FP(p_t)}{n} \cdot \frac{p_t}{1 - p_t}
+\netbenefit = \frac{\tp(\probthreshold)}{n} - \frac{\fp(\probthreshold)}{n} \cdot \frac{\probthreshold}{1 - \probthreshold}
 \]
 
 With benchmark strategies:
 
 \[
-NB_{all}(p_t) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{p_t}{1 - p_t}, \quad NB_{none} = 0
+\nball(\probthreshold) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{\probthreshold}{1 - \probthreshold}, \quad \nbnone = 0
 \]
 \end{itemize}
 
 \subsection{Experimental Setup and Results}
 
-Structured clinical data from two cancer centers in China provided a training cohort (Cohort A, $n_s=295$) and an external test cohort (Cohort B, $n_t=190$). Cohort A contained 63 structured features; Cohort B contained 58 (Table~\ref{tab:cohort_summary}).
+Structured clinical data from two cancer centers in China provided a training cohort (Cohort A, $\sourcedatasize=295$) and an external test cohort (Cohort B, $\targetdatasize=190$). Cohort A contained 63 structured features; Cohort B contained 58 (Table~\ref{tab:cohort_summary}).
 
 \begin{table}[htbp]
 \centering
@@ -86,9 +86,11 @@ Outcome (Malignant) & & \\
 \subsection{Main Performance Results}
 
 \subsubsection{Source and Target Domain Performance}
-While Figure~\ref{fig:performance-heatmaps} visualizes the relative performance trends across methods, Table~\ref{tab:main_results_table} provides the precise numerical metrics for detailed comparison. In source-domain evaluation, PANDA achieved an AUC of 0.829, significantly outperforming Random Forest (0.752) and clinical scores (Mayo AUC 0.605).
+While Figure~\ref{fig:performance-heatmaps} visualizes the relative performance trends across methods, Table~\ref{tab:main_results_table} provides the precise numerical metrics for detailed comparison. In source-domain evaluation, PANDA achieved an \auc of 0.829, significantly outperforming Random Forest (0.752) and clinical scores (Mayo \auc 0.605).
 
-On the external target domain, the benefits of adaptation became clear. The TCA-enhanced PANDA model reached the highest AUC of 0.705 and Recall of 0.944. In contrast, Random Forest dropped to 0.632, and SVM to 0.628, indicating severe degradation due to domain shift. The clinical scores (Mayo, PKUPH) performed poorly (AUC $<$ 0.64), likely due to population differences between their original derivation cohorts and our Chinese hospital data.
+On the external target domain, the benefits of adaptation became clear. The TCA-enhanced PANDA model reached the highest \auc of 0.705 and \recall of 0.944. In contrast, Random Forest dropped to 0.632, and SVM to 0.628, indicating severe degradation due to domain shift. The clinical scores (Mayo, PKUPH) performed poorly (\auc $<$ 0.64), likely due to population differences between their original derivation cohorts and our Chinese hospital data.
+
+Figure~\ref{fig:combined_analysis} complements these numbers with the ROC, calibration, and decision curves computed on both Cohort A and Cohort B, emphasizing how the TCA-aligned embeddings stabilize the model under cross-hospital deployment.
 
 \begin{table}[htbp]
 \centering
@@ -96,7 +98,7 @@ On the external target domain, the benefits of adaptation became clear. The TCA-
 \label{tab:main_results_table}
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Model} & \textbf{AUC} & \textbf{Accuracy} & \textbf{F1 Score} & \textbf{Precision} & \textbf{Recall} \\
+\textbf{Model} & \textbf{\auc} & \textbf{\accuracy} & \textbf{\fonescore} & \textbf{\precision} & \textbf{\recall} \\
 \midrule
 \multicolumn{6}{l}{\textit{Source Domain (Internal CV)}} \\
 \textbf{PANDA (TabPFN)} & \textbf{0.829} & \textbf{0.746} & \textbf{0.810} & \textbf{0.786} & 0.846 \\
@@ -126,9 +128,9 @@ Mayo Score & 0.584 & 0.342 & 0.000 & 0.000 & 0.000 \\
 \subsubsection{Stratified Analysis}
 To investigate potential biases, we evaluated PANDA's performance across key subgroups (Table~\ref{tab:stratified_analysis}).
 \begin{itemize}
-    \item \textbf{Nodule Size}: Performance is robust for large nodules ($>$8mm, AUC 0.74) but drops for sub-centimeter nodules (AUC 0.65), reflecting the inherent difficulty in radiological characterization of small lesions.
-    \item \textbf{Smoking Status}: The model performs better in smokers (AUC 0.72) than non-smokers (AUC 0.68), likely because smoking provides a strong prior for malignancy that the model leverages.
-    \item \textbf{Gender}: We observed consistent performance across gender (AUC 0.70 vs 0.71), suggesting no significant gender bias.
+    \item \textbf{Nodule Size}: Performance is robust for large nodules ($>$8mm, \auc 0.74) but drops for sub-centimeter nodules (\auc 0.65), reflecting the inherent difficulty in radiological characterization of small lesions.
+    \item \textbf{Smoking Status}: The model performs better in smokers (\auc 0.72) than non-smokers (\auc 0.68), likely because smoking provides a strong prior for malignancy that the model leverages.
+    \item \textbf{Gender}: We observed consistent performance across gender (\auc 0.70 vs 0.71), suggesting no significant gender bias.
 \end{itemize}
 
 \begin{table}[htbp]
@@ -137,7 +139,7 @@ To investigate potential biases, we evaluated PANDA's performance across key sub
 \label{tab:stratified_analysis}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Subgroup} & \textbf{n} & \textbf{AUC} & \textbf{Sensitivity} \\
+\textbf{Subgroup} & \textbf{n} & \textbf{\auc} & \textbf{Sensitivity} \\
 \midrule
 \textbf{Nodule Size} & & & \\
 $\le 8$ mm & 72 & 0.65 & 0.88 \\
@@ -162,37 +164,58 @@ We further validated PANDA on the TableShift BRFSS Diabetes benchmark (White $\r
 \centering
 \caption{TableShift BRFSS Diabetes Results (Race Shift). OOD = Out of Distribution (Non-White).}
 \label{tab:tableshift_results}
+\footnotesize
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Model} & \textbf{ID AUC} & \textbf{OOD AUC} & \textbf{OOD Acc} & \textbf{Gap} \\
+\textbf{Model} & \textbf{ID \auc} & \textbf{OOD \auc} & \textbf{OOD Acc} & \textbf{Gap} \\
 \midrule
 \textbf{PANDA + TCA} & 0.809 & \textbf{0.804} & \textbf{0.848} & \textbf{-0.005} \\
 PANDA (No UDA) & 0.809 & 0.796 & 0.847 & -0.013 \\
-XGBoost & 0.815 & 0.783 & 0.840 & -0.032 \\
-Decision Tree & 0.680 & 0.566 & 0.720 & -0.114 \\
+Random Forest & -- & 0.787 & 0.844 & -- \\
+Gradient Boosting (GBDT) & 0.815 & 0.783 & 0.834 & -0.032 \\
+XGBoost & -- & 0.770 & 0.827 & -- \\
+SVM & -- & 0.645 & 0.840 & -- \\
+Decision Tree & 0.680 & 0.566 & 0.775 & -0.114 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-As shown in Table~\ref{tab:tableshift_results}, PANDA+TCA maintained an AUC of 0.804 on the OOD target, showing almost zero degradation from the ID source (0.809). In contrast, XGBoost dropped from 0.815 to 0.783.
+As shown in Table~\ref{tab:tableshift_results}, PANDA+TCA maintained an \auc of 0.804 on the OOD target, showing almost zero degradation from the ID source (0.809). In contrast, XGBoost dropped from 0.815 to 0.783.
+
+Figure~\ref{fig:tableshift-heatmaps} visualizes the heatmap comparison between ID and OOD metrics, reinforcing how PANDA+TCA keeps the intensities stable under the race shift.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/tableshift/combined_heatmaps_nature.pdf}
+    \caption{\textbf{TableShift heatmaps.} Comparison of ID vs OOD performance metrics across baselines, highlighting PANDA+TCA's stability under race shift.}
+    \label{fig:tableshift-heatmaps}
+\end{figure}
 
 \textbf{Discussion on Precision/Recall}:
-Readers may notice low F1 scores in BRFSS despite high accuracy (Fig.~\ref{fig:brfss-roc}). This is an artifact of the low prevalence (17.4\%) and the default 0.5 threshold. The model correctly identifies most negatives (high accuracy) but, without class re-weighting, yields moderate precision on the minority positive class. For screening purposes, the high AUC (0.804) confirms the model's discriminative power; the operating point can be adjusted via threshold tuning to prioritize recall.
+Readers may notice low $\fonescore$s in BRFSS despite high $\accuracy$ (Fig.~\ref{fig:brfss-roc}). This is an artifact of the low $\prevalence$ (17.4\%) and the default 0.5 threshold. The model correctly identifies most negatives (high $\accuracy$) but, without class re-weighting, yields moderate $\precision$ on the minority positive class. For screening purposes, the high $\auc$ (0.804) confirms the model's discriminative power; the operating point can be adjusted via threshold tuning to prioritize $\recall$.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{img/tableshift/combined_analysis_figure.pdf}
     \caption{\textbf{TableShift BRFSS Diabetes analysis.} \textbf{a,b} ROC curves showing PANDA's robustness. \textbf{c,d} Calibration curves. \textbf{e,f} Decision curves.}
-    \label{fig:brfss-roc}
+\label{fig:brfss-roc}
 \end{figure}
 
 \subsection{Interpretability and Stability}
 Recursive Feature Elimination (RFE) identified a stable subset of 8 features (Age, Spiculation, etc.) that maximized the Cost-Effectiveness Index (Fig.~\ref{fig:rfe-performance}). This "best8" set performed within 1\% of the full 63-feature set but with significantly better cross-center stability.
+Figure~\ref{fig:feature_selection_uda} illustrates how cross-domain feature selection interacts with UDA to keep the pooled covariance low, making the latent alignment problem easier for TCA.
 
+% New figure for feature selection and UDA interaction
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{img/cross_hospital/Feature Selection and UDA.pdf}
+    \caption{\textbf{Feature selection meets UDA.} Selecting features with low pooled variance (left column) reduces the domain gap seen by TCA (right column), keeping cross-domain covariance traces small.}
+    \label{fig:feature_selection_uda}
+\end{figure}
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=1\linewidth]{img/cross_hospital/feature_performance_comparison_comprehensive.pdf}
-    \caption{RFE performance analysis. \textbf{a} AUC plateaus around 8-10 features. \textbf{b} Stability improves with smaller subsets.}
+    \caption{RFE performance analysis. \textbf{a} \auc plateaus around 8-10 features. \textbf{b} Stability improves with smaller subsets.}
     \label{fig:rfe-performance}
 \end{figure}
 

@@ -7,15 +7,15 @@ Cross-hospital medical diagnosis represents a complex intersection of small-samp
 \subsection{Mathematical Notation and Preliminaries}
 \label{subsec:notation}
 
-We consider a supervised classification task where the input space is a $d$-dimensional feature space $\mathcal{X} \subseteq \mathbb{R}^d$ comprising mixed numerical and categorical variables (e.g., patient age, tumor diameter, smoking status), and the output space is a binary label space $\mathcal{Y} = \{0, 1\}$ (e.g., benign vs. malignant).
+We consider a supervised classification task where the input space is a $\featuredim$-dimensional feature space $\inputspace \subseteq \mathbb{R}^{\featuredim}$ comprising mixed numerical and categorical variables (e.g., patient age, tumor diameter, smoking status), and the output space is a binary label space $\labelspace = \{0, 1\}$ (e.g., benign vs. malignant).
 
-A \textbf{domain} is defined as a joint probability distribution $P(X, Y)$ over $\mathcal{X} \times \mathcal{Y}$. We are given data from two distinct domains:
+A \textbf{domain} is defined as a joint probability distribution $P(\inputspace, \labelspace)$ over $\inputspace \times \labelspace$. We are given data from two distinct domains:
 \begin{itemize}
-    \item \textbf{Source Domain (Hospital A):} We observe a labeled dataset $S = \{(\mathbf{x}_i^s, y_i^s)\}_{i=1}^{n_s}$ drawn i.i.d. from the source distribution $P_S(X, Y)$. Here, $n_s$ is the number of labeled samples in the source hospital.
-    \item \textbf{Target Domain (Hospital B):} We observe an unlabeled dataset $T = \{\mathbf{x}_j^t\}_{j=1}^{n_t}$ drawn i.i.d. from the marginal distribution $P_T(X)$ of the target domain $P_T(X, Y)$. The target labels $Y_T$ are unobserved during training, reflecting the real-world constraint of deploying models to new hospitals without local ground truth.
+    \item \textbf{Source Domain (Hospital A):} We observe a labeled dataset $\sourcedata = \{(\featurevec_i^s, \labelval_i^s)\}_{i=1}^{\sourcedatasize}$ drawn i.i.d. from the source distribution $\sourcedomaindist$. Here, $\sourcedatasize$ is the number of labeled samples in the source hospital.
+    \item \textbf{Target Domain (Hospital B):} We observe an unlabeled dataset $\targetdata = \{\featurevec_j^t\}_{j=1}^{\targetdatasize}$ drawn i.i.d. from the marginal distribution $\marginaltargetdist$ of the target domain $\targetdomaindist$. The target labels $\targetlabels$ are unobserved during training, reflecting the real-world constraint of deploying models to new hospitals without local ground truth.
 \end{itemize}
 
-\textbf{Feature Heterogeneity:} In multi-center studies, hospitals often record different sets of variables. Let $\mathcal{F}_S$ and $\mathcal{F}_T$ be the sets of feature indices available in the source and target domains, respectively. We define the \textbf{shared feature subspace} as the intersection $\mathcal{F}_{\cap} = \mathcal{F}_S \cap \mathcal{F}_T$. The effective input dimensionality for the cross-domain model is $d_{\cap} = |\mathcal{F}_{\cap}|$. Features in the set difference $\mathcal{F}_{\setminus} = (\mathcal{F}_S \cup \mathcal{F}_T) \setminus \mathcal{F}_{\cap}$ are considered site-specific and are typically discarded for alignment, though they may contain domain-specific predictive signals.
+\textbf{Feature Heterogeneity:} In multi-center studies, hospitals often record different sets of variables. Let $\mathcal{F}_S$ and $\mathcal{F}_T$ be the sets of feature indices available in the source and target domains, respectively. We define the \textbf{shared feature subspace} as the intersection $\sharedfeatures = \mathcal{F}_S \cap \mathcal{F}_T$. The effective input dimensionality for the cross-domain model is $\intersectdim = |\sharedfeatures|$. Features in the set difference $\mathcal{F}_{\setminus} = (\mathcal{F}_S \cup \mathcal{F}_T) \setminus \sharedfeatures$ are considered site-specific and are typically discarded for alignment, though they may contain domain-specific predictive signals.
 
 Table \ref{tab:notation} summarizes the key mathematical notations used throughout this thesis.
 
@@ -29,27 +29,34 @@ Table \ref{tab:notation} summarizes the key mathematical notations used througho
     \textbf{Symbol} & \textbf{Definition} & \textbf{Dimensions} \\
     \midrule
     \multicolumn{3}{l}{\textit{Domains and Data}} \\
-    $\mathcal{X}$ & Input feature space (mixed numerical/categorical) & $\subseteq \mathbb{R}^d$ \\
-    $\mathcal{Y}$ & Label space (0: Benign, 1: Malignant) & $\{0, 1\}$ \\
-    $\mathcal{D}_S, \mathcal{D}_T$ & Source and Target domain distributions & over $\mathcal{X} \times \mathcal{Y}$ \\
-    $S, T$ & Empirical datasets drawn from $\mathcal{D}_S, \mathcal{D}_T$ & Sets of size $n_s, n_t$ \\
-    $\mathbf{x}, y$ & Feature vector and corresponding label & $\mathbf{x} \in \mathbb{R}^d, y \in \mathcal{Y}$ \\
-    $\mathcal{F}_{\cap}, \mathcal{F}^*$ & Shared feature schema and RFE-selected subset & Subsets of indices \\
+    $\inputspace$ & Input feature space (mixed numerical/categorical) & $\subseteq \mathbb{R}^d$ \\
+    $\labelspace$ & Label space (0: Benign, 1: Malignant) & $\{0, 1\}$ \\
+    $\sourcedomaindist, \targetdomaindist$ & Source and Target domain distributions & over $\inputspace \times \labelspace$ \\
+    $\sourcedata, \targetdata$ & Empirical datasets drawn from $\sourcedomaindist, \targetdomaindist$ & Sets of size $\sourcedatasize, \targetdatasize$ \\
+    $\featurevec, \labelval$ & Feature vector and corresponding label & $\featurevec \in \mathbb{R}^d, \labelval \in \labelspace$ \\
+    $\sharedfeatures, \rfeselectedfeatures$ & Shared feature schema and RFE-selected subset & Subsets of indices \\
     
     \multicolumn{3}{l}{\textit{Learning Theory}} \\
-    $h, \mathcal{H}$ & Hypothesis function (classifier) and hypothesis class & $h: \mathcal{X} \to \mathcal{Y}$ \\
-    $\epsilon_S(h), \epsilon_T(h)$ & Expected risk (error) on Source and Target distributions & Scalar $\in [0,1]$ \\
-    $\hat{\epsilon}_S(h), \hat{\epsilon}_T(h)$ & Empirical risk on datasets $S$ and $T$ & Scalar $\in [0,1]$ \\
-    $d_{\mathcal{H}\Delta\mathcal{H}}$ & $\mathcal{H}\Delta\mathcal{H}$-Divergence (Domain Discrepancy) & Scalar $\ge 0$ \\
-    $\lambda$ & Ideal joint hypothesis error (Adaptability term) & Scalar $\ge 0$ \\
+    $\hypothesis, \hypothesisclass$ & Hypothesis function (classifier) and hypothesis class & $\hypothesis: \inputspace \to \labelspace$ \\
+    $\sourceerror, \targeterror$ & Expected risk (error) on Source and Target distributions & Scalar $\in [0,1]$ \\
+    $\sourcesampleerror, \targetsampleerror$ & Empirical risk on datasets $\sourcedata$ and $\targetdata$ & Scalar $\in [0,1]$ \\
+    $\domaindivergence$ & $\mathcal{H}\Delta\mathcal{H}$-Divergence (Domain Discrepancy) & Scalar $\ge 0$ \\
+    $\adaptabilityterm$ & Ideal joint hypothesis error (Adaptability term) & Scalar $\ge 0$ \\
+    $\vcdim$ & VC Dimension of hypothesis class $\hypothesisclass$ & Scalar $\ge 1$ \\
+    $\confidence$ & Confidence parameter for generalization bound & Scalar $\in (0,1)$ \\
+    $\loss$ & Loss function & $\labelspace \times \labelspace \to \mathbb{R}_{\ge 0}$ \\
+    $\modelparams$ & Model parameters (weights) & Vector $\in \mathbb{R}^k$ \\
     
     \multicolumn{3}{l}{\textit{PANDA Architecture}} \\
-    $\psi(\cdot)$ & Domain adaptation mapping (TCA projection) & $\mathbb{R}^{k} \to \mathbb{R}^{m}$ \\
-    $\mathbf{W}$ & TCA Projection Matrix & $\mathbb{R}^{k \times m}$ \\
-    $\mathbf{K}$ & Kernel Matrix (Linear kernel on features) & $\mathbb{R}^{(n_s+n_t)^2}$ \\
-    $\mathbf{L}$ & MMD Indicator Matrix & $\mathbb{R}^{(n_s+n_t)^2}$ \\
-    $\mathbf{H}$ & Centering Matrix & $\mathbb{R}^{(n_s+n_t)^2}$ \\
-    $PPD$ & Posterior Predictive Distribution $P(y|\mathbf{x}, S)$ & Probability \\
+    $\adaptmap(\cdot)$ & Domain adaptation mapping (TCA projection) & $\mathbb{R}^{\rfecurrentdim} \to \mathbb{R}^{\tcaprojectdim}$ \\
+    $\tcaprojectionmatrix$ & TCA Projection Matrix & $\mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ \\
+    $\kernelmatrix$ & Kernel Matrix (Linear kernel on features) & $\mathbb{R}^{(\sourcedatasize+\targetdatasize)^2}$ \\
+    $\mmdmatrix$ & MMD Indicator Matrix & $\mathbb{R}^{(\sourcedatasize+\targetdatasize)^2}$ \\
+    $\centeringmatrix$ & Centering Matrix & $\mathbb{R}^{(\sourcedatasize+\targetdatasize)^2}$ \\
+    $\regularizationparam$ & TCA Regularization Parameter & Scalar $> 0$ \\
+    $\gammaK$ & RBF Kernel Bandwidth Parameter & Scalar $> 0$ \\
+    $\featuremap(\cdot)$ & Implicit Feature Map to RKHS & $\inputspace \to \rkhs$ \\
+    $\ppd$ & Posterior Predictive Distribution $P(\labelval|\featurevec, \sourcedata)$ & Probability \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -57,65 +64,65 @@ Table \ref{tab:notation} summarizes the key mathematical notations used througho
 \subsection{The Tabular Data Generation Process: A PFN Perspective}
 \label{subsec:pfn-generation}
 
-Traditional machine learning assumes a fixed parametric form for the data generation process (e.g., a separating hyperplane for SVMs). In contrast, the TabPFN framework posits that the dataset $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^N$ is generated from a \textbf{prior distribution over functions}, denoted as $P_{\text{prior}}$.
+Traditional machine learning assumes a fixed parametric form for the data generation process (e.g., a separating hyperplane for SVMs). In contrast, the TabPFN framework posits that the dataset $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^N$ is generated from a \textbf{prior distribution over functions}, denoted as $\priorfunc$.
 
 Formally, a dataset $\mathcal{D}$ is sampled in two steps:
 \begin{enumerate}
-    \item A structural equation model (SEM) or a data-generating function $f$ is sampled from the prior: $f \sim P_{\text{prior}}(\cdot)$. In TabPFN, this prior is constructed explicitly using a large mixture of synthetic structural causal models (SCMs), including Bayesian Neural Networks and causal graphs with varying sparsity and non-linearity.
-    \item Data points are sampled conditioned on this function: $y_i = f(\mathbf{x}_i) + \epsilon$, or $y_i \sim P(Y|f(\mathbf{x}_i))$.
+    \item A structural equation model (SEM) or a data-generating function $\func$ is sampled from the prior: $\func \sim \priorfunc(\cdot)$. In TabPFN, this prior is constructed explicitly using a large mixture of synthetic structural causal models (SCMs), including Bayesian Neural Networks and causal graphs with varying sparsity and non-linearity.
+    \item Data points are sampled conditioned on this function: $\labelval_i = \func(\featurevec_i) + \noise$, or $\labelval_i \sim P(\labelspace|\func(\featurevec_i))$.
 \end{enumerate}
 
-The learning objective of a Prior-Data Fitted Network (PFN) is to approximate the \textbf{posterior predictive distribution} (PPD) for a query sample $\mathbf{x}_{\text{query}}$ given the context dataset $S$:
+The learning objective of a Prior-Data Fitted Network (PFN) is to approximate the \textbf{posterior predictive distribution} (\ppd) for a query sample $\queryvec$ given the context dataset $\sourcedata$:
 \begin{equation}
-    P(y_{\text{query}} \mid \mathbf{x}_{\text{query}}, S) = \int P(y_{\text{query}} \mid \mathbf{x}_{\text{query}}, f) \, P(f \mid S) \, df
+    \ppd(\labelvalq \mid \queryvec, \sourcedata) = \int P(\labelvalq \mid \queryvec, \func) \, P(\func \mid \sourcedata) \, d\func
 \end{equation}
-TabPFN approximates this integral using a Transformer-based architecture that attends to the entire context $S$ (In-Context Learning). This perspective is particularly advantageous for the medical small-sample setting ($n_s < 500$) because:
+TabPFN approximates this integral using a Transformer-based architecture that attends to the entire context $\sourcedata$ (In-Context Learning). This perspective is particularly advantageous for the medical small-sample setting ($\sourcedatasize < 500$) because:
 \begin{itemize}
     \item It avoids iterative gradient descent on the small dataset, mitigating the risk of overfitting to noise.
-    \item It leverages the "knowledge" encoded in the prior $P_{\text{prior}}$, effectively transferring inductive biases about tabular structures (e.g., decision boundaries are often aligned with axes, sparsity is common) to the medical task.
+    \item It leverages the "knowledge" encoded in the prior $\priorfunc$, effectively transferring inductive biases about tabular structures (e.g., decision boundaries are often aligned with axes, sparsity is common) to the medical task.
 \end{itemize}
 
-However, the standard PFN assumes that the query sample $\mathbf{x}_{\text{query}}$ comes from the same distribution as $S$ (i.e., same $f$). In our cross-hospital setting, the target query $\mathbf{x}^t$ comes from a shifted distribution $P_T$, violating the exchangeability assumption of the posterior approximation.
+However, the standard PFN assumes that the query sample $\queryvec$ comes from the same distribution as $\sourcedata$ (i.e., same $\func$). In our cross-hospital setting, the target query $\featurevect$ comes from a shifted distribution $\targetdomaindist$, violating the exchangeability assumption of the posterior approximation.
 
 \subsection{Formalizing Domain Shift}
 \label{subsec:domain-shift}
 
-The core challenge in our research is that $P_S(X, Y) \neq P_T(X, Y)$. This joint distribution shift can be decomposed into three primary components relevant to medical AI:
+The core challenge in our research is that $\sourcedomaindist \neq \targetdomaindist$. This joint distribution shift can be decomposed into three primary components relevant to medical AI:
 
 \subsubsection{Covariate Shift: The Acquisition Gap}
-Covariate shift occurs when the marginal feature distributions differ, $P_S(X) \neq P_T(X)$, while the conditional probability of the label remains constant, $P_S(Y|X) = P_T(Y|X)$.
+Covariate shift occurs when the marginal feature distributions differ, $\marginalsourcedist \neq \marginaltargetdist$, while the conditional probability of the label remains constant, $\conditionalps = \conditionalpt$.
 \begin{equation}
-    P_S(X) \neq P_T(X) \quad \text{and} \quad P_S(Y|X) = P_T(Y|X)
+    \marginalsourcedist \neq \marginaltargetdist \quad \text{and} \quad \conditionalps = \conditionalpt
 \end{equation}
-In pulmonary nodule diagnosis, this is often driven by technological heterogeneity. For instance, CT scanners use different reconstruction kernels (e.g., "Sharp" vs. "Smooth"). A nodule scanned with a sharp kernel will systematically exhibit higher values for texture features like "entropy" or "spiculation" compared to the same nodule scanned with a smooth kernel, shifting the probability density function $P(x_{\text{texture}})$ without changing the underlying malignancy risk. TabPFN is particularly sensitive to this because its attention mechanism relies on finding similar examples in the support set; if the target $\mathbf{x}^t$ lies in a region unsupported by $P_S(X)$, the attention weights become diffuse.
+In pulmonary nodule diagnosis, this is often driven by technological heterogeneity. For instance, CT scanners use different reconstruction kernels (e.g., "Sharp" vs. "Smooth"). A nodule scanned with a sharp kernel will systematically exhibit higher values for texture features like "entropy" or "spiculation" compared to the same nodule scanned with a smooth kernel, shifting the probability density function $P(\featurevectexture)$ without changing the underlying malignancy risk. TabPFN is particularly sensitive to this because its attention mechanism relies on finding similar examples in the support set; if the target $\featurevect$ lies in a region unsupported by $\marginalsourcedist$, the attention weights become diffuse.
 
 \subsubsection{Label Shift: The Prevalence Gap}
 Label shift, or prior probability shift, is defined by a change in the marginal label distribution:
 \begin{equation}
-    P_S(Y) \neq P_T(Y)
+    \marginalsourcelabel \neq \marginaltargetlabel
 \end{equation}
-This is endemic to healthcare referrals. A tertiary cancer center (Source) typically receives high-risk referrals with a malignancy prevalence of $P_S(Y=1) \approx 60\%$. In contrast, a community screening program (Target) encounters a broader population with many benign incidental findings, where $P_T(Y=1) \approx 5\%-20\%$. A model trained on the balanced source will learn a prior $\pi_S$ and systematically overestimate risk on the target, leading to poor calibration and excessive false positives.
+This is endemic to healthcare referrals. A tertiary cancer center (Source) typically receives high-risk referrals with a malignancy prevalence of $P(\labelspace=1) \approx 60\%$. In contrast, a community screening program (Target) encounters a broader population with many benign incidental findings, where $P(\labelspace=1) \approx 5\%-20\%$. A model trained on the balanced source will learn a prior $\prevalence_S$ and systematically overestimate risk on the target, leading to poor calibration and excessive false positives.
 
 \subsubsection{Concept Shift: The Definition Gap}
 Concept shift implies a fundamental change in the relationship between features and labels:
 \begin{equation}
-    P_S(Y|X) \neq P_T(Y|X)
+    \conditionalps \neq \conditionalpt
 \end{equation}
-In pulmonary medicine, this arises from latent confounders such as geographic pathology. In regions like the Ohio River Valley (USA) or parts of East Asia, granulomatous diseases (e.g., Histoplasmosis, Tuberculosis) are endemic. These benign lesions often mimic the radiographic appearance of malignancy (e.g., spiculation, upper-lobe location). Consequently, a feature vector $\mathbf{x}$ that indicates a 90\% probability of cancer in a non-endemic source hospital might only indicate a 40\% probability in a TB-endemic target hospital.
+In pulmonary medicine, this arises from latent confounders such as geographic pathology. In regions like the Ohio River Valley (USA) or parts of East Asia, granulomatous diseases (e.g., Histoplasmosis, Tuberculosis) are endemic. These benign lesions often mimic the radiographic appearance of malignancy (e.g., spiculation, upper-lobe location). Consequently, a feature vector $\featurevec$ that indicates a 90\% probability of cancer in a non-endemic source hospital might only indicate a 40\% probability in a TB-endemic target hospital.
 
 \subsubsection{Theoretical Bound on Generalization Error}
-Following the seminal theory by Ben-David et al., the expected error of a hypothesis $h$ on the target domain, $\epsilon_T(h)$, is bounded by:
+Following the seminal theory by Ben-David et al., the expected error of a hypothesis $\hypothesis$ on the target domain, $\targeterror$, is bounded by:
 \begin{equation}
     \label{eq:ben-david}
-    \epsilon_T(h) \leq \epsilon_S(h) + \frac{1}{2} d_{\mathcal{H}\Delta\mathcal{H}}(P_S, P_T) + \lambda
+    \targeterror \leq \sourceerror + \frac{1}{2} \domaindivergence(\sourcedomaindist, \targetdomaindist) + \adaptabilityterm
 \end{equation}
 where:
 \begin{itemize}
-    \item $\epsilon_S(h)$ is the source domain error, minimized via supervised training.
-    \item $d_{\mathcal{H}\Delta\mathcal{H}}(P_S, P_T)$ is the $\mathcal{H}\Delta\mathcal{H}$-divergence between the two domains.
-    \item $\lambda = \min_{h \in \mathcal{H}} [\epsilon_S(h) + \epsilon_T(h)]$ is the error of the ideal joint hypothesis.
+    \item $\sourceerror$ is the source domain error, minimized via supervised training.
+    \item $\domaindivergence(\sourcedomaindist, \targetdomaindist)$ is the $\mathcal{H}\Delta\mathcal{H}$-divergence between the two domains.
+    \item $\adaptabilityterm = \min_{\hypothesis \in \hypothesisclass} [\sourceerror + \targeterror]$ is the error of the ideal joint hypothesis.
 \end{itemize}
-This bound highlights that minimizing source error is insufficient; we must explicitly minimize the divergence $d_{\mathcal{H}\Delta\mathcal{H}}(P_S, P_T)$.
+This bound highlights that minimizing source error is insufficient; we must explicitly minimize the divergence $\domaindivergence(\sourcedomaindist, \targetdomaindist)$.
 
 \subsection{Theoretical Constraints of Existing Models}
 \label{subsec:model-constraints}
@@ -123,54 +130,54 @@ This bound highlights that minimizing source error is insufficient; we must expl
 To justify the architecture of PANDA, we formally analyze why existing state-of-the-art models fail in this specific regime ($N \approx 300$, Unlabeled Target, Tabular Data).
 
 \subsubsection{Gradient Boosted Decision Trees (GBDT)}
-GBDTs (e.g., XGBoost, LightGBM) partition the feature space using hard, axis-aligned splits ($\mathbb{I}(x_j < \theta)$). They suffer from two critical limitations in UDA:
+GBDTs (e.g., XGBoost, LightGBM) partition the feature space using hard, axis-aligned splits ($\mathbb{I}(\featurevecj < \threshold)$). They suffer from two critical limitations in UDA:
 \begin{enumerate}
     \item \textbf{Non-Differentiability:} The piecewise constant decision boundary is non-differentiable with respect to input features. This precludes the use of gradient-based domain alignment techniques (like Adversarial Training or Gradient Reversal Layers) which require backpropagating a domain loss into the feature encoder.
-    \item \textbf{Inability to Extrapolate:} Tree models cannot extrapolate beyond the range of the training data. If covariate shift pushes the target distribution $P_T(X)$ outside the support of $P_S(X)$, the tree maps all such points to the value of the nearest leaf node, often resulting in statistically invalid predictions.
+    \item \textbf{Inability to Extrapolate:} Tree models cannot extrapolate beyond the range of the training data. If covariate shift pushes the target distribution $\marginaltargetdist$ outside the support of $\marginalsourcedist$, the tree maps all such points to the value of the nearest leaf node, often resulting in statistically invalid predictions.
 \end{enumerate}
 
 \subsubsection{Deep Tabular Models}
 Deep learning models (e.g., TabNet, FT-Transformer) offer differentiability but lack the appropriate inductive bias for small tabular datasets:
 \begin{enumerate}
-    \item \textbf{Data Hunger:} Neural networks typically require large datasets ($N > 10^4$) to converge to a generalizable solution. With $N \approx 300$, deep models are prone to severe overfitting or convergence to local minima.
+    \item \textbf{Data Hunger:} Neural networks typically require large datasets ($N > 10^4$) to converge to a generalizable solution. With $\sourcedatasize \approx 300$, deep models are prone to severe overfitting or convergence to local minima.
     \item \textbf{Rotational Invariance:} Standard MLPs are rotationally invariant, but tabular features are not rotationally interchangeable (e.g., rotating "Age" and "Creatinine" axes creates a nonsensical feature space). This mismatch in inductive bias makes them less sample-efficient than tree-based or prior-fitted methods.
 \end{enumerate}
 
 \subsection{Transfer Component Analysis (TCA) Optimization Objective}
 \label{subsec:tca-optimization}
 
-To minimize the divergence term in Eq. \ref{eq:ben-david}, we employ Transfer Component Analysis (TCA). TCA seeks a feature map $\varphi: \mathcal{X} \rightarrow \mathcal{H}_{RKHS}$ such that the Maximum Mean Discrepancy (MMD) between source and target distributions in the Reproducing Kernel Hilbert Space (RKHS) is minimized.
+To minimize the divergence term in Eq. \ref{eq:ben-david}, we employ Transfer Component Analysis (TCA). TCA seeks a feature map $\featuremap: \inputspace \rightarrow \rkhs$ such that the Maximum Mean Discrepancy (MMD) between source and target distributions in the Reproducing Kernel Hilbert Space (RKHS) is minimized.
 
 The empirical MMD distance is defined as:
 \begin{equation}
-    \text{MMD}(\mathcal{D}_S, \mathcal{D}_T) = \left\| \frac{1}{n_s} \sum_{i=1}^{n_s} \varphi(\mathbf{x}_i^s) - \frac{1}{n_t} \sum_{j=1}^{n_t} \varphi(\mathbf{x}_j^t) \right\|_{\mathcal{H}}^2
+    \text{MMD}(\sourcedomaindist, \targetdomaindist) = \left\| \frac{1}{\sourcedatasize} \sum_{i=1}^{\sourcedatasize} \featuremap(\featurevec_i^s) - \frac{1}{\targetdatasize} \sum_{j=1}^{\targetdatasize} \featuremap(\featurevec_j^t) \right\|_{\hypothesisclass}^2
 \end{equation}
 
-TCA aims to learn a transformation matrix $\mathbf{W} \in \mathbb{R}^{(n_s+n_t) \times m}$ that reduces the data dimensionality to $m \ll d$ while minimizing MMD. The optimization problem is formally:
+TCA aims to learn a transformation matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that reduces the data dimensionality to $\tcaprojectdim \ll \featuredim$ while minimizing MMD. The optimization problem is formally:
 
 \begin{equation}
     \begin{aligned}
-    & \min_{\mathbf{W}} \quad \text{tr}(\mathbf{W}^\top \mathbf{K} \mathbf{L} \mathbf{K} \mathbf{W}) + \mu \text{tr}(\mathbf{W}^\top \mathbf{W}) \\
-    & \text{s.t.} \quad \mathbf{W}^\top \mathbf{K} \mathbf{H} \mathbf{K} \mathbf{W} = \mathbf{I}
+    & \min_{\tcaprojectionmatrix} \quad \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \mu \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \\
+    & \text{s.t.} \quad {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix
     \end{aligned}
 \end{equation}
 
 where:
 \begin{itemize}
-    \item $\mathbf{K} \in \mathbb{R}^{(n_s+n_t) \times (n_s+n_t)}$ is the kernel matrix computed on the union of source and target data (specifically, the RFE-selected features). We specifically employ a \textbf{Linear Kernel} on these features: $K_{ij} = \langle \mathbf{x}_i, \mathbf{x}_j \rangle$. This is justified because the RFE process aims to select a set of features that are already more linearly separable or amenable to linear transformation. Using a linear kernel provides a robust and computationally efficient alignment without introducing complex hyperparameter tuning for RBF bandwidths.
+    \item $\kernelmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times (\sourcedatasize+\targetdatasize)}$ is the kernel matrix computed on the union of source and target data (specifically, the RFE-selected features). We specifically employ a \textbf{Linear Kernel} on these features: $\kernelmatrix_{ij} = \langle \featurevec_i, \featurevec_j \rangle$. This is justified because the RFE process aims to select a set of features that are already more linearly separable or amenable to linear transformation. Using a linear kernel provides a robust and computationally efficient alignment without introducing complex hyperparameter tuning for RBF bandwidths.
 
-    \item $\mathbf{L}$ is the MMD coefficient matrix, with elements $L_{ij} = 1/n_s^2$ if $x_i, x_j \in S$, $1/n_t^2$ if $x_i, x_j \in T$, and $-1/(n_s n_t)$ otherwise.
-    \item $\mathbf{H} = \mathbf{I} - \frac{1}{n_s+n_t}\mathbf{1}\mathbf{1}^\top$ is the centering matrix.
-    \item The constraint $\mathbf{W}^\top \mathbf{K} \mathbf{H} \mathbf{K} \mathbf{W} = \mathbf{I}$ ensures the variance of the projected data is preserved (maximizing information).
+    \item $\mmdmatrix$ is the MMD coefficient matrix, with elements $\mmdmatrix_{ij} = 1/\sourcedatasize^2$ if $\featurevec_i, \featurevec_j \in \sourcedata$, $1/\targetdatasize^2$ if $\featurevec_i, \featurevec_j \in \targetdata$, and $-1/(\sourcedatasize \targetdatasize)$ otherwise.
+    \item $\centeringmatrix = \identitymatrix - \frac{1}{\sourcedatasize+\targetdatasize}\onesvec\onesvec^\top$ is the centering matrix.
+    \item The constraint ${\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix$ ensures the variance of the projected data is preserved (maximizing information).
 \end{itemize}
 
 \subsection{The PANDA Framework: A Unified Formalization}
 \label{subsec:panda-formalization}
 
-We formalize our proposed \textbf{PANDA} (Pre-trained tAbular fouNdation model with Domain Adaptation) framework as a composite function $f_{\text{PANDA}}: \mathcal{X} \rightarrow \mathcal{Y}$. The inference process for a target sample $\mathbf{x}$ is defined as:
+We formalize our proposed \textbf{PANDA} (Pre-trained tAbular fouNdation model with Domain Adaptation) framework as a composite function $\pandafunc: \inputspace \rightarrow \labelspace$. The inference process for a target sample $\featurevec$ is defined as:
 
 \begin{equation}
-    f_{\text{PANDA}}(\mathbf{x}) = h\left( \psi(\mathbf{x}; \mathcal{F}^*) \right)
+    \pandafunc(\featurevec) = \hypothesis\left( \adaptmap(\featurevec; \rfeselectedfeatures) \right)
 \end{equation}
 
 This composition involves distinct stages, grounded in the optimization of the feature subspace prior to alignment:
@@ -178,31 +185,31 @@ This composition involves distinct stages, grounded in the optimization of the f
 \subsubsection{Stage 1: Recursive Feature Elimination (RFE) with TabPFN}
 \label{subsubsec:rfe-formalization}
 
-Directly applying domain adaptation on high-dimensional, noisy feature spaces often leads to negative transfer. We employ Recursive Feature Elimination (RFE) to determine the optimal subspace $\mathcal{F}^* \subseteq \mathcal{F}_{\cap}$.
+Directly applying domain adaptation on high-dimensional, noisy feature spaces often leads to negative transfer. We employ Recursive Feature Elimination (RFE) to determine the optimal subspace $\rfeselectedfeatures \subseteq \sharedfeatures$.
 
-Let $S^{(0)} = \mathcal{F}_{\cap}$ be the initial set of shared features. The RFE process generates a sequence of feature subsets $S^{(0)} \supset S^{(1)} \supset \dots \supset S^{(d-k)}$, where $k$ is the target dimensionality. At each iteration $t$:
+Let $\rfeset^{(0)} = \sharedfeatures$ be the initial set of shared features. The RFE process generates a sequence of feature subsets $\rfeset^{(0)} \supset \rfeset^{(1)} \supset \dots \supset \rfeset^{(\featuredim-\rfecurrentdim)}$, where $\rfecurrentdim$ is the target dimensionality. At each iteration $t$:
 
 \begin{enumerate}
-    \item \textbf{Model Fitting:} We define the TabPFN posterior predictive distribution conditioned on the current subset $S^{(t)}$ using the source data $S$.
-    \item \textbf{Importance Estimation ($\mathcal{I}$):} Unlike linear models, TabPFN is a non-parametric meta-learned model. We approximate feature importance using \textbf{Permutation Importance}. For each feature $j \in S^{(t)}$, we compute the degradation in the AUC metric when feature $j$ is randomly permuted in the validation set:
+    \item \textbf{Model Fitting:} We define the TabPFN posterior predictive distribution conditioned on the current subset $\rfeiterateset$ using the source data $\sourcedata$.
+    \item \textbf{Importance Estimation ($\rfeimportance$):} Unlike linear models, TabPFN is a non-parametric meta-learned model. We approximate feature importance using \textbf{Permutation Importance}. For each feature $\featurevecj \in \rfeiterateset$, we compute the degradation in the \auc metric when feature $\featurevecj$ is randomly permuted in the validation set:
     \begin{equation}
-        \mathcal{I}(j; S^{(t)}) = \mathcal{L}_{\text{AUC}}(h_{S^{(t)}}, S) - \mathcal{L}_{\text{AUC}}(h_{S^{(t)}}, S^{\text{perm}(j)})
+        \rfeimportance(\featurevecj; \rfeiterateset) = \lossauc(\hypothesissubset, \sourcedata) - \lossauc(\hypothesissubset, \sourcedata^{\text{perm}(j)})
     \end{equation}
     
     \item \textbf{Elimination:} We identify and remove the feature with the minimal contribution:
     \begin{equation}
-        j_{\text{elim}} = \operatorname*{argmin}_{j \in S^{(t)}} \mathcal{I}(j; S^{(t)})
+        \minfeature = \argmin_{\featurevecj \in \rfeiterateset} \rfeimportance(\featurevecj; \rfeiterateset)
         \quad \longrightarrow \quad
-        S^{(t+1)} = S^{(t)} \setminus \{j_{\text{elim}}\}
+        \rfeset^{(t+1)} = \rfeiterateset \setminus \{\minfeature\}
     \end{equation}
 \end{enumerate}
 
-The final subset $\mathcal{F}^*$ is selected to maximize stability and discriminative power, effectively reducing the $\lambda$ term (joint error) in the Ben-David bound by removing concept-shifted features.
+The final subset $\rfeselectedfeatures$ is selected to maximize stability and discriminative power, effectively reducing the $\adaptabilityterm$ term (joint error) in the Ben-David bound by removing concept-shifted features.
 
 \subsubsection{Stage 2: Foundation Model Encoding ($\phi$)} [Deprecated]
-\subsubsection{Stage 2: Domain Adaptation Mapping ($\psi$) and Classification ($h$)}
+\subsubsection{Stage 2: Domain Adaptation Mapping ($\adaptmap$) and Classification ($\hypothesis$)}
 
-Following RFE, the selected features are then adapted using TCA. The domain adaptation mapping $\psi$ operates on the RFE-selected features $\mathcal{F}^*$ to project them into a domain-invariant subspace. This transformed feature set, $\mathbf{x}' = \psi(\mathbf{x}; \mathcal{F}^*)$, is then fed into the TabPFN classifier. The classification function $h$ represents the combined operation of the TabPFN classifier and the ensemble-based temperature scaling, which together yield the final calibrated malignancy probability.
+Following RFE, the selected features are then adapted using TCA. The domain adaptation mapping $\adaptmap$ operates on the RFE-selected features $\rfeselectedfeatures$ to project them into a domain-invariant subspace. This transformed feature set, $\featurevec' = \adaptmap(\featurevec; \rfeselectedfeatures)$, is then fed into the TabPFN classifier. The classification function $\hypothesis$ represents the combined operation of the TabPFN classifier and the ensemble-based temperature scaling, which together yield the final calibrated malignancy probability.
 
 \subsection{Clinical-Statistical Mapping}
 \label{subsec:clinical-mapping}
@@ -217,11 +224,11 @@ Table \ref{tab:clinical-mapping} summarizes the correspondence between the clini
     \toprule
     \textbf{Clinical Challenge} & \textbf{Statistical Mechanism} & \textbf{PANDA Component} & \textbf{Theoretical Justification} \\
     \midrule
-    Scanner Variance (Sharp vs. Smooth Kernels) & Covariate Shift: $P_S(X) \neq P_T(X)$ & Latent TCA on RFE-selected features & Minimizes MMD divergence $d_{\mathcal{H}\Delta\mathcal{H}}$ in RKHS. \\
+    Scanner Variance (Sharp vs. Smooth Kernels) & Covariate Shift: $\marginalsourcedist \neq \marginaltargetdist$ & Latent TCA on RFE-selected features & Minimizes MMD divergence $\domaindivergence$ in RKHS. \\
     \midrule
-    Referral Patterns (Cancer Center vs. Screening) & Label Shift: $P_S(Y) \neq P_T(Y)$ & Ensemble Aggregation \& Temperature Scaling & Calibrates posteriors; smooths overconfidence from prior mismatch. \\
+    Referral Patterns (Cancer Center vs. Screening) & Label Shift: $\marginalsourcelabel \neq \marginaltargetlabel$ & Ensemble Aggregation \& Temperature Scaling & Calibrates posteriors; smooths overconfidence from prior mismatch. \\
     \midrule
-    Biological Confounders (TB vs. Cancer) & Concept Shift: $P_S(Y|X) \neq P_T(Y|X)$ & Cross-Domain RFE & Minimizes joint error $\lambda$ by removing unstable features. \\
+    Biological Confounders (TB vs. Cancer) & Concept Shift: $\conditionalps \neq \conditionalpt$ & Cross-Domain RFE & Minimizes joint error $\adaptabilityterm$ by removing unstable features. \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -231,9 +238,9 @@ Table \ref{tab:clinical-mapping} summarizes the correspondence between the clini
 
 Our formulation is bound by specific constraints inherent to the medical domain:
 \begin{itemize}
-    \item \textbf{Small Sample Size Constraint:} The sample sizes $n_s, n_t$ are typically in the range of 100 to 1000. This prohibits the use of deep domain adaptation networks.
-    \item \textbf{Privacy and Data Silos:} We assume source data $\mathcal{D}_S$ and target data $\mathcal{D}_T$ cannot be physically merged.
-    \item \textbf{Class Imbalance:} The prevalence of the positive class is often low ($\pi < 0.3$), requiring AUC-centric optimization.
+    \item \textbf{Small Sample Size Constraint:} The sample sizes $\sourcedatasize, \targetdatasize$ are typically in the range of 100 to 1000. This prohibits the use of deep domain adaptation networks.
+    \item \textbf{Privacy and Data Silos:} We assume source data $\sourcedomaindist$ and target data $\targetdomaindist$ cannot be physically merged.
+    \item \textbf{Class Imbalance:} The prevalence of the positive class is often low ($\prevalence < 0.3$), requiring \auc-centric optimization.
 \end{itemize}
 
 This formalization sets the stage for the specific methodological implementations detailed in Chapter 4.
