@@ -30,13 +30,6 @@ Xia He, Ning Xue, Xiaohua Liu, Xuemiao Tang, Songguo Peng, Yuanye Qu, Lina
   pulmonary nodules: a multicenter study in chinese population.
 \newblock {\em Cancer cell international}, 21(1):115, 2021.
 
-\bibitem{garau_external_2020}
-Noemi Garau, Chiara Paganelli, Paul Summers, Wookjin Choi, Sadegh Alam, Wei Lu,
-  Cristiana Fanciullo, Massimo Bellomi, Guido Baroni, and Cristiano Rampinelli.
-\newblock External validation of radiomics-based predictive models in low-dose
-  {CT} screening for early lung cancer diagnosis.
-\newblock 47(9):4125--4136.
-
 \bibitem{zhang_comprehensive_2022}
 Kai Zhang, Zihan Wei, Yuntao Nie, Haifeng Shen, Xin Wang, Jun Wang, Fan Yang,
   and Kezhong Chen.
@@ -50,6 +43,13 @@ Qiao Liu, Xue Lv, Daiquan Zhou, Na~Yu, Yuqin Hong, and Yan Zeng.
   for pulmonary nodules based on machine learning.
 \newblock 18(5):e13769.
 
+\bibitem{garau_external_2020}
+Noemi Garau, Chiara Paganelli, Paul Summers, Wookjin Choi, Sadegh Alam, Wei Lu,
+  Cristiana Fanciullo, Massimo Bellomi, Guido Baroni, and Cristiano Rampinelli.
+\newblock External validation of radiomics-based predictive models in low-dose
+  {CT} screening for early lung cancer diagnosis.
+\newblock 47(9):4125--4136.
+
 \bibitem{chen2016xgboost}
 Tianqi Chen and Carlos Guestrin.
 \newblock Xgboost: A scalable tree boosting system.
@@ -61,13 +61,6 @@ Yury Gorishniy, Ivan Rubachev, Valentin Khrulkov, and Artem Babenko.
 \newblock Revisiting deep learning models for tabular data.
 \newblock {\em Advances in neural information processing systems},
   34:18932--18943, 2021.
-
-\bibitem{hellin2024unraveling}
-Carlos~J Hell{\'\i}n, Alvaro~A Olmedo, Adri{\'a}n Valledor, Josefa G{\'o}mez,
-  Miguel L{\'o}pez-Ben{\'\i}tez, and Abdelhamid Tayebi.
-\newblock Unraveling the impact of class imbalance on deep-learning models for
-  medical image classification.
-\newblock {\em Applied Sciences}, 14(8):3419, 2024.
 
 \bibitem{arik2021tabnet}
 Sercan~O. Arik and Tomas Pfister.
@@ -95,17 +88,43 @@ Vitaly Borisov, Thomas Leemann, Pierre Selegue, Riccardo Miotto, Mario May, and
 \newblock {\em IEEE Transactions on Neural Networks and Learning Systems},
   33(9):4472--4492, 2022.
 
+\bibitem{ardila_end--end_2019}
+Diego Ardila, Atilla~P. Kiraly, Sujeeth Bharadwaj, Bokyung Choi, Joshua~J.
+  Reicher, Lily Peng, Daniel Tse, Mozziyar Etemadi, Wenxing Ye, Greg Corrado,
+  David~P. Naidich, and Shravya Shetty.
+\newblock End-to-end lung cancer screening with three-dimensional deep learning
+  on low-dose chest computed tomography.
+\newblock 25(6):954--961.
+
+\bibitem{zech_variable_2018}
+John~R. Zech, Marcus~A. Badgeley, Manway Liu, Anthony~B. Costa, Joseph~J.
+  Titano, and Eric~Karl Oermann.
+\newblock Variable generalization performance of a deep learning model to
+  detect pneumonia in chest radiographs: A cross-sectional study.
+\newblock 15(11):e1002683.
+\newblock Publisher: Public Library of Science.
+
+\bibitem{hellin2024unraveling}
+Carlos~J Hell{\'\i}n, Alvaro~A Olmedo, Adri{\'a}n Valledor, Josefa G{\'o}mez,
+  Miguel L{\'o}pez-Ben{\'\i}tez, and Abdelhamid Tayebi.
+\newblock Unraveling the impact of class imbalance on deep-learning models for
+  medical image classification.
+\newblock {\em Applied Sciences}, 14(8):3419, 2024.
+
 \bibitem{hollmann2025accurate}
 Noah Hollmann, Samuel M{\"u}ller, Lennart Purucker, Arjun Krishnakumar, Max
   K{\"o}rfer, Shi~Bin Hoo, Robin~Tibor Schirrmeister, and Frank Hutter.
 \newblock Accurate predictions on small data with a tabular foundation model.
 \newblock {\em Nature}, 637(8045):319--326, 2025.
 
+\bibitem{schneider2024foundation}
+Johannes Schneider, Christian Meske, and Pauline Kuss.
+\newblock Foundation models: A new paradigm for artificial intelligence.
+\newblock {\em Business \& Information Systems Engineering}, 66(2):221--231,
+  2024.
+
 \bibitem{noauthor_prior_nodate}
 Prior labs.
-
-\bibitem{noauthor_closer_nodate}
-A closer look at {TabPFN} v2: Strength, limitation, and extension.
 
 \bibitem{noauthor_realistic_nodate}
 Realistic evaluation of {TabPFN} v2 in open environments.
@@ -114,16 +133,13 @@ Realistic evaluation of {TabPFN} v2 in open environments.
 automl/drift-resilient\_tabpfn.
 \newblock original-date: 2024-10-22T17:32:11Z.
 
+\bibitem{noauthor_closer_nodate}
+A closer look at {TabPFN} v2: Strength, limitation, and extension.
+
 \bibitem{eremeev_turning_2025}
 Dmitry Eremeev, Gleb Bazhenov, Oleg Platonov, Artem Babenko, and Liudmila
   Prokhorenkova.
 \newblock Turning tabular foundation models into graph foundation models.
-
-\bibitem{schneider2024foundation}
-Johannes Schneider, Christian Meske, and Pauline Kuss.
-\newblock Foundation models: A new paradigm for artificial intelligence.
-\newblock {\em Business \& Information Systems Engineering}, 66(2):221--231,
-  2024.
 
 \bibitem{guan2021domain}
 Hao Guan and Mingxia Liu.
@@ -156,31 +172,15 @@ Seyedmehdi Orouji, Martin~C. Liu, Tal Korem, and Megan A.~K. Peters.
   datasets.
 \newblock 10(51):eadp6040.
 
-\bibitem{gardner_benchmarking_2024}
-Josh Gardner, Zoran Popovic, and Ludwig Schmidt.
-\newblock Benchmarking distribution shift in tabular data with {TableShift}.
-
 \bibitem{ahn_unsupervised_2023}
 Seong-Ho Ahn, Seeun Kim, and Dong-Hwa Jeong.
 \newblock Unsupervised domain adaptation for mitigating sensor variability and
   interspecies heterogeneity in animal activity recognition.
 \newblock 13(20):3276.
 
-\bibitem{ardila_end--end_2019}
-Diego Ardila, Atilla~P. Kiraly, Sujeeth Bharadwaj, Bokyung Choi, Joshua~J.
-  Reicher, Lily Peng, Daniel Tse, Mozziyar Etemadi, Wenxing Ye, Greg Corrado,
-  David~P. Naidich, and Shravya Shetty.
-\newblock End-to-end lung cancer screening with three-dimensional deep learning
-  on low-dose chest computed tomography.
-\newblock 25(6):954--961.
-
-\bibitem{zech_variable_2018}
-John~R. Zech, Marcus~A. Badgeley, Manway Liu, Anthony~B. Costa, Joseph~J.
-  Titano, and Eric~Karl Oermann.
-\newblock Variable generalization performance of a deep learning model to
-  detect pneumonia in chest radiographs: A cross-sectional study.
-\newblock 15(11):e1002683.
-\newblock Publisher: Public Library of Science.
+\bibitem{gardner_benchmarking_2024}
+Josh Gardner, Zoran Popovic, and Ludwig Schmidt.
+\newblock Benchmarking distribution shift in tabular data with {TableShift}.
 
 \bibitem{sun2019informative}
 Feng Sun, Hanrui Wu, Zhihang Luo, Wenwen Gu, Yuguang Yan, and Qing Du.
@@ -509,6 +509,12 @@ Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
 \newblock 8(1):9286.
 \newblock Publisher: Nature Publishing Group.
 
+\bibitem{ben2010theory}
+Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and
+  Jennifer~Wortman Vaughan.
+\newblock A theory of learning from different domains.
+\newblock {\em Machine learning}, 79(1):151--175, 2010.
+
 \bibitem{de2021adapt}
 Antoine de~Mathelin, Fran{\c{c}}ois Deheeger, Guillaume Richard, Mathilde
   Mougeot, and Nicolas Vayatis.
@@ -518,10 +524,24 @@ Antoine de~Mathelin, Fran{\c{c}}ois Deheeger, Guillaume Richard, Mathilde
 \bibitem{noauthor_welcome_nodate}
 Welcome! — adapt 0.1.0 documentation.
 
-\bibitem{ben2010theory}
-Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and
-  Jennifer~Wortman Vaughan.
-\newblock A theory of learning from different domains.
-\newblock {\em Machine learning}, 79(1):151--175, 2010.
+\bibitem{cortes1995support}
+Corinna Cortes and Vladimir Vapnik.
+\newblock Support-vector networks.
+\newblock {\em Machine learning}, 20(3):273--297, 1995.
+
+\bibitem{breiman1984classification}
+Leo Breiman, Jerome Friedman, Richard~A Olshen, and Charles~J Stone.
+\newblock {\em Classification and regression trees}.
+\newblock Chapman and Hall/CRC, 1984.
+
+\bibitem{breiman2001random}
+Leo Breiman.
+\newblock Random forests.
+\newblock {\em Machine learning}, 45(1):5--32, 2001.
+
+\bibitem{friedman2001greedy}
+Jerome~H Friedman.
+\newblock Greedy function approximation: a gradient boosting machine.
+\newblock {\em Annals of statistics}, pages 1189--1232, 2001.
 
 \end{thebibliography}

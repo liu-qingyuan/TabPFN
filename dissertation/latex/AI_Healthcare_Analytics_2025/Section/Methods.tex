@@ -38,21 +38,27 @@ The process uses a wrapper around the TabPFN classifier to compute permutation i
 where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative elimination process.
 
 \begin{algorithm}[H]
-\caption{Cross-Domain Recursive Feature Elimination (RFE)}
+\caption{Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}
 \label{alg:cross_domain_rfe}
 \begin{algorithmic}[1]
-\REQUIRE Source Data $\sourcedatafeatures, \sourcedatalabels$, Target Schema $\targetfeatureschema$, Target Feature Count $\targetfeaturecount$
+\REQUIRE Source Data $\sourcedatafeatures, \sourcedatalabels$, Target Feature Count Range $[k_{\min}, k_{\max}]$
 \ENSURE Optimal Feature Subset $\rfeselectedfeatures$
-\STATE \textbf{Initialize:} $\mathcal{S} \leftarrow \text{features}(\sourcedatafeatures) \cap \targetfeatureschema$ \COMMENT{Intersect with target availability}
-\WHILE{$|\mathcal{S}| > \targetfeaturecount$}
-    \STATE Train TabPFN classifier $\mathcal{M}$ on $\sourcedatafeatures[\mathcal{S}], \sourcedatalabels$
-    \STATE Compute permutation importance vector $\featureimportancevec \in \mathbb{R}^{|\mathcal{S}|}$ using 5 repeats
-    \STATE Identify feature with minimum importance: $\minfeature \leftarrow \arg\min_{f \in \mathcal{S}} \featureimportancevec[f]$
-    \STATE $\mathcal{S} \leftarrow \mathcal{S} \setminus \{\minfeature\}$ \COMMENT{Remove least important feature}
-    \STATE Record performance metric $\metrick(|\mathcal{S}|)$ (\auc) via 10-fold CV
-\ENDWHILE
-\STATE \textbf{Select} $\rfeselectedfeatures$ based on Cost-Effectiveness Index (CEI):
-\STATE $\text{CEI}(\rfecurrentdim) = \frac{\auc_{\rfecurrentdim} - 0.5}{\text{Cost}_{\rfecurrentdim}}$ \COMMENT{Optional cost-aware selection}
+\STATE \textbf{Initialize TabPFN Wrapper} with permutation importance computation
+\STATE \textbf{Initialize performance records:} $\mathcal{M} \leftarrow \emptyset$
+\FOR{$k = k_{\max}$ \TO $k_{\min}$}
+    \STATE \textbf{Configure sklearn RFE:} estimator=TabPFNWrapper, $n\_features\_to\_select = k$, step=1
+    \STATE \textbf{Fit RFE:} $(\rfeset_k, \text{ranking}_k) \leftarrow \text{RFE.fit}(\sourcedatafeatures, \sourcedatalabels)$
+    \STATE \textbf{Evaluate performance:} $\metrick(k) = \text{CV-AUC}(\rfeset_k)$ using $\numfolds$-fold CV
+    \STATE \textbf{Compute CEI components:}
+    \STATE \quad $\rfeperformance(k) = \metrick(k)$ \COMMENT{Performance score}
+    \STATE \quad $\rfeefficiency(k) = 1 - \frac{\text{Cost}(\rfeset_k)}{\text{Cost}(\text{all features})}$ \COMMENT{Cost efficiency}
+    \STATE \quad $\rfestability(k) = 1 - \text{Std}(\text{AUC across CV folds})$ \COMMENT{Stability score}
+    \STATE \quad $\rfesimplicity(k) = \exp(-\sparsityparam \cdot k)$ \COMMENT{Sparsity penalty}
+    \STATE \textbf{Compute CEI:} $\text{CEI}(k) = \rfecomponentweights_1 \rfeperformance(k) + \rfecomponentweights_2 \rfeefficiency(k) + \rfecomponentweights_3 \rfestability(k) + \rfecomponentweights_4 \rfesimplicity(k)$
+    \STATE $\mathcal{M} \leftarrow \mathcal{M} \cup \{(k, \rfeset_k, \text{CEI}(k))\}$
+\ENDFOR
+\STATE \textbf{Select optimal subset:} $\rfecurrentdim^* = \argmax_k \text{CEI}(k)$
+\STATE $\rfeselectedfeatures \leftarrow \rfeset_{\rfecurrentdim^*}$
 \RETURN $\rfeselectedfeatures$
 \end{algorithmic}
 \end{algorithm}
@@ -99,7 +105,7 @@ The final prediction is obtained by averaging over 32 diverse forward passes. Le
 where
 \begin{itemize}
     \item $\querypatient$ is the target query (patient),
-    \item $\contextdata$ is the subset of training data selected by seed $s$ (typically 1024 samples),
+    \item $\contextdata$ is the subset of training data selected by seed $s$,
     \item $\transformerbackbone$ is the frozen TabPFN Transformer backbone, and
     \item $\temperature=0.9$ is the temperature scaling parameter calibrated for small-sample confidence.
 \end{itemize}
@@ -215,40 +221,53 @@ To ensure that the chosen defaults are numerically stable and that the TCA hyper
 \label{subsec:experimental_config}
 
 \subsubsection{Baseline Hyperparameters}
-To enable fair comparison, all baseline models were tuned using grid search within the ranges specified in Table~\ref{tab:hyperparams}. This configuration step addresses the methodological challenge of unfair or under-tuned baselines by ensuring that competing models operate near their best-performing settings on the source domain. A unified hyperparameter management interface handles these configurations.
+To enable fair comparison, all baseline models were configured with default hyperparameters and essential settings for reproducibility. As shown in Table~\ref{tab:hyperparams}, we focused on consistent random state management, class imbalance handling through balanced class weights, and parallel processing for computational efficiency. This approach ensures that the comparison reflects the models' inherent capabilities rather than extensive hyperparameter optimization, which aligns with our research focus on domain adaptation effectiveness rather than individual model tuning.
 
 \begin{table}[htbp]
 \centering
-\caption{Hyperparameter search space for baseline models. Best parameters were selected via 5-fold CV on the source domain.}
+\caption{Configuration for baseline models. Default parameters were used with basic settings for reproducibility and class imbalance handling.}
 \label{tab:hyperparams}
 \begin{tabular}{lll}
 \toprule
-\textbf{Model} & \textbf{Parameter} & \textbf{Search space / value} \\ \midrule
-\multirow{3}{*}{XGBoost} & Learning rate & [0.01, 0.05, 0.1] \\
- & Max depth & [3, 4, 5, 6] \\
- & N estimators & [50, 100, 200] \\ \midrule
-\multirow{3}{*}{Random Forest} & N estimators & [100, 200, 500] \\
- & Max features & ['sqrt', 'log2'] \\
+\textbf{Model} & \textbf{Parameter} & \textbf{Value} \\ \midrule
+\multirow{3}{*}{XGBoost} & Random state & Fixed per experiment \\
+ & n\_jobs & -1 (parallel processing) \\
+ & eval\_metric & 'logloss' \\ \midrule
+\multirow{3}{*}{Random Forest} & Random state & Fixed per experiment \\
+ & n\_jobs & -1 (parallel processing) \\
  & Class weight & 'balanced' \\ \midrule
-\multirow{2}{*}{SVM} & C (regularization) & [0.1, 1, 10, 100] \\
- & Kernel & ['rbf', 'linear'] \\ \bottomrule
+\multirow{3}{*}{SVM} & Random state & Fixed per experiment \\
+ & Probability & True (for probability outputs) \\
+ & Class weight & 'balanced' \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \subsubsection{Clinical Scoring Models}
 We implemented three established clinical calculators for pulmonary nodule malignancy:
 \begin{itemize}
-    \item \textbf{Mayo model}: $\text{Prob} = \sigma(-6.83 + 0.039 \cdot \text{Age} + 0.79 \cdot \text{Smoke} + 1.34 \cdot \text{CancerHx} + 0.13 \cdot \text{Diameter} + 1.04 \cdot \text{Spiculation} + 0.78 \cdot \text{UpperLobe})$.
+    \item \textbf{Mayo model}: $\text{Prob} = \sigma(-6.83 + 0.039 \cdot \text{Age} + 0.79 \cdot \text{Smoke} + 1.34 \cdot \text{CancerHx} + 0.13 \cdot \text{Diameter} + 1.04 \cdot \text{Spiculation} + 0.78 \cdot \text{UpperLobe})$ \cite{swensen1997chest}.
     \item \textbf{PKUPH model}: A regression model specifically developed for Chinese populations \cite{perandini_solid_2016}: $\text{Prob} = \sigma(-4.50 + 0.07 \cdot \text{Age} + 0.68 \cdot \text{Diameter} + 0.74 \cdot \text{Spiculation} + 1.27 \cdot \text{FamilyHx} - 1.62 \cdot \text{Calcification} - 1.41 \cdot \text{Boundary})$.
     \item \textbf{LASSO Logistic Regression}: A data-driven baseline derived via L1-regularization on the source domain \cite{he2021novel}: $\hat{p} = \activation(-1.14 + 0.036 \cdot \text{Age} + 0.38 \cdot \text{CancerHx} + 0.20 \cdot \text{Diameter} - 0.29 \cdot \text{Calcification} + 0.026 \cdot \text{PleuralStretch} - 0.17 \cdot \text{VC} + 0.05 \cdot \text{DLCO} + 0.018 \cdot \text{CEA} + 0.004 \cdot \text{NSE})$.
 \end{itemize}
 These models are applied using their published coefficients without re-training and represent the standard of care.
 
-\subsubsection{Computational Framework}
-All experiments were conducted on a workstation equipped with
+\subsubsection{ML Baseline Models}
+We implemented five machine learning baseline models for comprehensive comparison with the PANDA framework. These models were trained and evaluated using 10-fold cross-validation on the target domain with the same feature set and preprocessing pipeline as PANDA:
 \begin{itemize}
-    \item \textbf{Hardware}: NVIDIA RTX 4090 GPU (24GB VRAM), AMD Ryzen 9 7950X CPU, 64GB DDR5 RAM.
-    \item \textbf{Software}: PyTorch 2.1.2 (CUDA 12.1), Scikit-learn 1.3.2, Adapt 0.4.4.
+    \item \textbf{Support Vector Machine (SVM)}: A maximum margin classifier that finds optimal hyperplanes for classification \cite{cortes1995support}. Configuration: probability=True, class\_weight='balanced' for imbalanced data handling.
+    \item \textbf{Decision Tree (DT)}: A tree-based classifier that learns decision rules from data features using recursive partitioning \cite{breiman1984classification}. Configuration: default sklearn parameters with reproducibility settings.
+    \item \textbf{Random Forest (RF)}: An ensemble method that constructs multiple decision trees and outputs the majority vote through bagging \cite{breiman2001random}. Configuration: class\_weight='balanced', parallel processing enabled.
+    \item \textbf{Gradient Boosting Decision Tree (GBDT)}: A boosting ensemble method that builds trees sequentially, each correcting the previous one's errors through gradient descent optimization \cite{friedman2001greedy}. Configuration: default sklearn parameters for gradient boosting.
+    \item \textbf{XGBoost}: An optimized gradient boosting framework designed for efficiency and performance with regularized objective function and tree pruning \cite{chen2016xgboost}. Configuration: eval\_metric='logloss', parallel processing enabled.
+\end{itemize}
+All ML baseline models used default hyperparameters with consistent random state management and class imbalance handling, ensuring comparison reflects inherent model capabilities rather than extensive optimization.
+
+\subsubsection{Computational Framework}
+All experiments were conducted on the High Performance Computing platform at the Hong Kong Polytechnic University Department of Computing, equipped with
+\begin{itemize}
+    \item \textbf{Hardware}: NVIDIA A800-SXM4-80GB GPU (80GB HBM2 memory), AMD EPYC 7742 64-Core Processor (256 threads), NUMA architecture with 512MB L3 cache.
+    \item \textbf{Software}: PyTorch 2.7.0 (CUDA 12.2), Scikit-learn 1.6.1, Adapt 0.4.4.
+    \item \textbf{System}: Ubuntu 22.04.4 LTS, NVIDIA Driver 535.161.07.
 \end{itemize}
 
 \label{sec:meth-end}

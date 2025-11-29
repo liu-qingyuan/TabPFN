@@ -2,13 +2,26 @@
 \label{sec:eval-start}
 \label{sec:evaluation}
 
-We evaluate PANDA in terms of cross-institutional performance, domain adaptation, interpretability, and clinical utility, using a protocol designed to approximate real-world deployment.
+We evaluate PANDA from an artificial intelligence and deployment perspective,
+focusing on its ability to (i) learn from small, heterogeneous tabular cohorts,
+(ii) remain robust under cross-hospital and cross-population distribution shifts, and
+(iii) provide interpretable, clinically useful predictions.
+To this end, we adopt a unified evaluation protocol across two complementary
+experiments: \textbf{Experiment 1 (E1)}, which targets cross-hospital pulmonary
+nodule malignancy prediction, and \textbf{Experiment 2 (E2)}, which targets
+race-driven cross-population shift in the TableShift BRFSS Diabetes benchmark.
 
-\subsection{Evaluation Metrics and Statistical Analysis}
+\subsection{Evaluation Protocols for Cross-Domain Diagnostic Models}
+
+We adopt a common set of discrimination, calibration, and clinical-utility metrics
+to enable consistent comparison across hospitals and benchmarks.
+Unless otherwise specified, all reported metrics are computed over 10-fold
+stratified cross-validation on the source domain and once on the external or
+out-of-distribution (OOD) domain.
 
 \subsubsection{Classification Performance Metrics}
 
-We report results as averages over 10-fold stratified cross-validation to mitigate label imbalance. The metrics are defined as follows:
+We report all results as averages over 10-fold stratified cross-validation to mitigate label imbalance. The metrics are defined as follows:
 
 \[
 \begin{aligned}
@@ -23,7 +36,7 @@ We report results as averages over 10-fold stratified cross-validation to mitiga
 \end{aligned}
 \]
 
-Let $\mathcal{D} = {(\featurevec_i, \labelval_i)}_{i=1}^n$ denote the full dataset, and let $\mathcal{D}_k$ be the $k$-th fold. For a metric $M$, the mean and standard deviation over $\numfolds=10$ folds are
+Let $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^n$ denote the full dataset, and let $\mathcal{D}_k$ be the $k$-th fold. For a metric $M$, the mean and standard deviation over $\numfolds=10$ folds are
 
 \[
 \meanmetric = \frac{1}{\numfolds}\sum_{k=1}^{\numfolds} \metrick, \quad \stdmetric = \sqrt{\frac{1}{\numfolds-1} \sum_{k=1}^{\numfolds} (\metrick - \meanmetric)^2}.
@@ -32,30 +45,41 @@ Let $\mathcal{D} = {(\featurevec_i, \labelval_i)}_{i=1}^n$ denote the full datas
 \subsubsection{Visualization-Based Evaluation}
 
 \begin{itemize}
-\item \textbf{ROC Curves:} We plot $\tpr(\tau)$ versus $\fpr(\tau)$ for $\tau \in [0,1]$ to characterize the sensitivity–specificity trade-off.
+\item \textbf{ROC Curves:} We plot $\tpr(\tau)$ versus $\fpr(\tau)$ for $\tau \in [0,1]$ to characterize the trade-off between sensitivity and specificity across operating thresholds.
 
 \item \textbf{Calibration Curves:} We assess the agreement between the predicted probability $\predprob$ and the observed frequency $\labelval_i$. For $\numfolds$ equal-width bins $\calibbin = [k/\numfolds, (k+1)/\numfolds)$, we compute
-
 \[
 \meanpredprob = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \predprob, \quad \meanobservedfreq = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \labelval_i.
 \]
+These quantities summarize both over- and underestimation of risk across the probability range.
 
 \item \textbf{Decision Curve Analysis (DCA):} For a given probability threshold $\probthreshold$, the net benefit is
-
 \[
 \netbenefit = \frac{\tp(\probthreshold)}{n} - \frac{\fp(\probthreshold)}{n} \cdot \frac{\probthreshold}{1 - \probthreshold},
 \]
-
 with benchmark strategies
-
 \[
 \nball(\probthreshold) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{\probthreshold}{1 - \probthreshold}, \quad \nbnone = 0.
 \]
+DCA therefore quantifies the clinical utility of a model across plausible decision thresholds relative to treating all or no patients.
 \end{itemize}
 
-\subsection{Experimental Setup and Results}
+\subsection{Experiment 1 (E1): Cross-Hospital Pulmonary Nodule Malignancy Prediction}
 
-Structured clinical data from two cancer centers in China provided a training cohort (Cohort A, $\sourcedatasize=295$) and an external test cohort (Cohort B, $\targetdatasize=190$). Cohort A contained 63 structured features, and Cohort B contained 58 (Table~\ref{tab:cohort_summary}).
+Experiment 1 evaluates PANDA in a realistic cross-hospital deployment scenario
+for pulmonary nodule malignancy prediction.
+Structured clinical data from two cancer centers in China provide a labeled
+source cohort (Cohort A, $\sourcedatasize=295$) and an external target cohort
+(Cohort B, $\targetdatasize=190$).
+Cohort A contains 63 structured features and Cohort B contains 58, reflecting
+differences in local documentation and biomarker panels
+(Table~\ref{tab:cohort_summary}).
+Both cohorts exhibit moderate class imbalance, with malignant nodules comprising
+64.1\% of patients in Cohort A and 65.8\% in Cohort B, and key covariates such as
+upper-lobe location, age, pulmonary function indices (DLCO, VC), and serum CEA
+show distributional differences between the two hospitals.
+These discrepancies capture the covariate shift that motivates domain adaptation
+in this setting.
 
 \begin{table}[htbp]
 \centering
@@ -83,17 +107,35 @@ Outcome (Malignant) & & \\
 \end{tabular}
 \end{table}
 
-\subsection{Main Performance Results}
+\subsection{E1: Internal and Cross-Hospital Generalization}
 
 \subsubsection{Source and Target Domain Performance}
 
-Figure~\ref{fig:performance-heatmaps} summarizes relative performance trends across methods, and Table~\ref{tab:main_results_table} reports the corresponding numerical metrics. In source-domain evaluation (10-fold cross-validation on Cohort A), PANDA (TabPFN) achieves the highest \auc of 0.811, accuracy of 0.871, and strongest precision (0.642), reflecting the foundation model’s ability to extract discriminative signals from a compact feature set. GBDT and Random Forest follow closely, with \auc of 0.803 and 0.800, respectively. Random Forest attains the highest precision but a recall of 0.104, while SVM collapses into a degenerate solution with zero F1 because its thresholded scores never trigger the positive class during internal validation. Decision Tree and XGBoost tend toward higher recall at the cost of precision, illustrating the typical trade-offs among classical baselines in this small-data setting. All source-domain experimental results are reproducible using the provided codebase and configuration scripts.
+Figure~\ref{fig:performance-heatmaps} summarizes relative performance trends
+across methods, and Table~\ref{tab:main_results_table} reports the corresponding
+numerical metrics.
+On the source domain (10-fold cross-validation on Cohort A), PANDA (TabPFN) achieves the
+highest \auc of 0.8287, demonstrating the superior performance of the tabular
+foundation model on small, heterogeneous medical datasets.
+LASSO LR and Random Forest follow closely, with \auc values of 0.7631 and 0.7515,
+respectively.
+XGBoost and GBDT show competitive performance (\auc 0.7416 and 0.7212), while
+traditional clinical scores (Mayo, PKUPH) and classical machine learning baselines
+exhibit lower discrimination.
+All source-domain experimental results are reproducible using the provided
+codebase and configuration scripts.
 
-On the external target domain, the benefits of adaptation become clear. The TCA-enhanced PANDA model attains the highest \auc\ of 0.705 and \recall\ of 0.944. In contrast, Random Forest and SVM drop to \auc\ values of 0.632 and 0.628, indicating substantial degradation due to domain shift. The clinical scores (Mayo, PKUPH) perform poorly (\auc\ $<$ 0.64), likely because their original derivation cohorts differ from the Chinese hospital population considered here.
-
-Figure~\ref{fig:combined_analysis} complements these results with ROC, calibration, and decision curves for both Cohort A and Cohort B, highlighting how the TCA-aligned embeddings stabilize the model under cross-hospital deployment.
-
-Taken together, these comparisons explain why PANDA outperforms the baselines. The pre-trained tabular foundation model can exploit higher-order feature interactions while remaining data-efficient in a small-cohort setting, whereas tree ensembles and SVMs are trained from scratch and are more sensitive to sampling noise and class imbalance. Embedding TCA in the latent space further reduces the distributional mismatch between Cohort A and Cohort B, allowing PANDA to retain high recall on the external cohort where models trained only on source-domain statistics degrade. In contrast, the hand-crafted clinical scores are fixed parametric formulas derived in different populations and cannot adapt their decision boundary to the feature distributions and prevalence observed in the present Chinese cohorts.
+On the external target domain (Cohort B), the benefits of unsupervised domain
+adaptation become evident.
+The TCA-enhanced PANDA model attains the highest \auc\ of 0.7046 and an
+exceptionally high \recall\ of 0.9440, indicating strong sensitivity for clinical
+screening applications.
+PANDA\_NoUDA follows closely with \auc of 0.6980, demonstrating the inherent
+transferability of the tabular foundation model.
+In contrast, traditional machine learning methods experience substantial
+performance drops under domain shift, with Random Forest declining to \auc 0.6324
+and tree ensembles dropping below 0.600.
+The clinical scores continue to show poor transportability across institutions.
 
 \begin{table}[htbp]
 \centering
@@ -104,20 +146,27 @@ Taken together, these comparisons explain why PANDA outperforms the baselines. T
 \textbf{Model} & \textbf{\auc} & \textbf{\accuracy} & \textbf{\fonescore} & \textbf{\precision} & \textbf{\recall} \\
 \midrule
 \multicolumn{6}{l}{\textit{Source Domain (Internal CV)}} \\
-\textbf{PANDA (TabPFN)} & \textbf{0.811} & \textbf{0.871} & 0.212 & 0.642 & 0.141 \\
-GBDT & 0.803 & 0.884 & \textbf{0.406} & 0.638 & 0.304 \\
-Random Forest & 0.800 & 0.876 & 0.180 & \textbf{0.867} & 0.104 \\
-XGBoost & 0.784 & 0.865 & 0.332 & 0.478 & 0.259 \\
-SVM & 0.640 & 0.867 & 0.000 & 0.000 & 0.000 \\
-Decision Tree & 0.616 & 0.808 & 0.326 & 0.303 & \textbf{0.356} \\
+\textbf{PANDA (TabPFN)} & \textbf{0.8287} & 0.7460 & \textbf{0.8102} & 0.7864 & 0.8462 \\
+LASSO LR & 0.7631 & 0.7224 & 0.8101 & 0.7227 & \textbf{0.9254} \\
+Random Forest & 0.7515 & 0.6983 & 0.7792 & 0.7351 & 0.8415 \\
+XGBoost & 0.7416 & 0.6778 & 0.7520 & 0.7325 & 0.7871 \\
+GBDT & 0.7212 & 0.6911 & 0.7690 & 0.7394 & 0.8140 \\
+SVM & 0.7175 & 0.6645 & 0.7197 & \textbf{0.7794} & 0.6769 \\
+PKUPH & 0.6640 & \textbf{0.6782} & 0.7672 & 0.7148 & 0.8354 \\
+Mayo & 0.6049 & 0.3592 & 0.0000 & 0.0000 & 0.0000 \\
+Decision Tree & 0.5764 & 0.6099 & 0.6929 & 0.6997 & 0.6974 \\
 \midrule
 \multicolumn{6}{l}{\textit{Target Domain (External Validation)}} \\
-\textbf{PANDA + TCA} & \textbf{0.705} & \textbf{0.705} & \textbf{0.808} & 0.707 & \textbf{0.944} \\
-PANDA (No UDA) & 0.698 & 0.663 & 0.776 & 0.689 & 0.888 \\
-Random Forest & 0.632 & 0.679 & 0.775 & 0.713 & 0.854 \\
-SVM & 0.628 & 0.568 & 0.647 & 0.695 & 0.606 \\
-PKUPH Score & 0.636 & 0.695 & 0.784 & \textbf{0.733} & 0.847 \\
-Mayo Score & 0.584 & 0.342 & 0.000 & 0.000 & 0.000 \\
+\textbf{TCA} & \textbf{0.7046} & \textbf{0.7053} & \textbf{0.8082} & 0.7066 & \textbf{0.9440} \\
+PANDA\_NoUDA & 0.6980 & 0.6632 & 0.7762 & 0.6894 & 0.8880 \\
+Random Forest & 0.6324 & 0.6789 & 0.7753 & 0.7128 & 0.8538 \\
+PKUPH & 0.6356 & 0.6947 & 0.7838 & \textbf{0.7329} & 0.8474 \\
+LASSO LR & 0.6678 & 0.6737 & 0.7911 & 0.6825 & 0.9429 \\
+SVM & 0.6285 & 0.5684 & 0.6468 & 0.6950 & 0.6064 \\
+GBDT & 0.5906 & 0.5842 & 0.6834 & 0.6689 & 0.7109 \\
+XGBoost & 0.5672 & 0.5947 & 0.6937 & 0.6701 & 0.7244 \\
+Decision Tree & 0.5090 & 0.5684 & 0.6759 & 0.6650 & 0.6942 \\
+Mayo & 0.5837 & 0.3421 & 0.0000 & 0.0000 & 0.0000 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -131,11 +180,12 @@ Mayo Score & 0.584 & 0.342 & 0.000 & 0.000 & 0.000 \\
 
 \subsubsection{Stratified Analysis}
 
-To examine potential biases, we evaluated PANDA's performance across key subgroups (Table~\ref{tab:stratified_analysis}).
+To examine potential biases and subgroup robustness, we evaluated PANDA's performance across key subgroups (Table~\ref{tab:stratified_analysis}).
+
 \begin{itemize}
-\item \textbf{Nodule Size}: Performance remains strong for large nodules ($>$8 mm, \auc 0.74) but declines for sub-centimeter nodules (\auc 0.65), reflecting the inherent difficulty of radiological characterization for small lesions.
-\item \textbf{Smoking Status}: The model performs better in smokers (\auc 0.72) than in non-smokers (\auc 0.68), likely because smoking provides a strong prior for malignancy that the model exploits.
-\item \textbf{Gender}: We observe comparable performance across gender (\auc 0.70 vs 0.71), suggesting no substantial gender-specific bias.
+\item \textbf{Nodule Size}: Performance remains strong for large nodules ($>8$ mm, \auc 0.74) but declines for sub-centimeter nodules (\auc 0.65), reflecting the inherent difficulty of radiological characterization for small lesions.
+\item \textbf{Smoking Status}: The model performs better in smokers (\auc 0.72) than in non-smokers (\auc 0.68), likely because smoking provides a strong prior for malignancy that the model can exploit.
+\item \textbf{Gender}: We observe comparable performance across gender (\auc 0.70 vs 0.71), suggesting no substantial gender-specific bias at the current sample size.
 \end{itemize}
 
 \begin{table}[htbp]
@@ -161,60 +211,38 @@ Female & 80 & 0.70 & 0.93 \\
 \end{tabular}
 \end{table}
 
-\subsection{Additional Cross-Domain Validation on TableShift}
+\subsection{Experiment 2 (E2): Cross-Population Validation on TableShift}
 
-We further evaluated PANDA on the TableShift BRFSS Diabetes benchmark (White $\rightarrow$ Non-White race shift).
+We further evaluated PANDA on the TableShift BRFSS Diabetes benchmark, which introduces a race-driven shift by training on one demographic group and evaluating on another (White $\rightarrow$ Non-White). This benchmark provides a complementary stress test to the cross-hospital shift in the pulmonary nodule experiment and mimics realistic deployment across heterogeneous populations in population-health applications.
 
-\begin{table}[htbp]
-\centering
-\caption{TableShift BRFSS Diabetes results (race shift). OOD = out-of-distribution (Non-White).}
-\label{tab:tableshift_results}
-\footnotesize
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Model} & \textbf{ID \auc} & \textbf{OOD \auc} & \textbf{OOD Acc} & \textbf{Gap} \\
-\midrule
-\textbf{PANDA + TCA} & 0.794 & 0.804 & 0.848 & \textbf{-0.009} \\
-PANDA (No UDA) & \textbf{0.795} & \textbf{0.808} & \textbf{0.848} & -0.013 \\
-Random Forest & 0.778 & 0.786 & 0.845 & -0.008 \\
-Gradient Boosting (GBDT) & 0.780 & 0.785 & 0.834 & -0.005 \\
-XGBoost & 0.760 & 0.770 & 0.831 & -0.010 \\
-SVM & 0.646 & 0.645 & 0.840 & 0.001 \\
-Decision Tree & 0.585 & 0.575 & 0.779 & 0.010 \\
-\bottomrule
-\end{tabular}
-\end{table}
+In this setting, our goal is to assess whether a tabular foundation model with lightweight domain alignment can remain stable when the covariate distribution changes along demographic axes. Qualitatively, PANDA (with and without TCA) achieves discrimination and calibration that are competitive with well-tuned tree ensembles, while avoiding the severe performance collapse that would be concerning in a cross-population deployment. This behavior supports the view that the inductive biases learned by the foundation model transfer beyond the pulmonary nodule task and remain useful under a distinct form of distribution shift.
 
-As summarized in Table~\ref{tab:tableshift_results}, PANDA+TCA attains an \auc of 0.804 on the OOD target with only a $-0.009$ gap relative to the ID metric (0.794). In contrast, XGBoost loses 0.010 and remains well below both PANDA variants in ID and OOD \auc.
-
-These results are consistent with the cross-hospital findings and further clarify why PANDA achieves stronger performance than the baselines. Both PANDA variants start from a tabular foundation model that has learned generic inductive biases from a large synthetic task distribution, which appears to regularize learning in the high-dimensional, imbalanced BRFSS setting. The TCA module then aligns latent representations between ID and OOD splits, limiting the performance gap under race shift. Conventional tree ensembles and SVMs lack this combination of prior structure and explicit alignment, so their AUC and accuracy deteriorate more noticeably when the covariate distribution changes.
-
-Figure~\ref{fig:tableshift-heatmaps} visualizes the heatmap comparison between ID and OOD metrics, reinforcing that PANDA+TCA maintains stable performance under the race shift.
+Figure~\ref{fig:tableshift-heatmaps} summarizes the behavior of different models across the training and race-shifted evaluation splits, and Figure~\ref{fig:brfss-roc} reports ROC, calibration, and decision curves. Together, these visualizations indicate that PANDA’s score distributions and decision boundaries can be adapted to new demographic groups without sacrificing overall screening utility.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{img/tableshift/combined_heatmaps_nature.pdf}
-\caption{\textbf{Performance comparison across domains.} \textbf{a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s strong AUC, accuracy, and precision. \textbf{b} External validation (OOD) heatmap; the TCA-enhanced PANDA model retains the highest AUC and recall, confirming its resilience under race shift.}
+\caption{\textbf{Performance comparison on the TableShift BRFSS Diabetes benchmark.} Heatmaps summarize multiple metrics for PANDA and baseline models across the training split and the race-shifted evaluation split. PANDA with TCA remains competitive with strong tree ensembles and does not exhibit pronounced degradation under race shift.}
 \label{fig:tableshift-heatmaps}
 \end{figure}
 
-\textbf{Discussion on Precision/Recall}: Readers may observe low $\fonescore$ values in BRFSS despite high $\accuracy$ (Fig.~\ref{fig:brfss-roc}). This pattern arises from the low $\prevalence$ (17.4%) and the default 0.5 threshold. The model correctly identifies most negatives (high $\accuracy$) but, without class re-weighting, yields moderate $\precision$ on the minority positive class. For screening purposes, the high \auc (0.804) indicates adequate discriminative ability; the operating point can be adjusted via threshold tuning to prioritize $\recall$.
+\textbf{Discussion on Precision/Recall}: Readers may observe low $\fonescore$ values in BRFSS despite high $\accuracy$ (Fig.~\ref{fig:brfss-roc}). This pattern arises from the low $\prevalence$ (17.4\%) and the default 0.5 threshold: the model correctly identifies most negatives (high $\accuracy$) but, without class re-weighting, yields moderate $\precision$ on the minority positive class. For screening purposes, the ROC curves indicate adequate discriminative ability; the operating point can be adjusted via threshold tuning to prioritize $\recall$ when desired.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{img/tableshift/combined_analysis_figure.pdf}
-\caption{\textbf{TableShift BRFSS Diabetes analysis.} \textbf{a,b} ROC curves showing PANDA's robustness. \textbf{c,d} Calibration curves. \textbf{e,f} Decision curves.}
+\caption{\textbf{TableShift BRFSS Diabetes analysis.} \textbf{a,b} ROC curves showing PANDA's robustness under race-driven shift. \textbf{c,d} Calibration curves assessing probability estimates. \textbf{e,f} Decision curves illustrating net benefit across clinical thresholds.}
 \label{fig:brfss-roc}
 \end{figure}
 
 \subsection{Interpretability and Stability}
 
-Recursive feature elimination (RFE) identified a stable subset of 8 features (Age, Spiculation, etc.) that maximized the cost-effectiveness index (Fig.~\ref{fig:rfe-performance}). This \texttt{best8} set performed within 1% of the full 63-feature set while providing substantially better cross-center stability. In source-domain evaluation, we also report RFE curves (Fig.~\ref{fig:rfe-performance}) that track AUC, accuracy, and F1 as functions of the retained subset size, together with stability and cost-effectiveness metrics. Performance plateaus around 9--13 features, consistent with the feature subset used in the final experiments.
+From an interpretability perspective, recursive feature elimination (RFE) identified a stable subset of 8 features (Age, Spiculation, etc.) that maximized the cost-effectiveness index (Fig.~\ref{fig:rfe-performance}). This \texttt{best8} set performed within 1\% of the full 63-feature set while providing substantially better cross-center stability. In source-domain evaluation, we also report RFE curves (Fig.~\ref{fig:rfe-performance}) that track AUC, accuracy, and F1 as functions of the retained subset size, together with stability and cost-effectiveness metrics. Performance plateaus around 9--13 features, consistent with the feature subset used in the final experiments.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1\linewidth]{img/cross_hospital/feature_performance_comparison_comprehensive.pdf}
-\caption{\textbf{Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance×0.45 + Simplicity×0.25 + Efficiency×0.15 + Stability×0.15) to identify a feature count that balances accuracy with practical deployment considerations.}
+\caption{\textbf{Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance$\times$0.45 + Simplicity$\times$0.25 + Efficiency$\times$0.15 + Stability$\times$0.15) to identify a feature count that balances accuracy with practical deployment considerations.}
 \label{fig:rfe-performance}
 \end{figure}
 

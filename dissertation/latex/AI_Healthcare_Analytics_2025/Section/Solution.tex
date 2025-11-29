@@ -2,7 +2,7 @@
 \label{sec:solution}
 \label{sec:sol-start}
 
-To bridge the gap between advanced tabular foundation models and the practical constraints of cross-hospital medical AI, we introduce PANDA (\textbf{P}re-trained t\textbf{A}bular fou\textbf{N}dation model with \textbf{D}omain \textbf{A}daptation). PANDA is a composite algorithmic framework designed to predict pulmonary nodule malignancy with high stability across heterogeneous clinical environments. It explicitly addresses the tripartite challenge of small-sample scarcity, distribution shift, and feature heterogeneity through a tightly integrated pipeline.
+To bridge the gap between advanced tabular foundation models and the practical constraints of cross-hospital medical AI, we introduce PANDA (\textbf{P}retrained \textbf{A}daptation \textbf{N}etwork with \textbf{D}omain \textbf{A}lignment). PANDA is a composite algorithmic framework designed to predict pulmonary nodule malignancy with high stability across heterogeneous clinical environments. It explicitly addresses the tripartite challenge of small-sample scarcity, distribution shift, and feature heterogeneity through a tightly integrated pipeline.
 
 We formalize the PANDA solution as a composite function $\pandafunc: \inputspace \to [0, 1]$ mapping raw, heterogeneous input space to a calibrated malignancy probability. The framework consists of four sequential stages: (1) Domain-Aware Feature Alignment and Selection, (2) Foundation Model Feature Extraction, (3) Latent Space Domain Adaptation, and (4) Multi-View Ensemble Classification.
 
@@ -13,17 +13,17 @@ The PANDA framework operates as a directed acyclic graph (DAG) of data transform
 
 \begin{table}[htbp]
     \centering
-    \caption{Data flow and transformations in the PANDA framework. The pipeline progressively refines the data from raw, high-dimensional inputs to low-dimensional, domain-invariant embeddings, and finally to a calibrated probability.}
+    \caption{Data flow and transformations in the PANDA framework. The pipeline progressively refines the data from raw, high-dimensional inputs to low-dimensional, domain-invariant embeddings, and finally to a calibrated probability. In our pulmonary nodule experiments, $k = 8$, $d_{\cap} = 8$, and $m = 15$, but these dimensions are dataset-dependent.}
     \label{tab:data-flow}
     \resizebox{\textwidth}{!}{%
         \begin{tabular}{lllll}
             \toprule
             \textbf{Stage} & \textbf{Component} & \textbf{Input Space} & \textbf{Core Operation} & \textbf{Output Space} \\
             \midrule
-            1 & Feature Alignment & $\mathbb{R}^{\rawdim}$ & Schema intersection $\cap$ & $\mathbb{R}^{\intersectdim}$ \\
-            2 & Cross-Domain RFE & $\mathbb{R}^{\intersectdim}$ & Iterative elimination via $\rfeimportance(\func)$ & $\mathbb{R}^{\rfecurrentdim}$ ($\rfecurrentdim \approx 8$) \\
-            3 & Latent TCA & $\mathbb{R}^{\rfecurrentdim}$ & Projection $\featurevec' = \tcaprojectionmatrix^\top \featurevec$ & $\mathbb{R}^{\tcaprojectdim}$ ($\tcaprojectdim=15$) \\
-            4 & TabPFN Classifier & $\mathbb{R}^{\tcaprojectdim}$ & Classification $\tabpfnfunc(\featurevec')$ & $[0, 1]$ (Prob.) \\
+            1 & Cross-Domain RFE & $\mathbb{R}^{\rawdim}$ & Iterative elimination via $\rfeimportance(\func)$ & $\mathbb{R}^{k}$ ($\rfeselectedfeatures$, $k = |\rfeselectedfeatures|$) \\
+            2 & Feature Alignment & $\mathbb{R}^{k}$ & Schema intersection on $\sharedfeatures$ & $\mathbb{R}^{d_{\cap}}$ ($d_{\cap} = |\sharedfeatures|$) \\
+            3 & Latent TCA & $\mathbb{R}^{d_{\cap}}$ & Projection $\featurevec' = \tcaprojectionmatrix^\top \featurevec$ & $\mathbb{R}^{m}$ ($m$ = latent dimension) \\
+            4 & TabPFN Classifier & $\mathbb{R}^{m}$ & Classification $\tabpfnfunc(\featurevec')$ & $[0, 1]$ (Prob.) \\
             5 & Ensemble & $[0, 1]^{\numpreprocessbranches \times \numrandomseeds}$ & Temperature-scaled averaging & $[0, 1]$ (Final) \\
             \bottomrule
         \end{tabular}%
@@ -32,20 +32,21 @@ The PANDA framework operates as a directed acyclic graph (DAG) of data transform
 
 
 
-The data journey begins with \textbf{Stage 1: Feature Alignment}. Here, we perform a robust schema intersection ($\sharedfeatures$) between the features available in the source domain and each target hospital's dataset. This crucial step effectively addresses the "missingness shift" by identifying the maximal common feature set, ensuring that only universally collected and relevant variables proceed through the pipeline, even if certain examinations are not uniformly performed across all clinical sites.
+The data journey begins with \textbf{Stage 1: Cross-Domain Recursive Feature Elimination (RFE)}. From the raw feature set of $\rawdim$ dimensions, this stage systematically reduces the dimensionality to a concise set of $k$ clinically impactful features, denoted as $\rfeselectedfeatures$ (where $k = |\rfeselectedfeatures|$). This reduction serves to minimize the joint error ($\adaptabilityterm$) across domains and focuses on the most diagnostically relevant biomarkers for malignancy prediction. In our pulmonary nodule experiments, the cost-effectiveness criterion selects $k = 8$, but $k$ is dataset-dependent.
 
-Following alignment, \textbf{Stage 2: Cross-Domain Recursive Feature Elimination (RFE)} takes over. From the $\intersectdim$ features, this stage systematically reduces the dimensionality to a concise set of $\rfecurrentdim \approx 8$ clinically impactful features, denoted as $\rfeselectedfeatures$. This reduction is not arbitrary; it serves to minimize the joint error ($\adaptabilityterm$) across domains and guarantees that the selected features are practically acquirable by all participating hospitals. This process aligns directly with the feature set $\rfeselectedfeatures$ and the target feature space for domain $t$, $\rfeiterateset$, as introduced in Section 3.6.1.
+Following feature selection, \textbf{Stage 2: Feature Alignment} performs a robust schema intersection ($\sharedfeatures$) between the RFE-selected features and those available in each target hospital's dataset. This yields a shared feature schema of dimensionality $d_{\cap} = |\sharedfeatures|$ that is tailored to each pair of hospitals (for our cross-hospital pulmonary nodule cohort, $d_{\cap} = 8$). This crucial step effectively addresses the "missingness shift" by ensuring that only universally available and relevant variables proceed through the pipeline, adapting the feature set to the specific constraints of each clinical site.
 
-Subsequently, in \textbf{Stage 3: Latent Transfer Component Analysis (TCA)}, the refined feature set $\mathbb{R}^{\rfecurrentdim}$ is adapted. TCA projects these features into a lower-dimensional, domain-invariant space $\mathbb{R}^{\tcaprojectdim}$ (typically $\tcaprojectdim=15$). This projection, $\featurevec' = \tcaprojectionmatrix^\top \featurevec$, is learned to minimize the Maximum Mean Discrepancy (MMD) between the source and target domain distributions in this latent space, thereby mitigating covariate shift.
+Subsequently, in \textbf{Stage 3: Latent Transfer Component Analysis (TCA)}, the refined feature set $\mathbb{R}^{d_{\cap}}$ is adapted. TCA projects these features into a lower-dimensional, domain-invariant space $\mathbb{R}^{m}$, with $m$ treated as a tunable latent dimension (we use $m = 15$ in the reported experiments). This projection, $\featurevec' = \tcaprojectionmatrix^\top \featurevec$, is learned to minimize the Maximum Mean Discrepancy (MMD) between the source and target domain distributions in this latent space, thereby mitigating covariate shift.
 
 \textbf{Stage 4: TabPFN Classifier} then processes the TCA-transformed features to predict the initial malignancy probability. In this stage, the TabPFN acts as a robust, pre-trained classifier on the domain-adapted data. Its in-context learning capabilities allow it to infer complex, non-linear decision boundaries without extensive gradient updates on small medical datasets.
 
 Finally, \textbf{Stage 5: Ensemble} aggregates predictions from multiple TabPFN Classifier instances. This involves temperature scaling of the individual TabPFN outputs, followed by averaging across $\numpreprocessbranches \times \numrandomseeds$ ensemble members, yielding the final, calibrated malignancy probability. The temperature scaling is crucial for adjusting predicted probabilities to account for potential label shifts between domains, ensuring more reliable and interpretable outputs.
 
 \subsubsection*{Mapping to Formal Problem Formulation}
-To establish a clear connection between the PANDA framework's architectural stages and its formal problem formulation presented in Section 3.6, we explicitly map the components of $\pandafunc(\featurevec) = \hypothesis(\adaptmap(\featurevec; \rfeselectedfeatures))$ to the corresponding stages:
+To establish a clear connection between the PANDA framework's architectural stages and its formal definition in Equation \ref{eq:panda-formalization}, we explicitly map the components of $\pandafunc(\featurevec) = \hypothesis \circ \adaptmap \circ \pi_{\cap} \circ \rfeop (\featurevec)$ to the corresponding stages:
 \begin{itemize}
-    \item $\rfeselectedfeatures \leftarrow$ Stages 1--2 (Schema Intersection + Cross-Domain RFE)
+    \item $\rfeselectedfeatures \leftarrow$ Stage 1 (Cross-Domain RFE)
+    \item $\sharedfeatures \leftarrow$ Stage 2 (Feature Alignment)
     \item $\adaptmap \leftarrow$ Stage 3 (Latent TCA)
     \item $\hypothesis \leftarrow$ Stages 4--5 (TabPFN Classifier + Ensemble/Calibration)
 \end{itemize}
@@ -55,14 +56,14 @@ This mapping clarifies how the abstract components of the PANDA function are ins
 \label{subsec:sol-tabpfn}
 
 The backbone of PANDA is the TabPFN (Tabular Prior-Data Fitted Network) foundation model. While TabPFN is capable of extracting embeddings, in the PANDA framework, we leverage it primarily as a robust \textbf{Classifier} operating on the domain-adapted features. This strategic choice is driven by TabPFN's unique ability to generalize well on small tabular datasets without extensive domain-specific fine-tuning.
-Mathematically, after the feature set $\featurevec$ has been aligned and reduced (Stages 1-2) and then adapted by TCA into $\featurevec'$ (Stage 3), the TabPFN classifier $\tabpfnfunc(\cdot)$ directly maps these transformed features to a malignancy probability:
+Mathematically, after the feature set $\featurevec$ has been reduced and aligned (Stages 1-2) and then adapted by TCA into $\featurevec'$ (Stage 3), the TabPFN classifier $\tabpfnfunc(\cdot)$ directly maps these transformed features to a malignancy probability:
 \begin{equation}
     \tabpfnfunc(\featurevec') \in [0, 1]
 \end{equation}
 Here, the entire pre-trained TabPFN model, including its Transformer encoder and classification head, is used to make predictions.
 
 \textbf{Theoretical Advantage (Prior-Data Fitted Learning):}
-The core innovation here is leveraging the \textbf{Prior-Data Fitted (PFN)} nature of TabPFN. TabPFN was meta-trained on millions of synthetic datasets generated from Structural Causal Models (SCMs). This meta-training instills a strong Bayesian prior $\priorfunc$ that favors simple, causal explanations over spurious correlations. In the context of medical data, where sample sizes are often small ($\sourcedatasize \approx 300$), traditional deep learning models typically overfit. However, TabPFN's meta-learned prior allows it to infer complex, non-linear decision boundaries (e.g., non-linear interactions between Age and Nodule Size) on the adapted features without requiring gradient updates on the small medical dataset. This directly addresses the "Small Sample Size" constraint defined in Section \ref{sec:problem-formulation}. By applying TabPFN to TCA-transformed features, we benefit from both domain invariance and strong generalization capabilities on small cohorts.
+The core innovation here is leveraging the \textbf{Prior-Data Fitted (PFN)} nature of TabPFN. TabPFN was meta-trained on millions of synthetic datasets generated from Structural Causal Models (SCMs). This meta-training instills a strong Bayesian prior $\priorfunc$ that favors simple, causal explanations over spurious correlations. In the context of medical data, where sample sizes are often small ($\sourcedatasize \approx 300$), traditional deep learning models typically overfit. However, TabPFN's meta-learned prior allows it to infer complex, non-linear decision boundaries (e.g., non-linear interactions between Age and Nodule Size) on the adapted features without requiring gradient updates on the small medical dataset. This directly addresses the "Small Sample Size" constraint defined in Equation \ref{eq:small-sample-constraint}. By applying TabPFN to TCA-transformed features, we benefit from both domain invariance and strong generalization capabilities on small cohorts.
 
 \subsection{Core Component II: Cross-Domain RFE with Cost-Effectiveness Index}
 \label{subsec:sol-rfe}
@@ -74,9 +75,9 @@ The selection process is not merely about maximizing \auc; it is governed by a g
 \end{equation}
 where the components are defined as:
 \begin{itemize}
-    \item \textbf{Performance ($\rfeperformance$):} A weighted sum of \auc and \fonescore on the source validation folds.
-    \item \textbf{Efficiency ($\rfeefficiency$):} Measures the reduction in clinical burden, defined as $1 - \frac{\featsetcost}{\totalfeatcost}$, where Cost proxies for the difficulty of acquiring the feature (e.g., age is cheap, contrast CT is expensive).
-    \item \textbf{Stability ($\rfestability$):} Quantifies the robustness of the feature subset across cross-validation folds, defined as $1 - \aucsd$.
+    \item \textbf{Performance ($\rfeperformance$):} A weighted sum of discriminative metrics on the source validation folds: $\rfeperformance = 0.5 \cdot \auc + 0.3 \cdot \accuracy + 0.2 \cdot \fonescore$.
+    \item \textbf{Efficiency ($\rfeefficiency$):} Measures the computational efficiency, defined as $1 - \frac{\bar{T} - T_{\min}}{T_{\max} - T_{\min}}$, where $\bar{T}$ is the mean training time for the feature subset.
+    \item \textbf{Stability ($\rfestability$):} Quantifies the robustness across multiple metrics, defined as $1 - \frac{1}{3} (\sigma_{\text{AUC}} + \sigma_{\text{Acc}} + \sigma_{\text{F1}})$, where $\sigma$ denotes the normalized standard deviation across folds.
     \item \textbf{Simplicity ($\rfesimplicity$):} A sparsity penalty $\exp(-\sparsityparam \rfecurrentdim)$ to prefer smaller, clinically manageable subsets (typically $\rfecurrentdim \in [5, 10]$).
 \end{itemize}
 
@@ -118,7 +119,7 @@ The four strategic branches are designed to present different "views" of the dat
 \begin{enumerate}
     \item \textbf{High-Complexity Ordinal (Raw+Quantile):} Features are mapped to a uniform distribution via `QuantileTransformer` (handling outliers) and concatenated with raw features. Categorical variables are Ordinal Encoded.
     \item \textbf{Low-Complexity Ordinal (Raw):} Raw features are used directly (relying on TabPFN's internal robustness). Categorical variables are Ordinal Encoded.
-    \item \textbf{High-Complexity Numeric:} Similar to Branch 1, but categorical variables are treated as numeric (useful for ordered grades like "Spiculation 1-5").
+    \item \textbf{High-Complexity Numeric:} Similar to Branch 1, but categorical variables are treated as numeric.
     \item \textbf{Low-Complexity Numeric:} Raw features with numeric encoding for categoricals.
 \end{enumerate}
 
@@ -136,7 +137,7 @@ where $\logitoutput$ is the logit output of the $i$-th TabPFN Classifier member,
 \label{subsec:sol-justification}
 
 \textbf{Addressing Small Sample Size:}
-The use of a frozen, pre-trained encoder $\featuremap_encoder$ avoids the need to train a deep network from scratch on $\sourcedatasize \approx 300$ samples. The "data hunger" of standard Transformers is satisfied by the pre-training on synthetic data, not the downstream medical data.
+The use of a frozen, pre-trained encoder $\tabpfnencoder$ avoids the need to train a deep network from scratch on $\sourcedatasize \approx 300$ samples. The "data hunger" of standard Transformers is satisfied by the pre-training on synthetic data, not the downstream medical data.
 
 \textbf{Addressing Distribution Shift:}
 The framework attacks shift at three levels:

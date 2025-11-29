@@ -16,6 +16,8 @@
 \newcommand{\rfeselectedfeatures}{\mathcal{F}^*} % RFE-selected subset of features
 \newcommand{\sourcedatasize}{n_s} % Number of labeled samples in source
 \newcommand{\targetdatasize}{n_t} % Number of unlabeled samples in target
+\newcommand{\ns}{n_s} % Alternative notation for source domain size
+\newcommand{\nt}{n_t} % Alternative notation for target domain size
 \newcommand{\rawdim}{d_{\text{raw}}} % Raw input feature dimensionality
 \newcommand{\intersectdim}{d_{\cap}} % Intersected feature dimensionality
 \newcommand{\featuredim}{d} % Dimensionality of input feature space
@@ -32,6 +34,8 @@
 % Learning Theory
 \newcommand{\hypothesis}{h} % Hypothesis function (classifier)
 \newcommand{\hypothesisclass}{\mathcal{H}} % Hypothesis class
+\newcommand{\deepmodelclass}{\mathcal{H}_{\text{deep}}} % Deep Neural Network Hypothesis Class
+\newcommand{\Hdeep}{\mathcal{H}_{\text{deep}}} % Alternative notation for deep model class
 \newcommand{\sourceerror}{\epsilon_S(\hypothesis)} % Expected risk (error) on Source distribution
 \newcommand{\targeterror}{\epsilon_T(\hypothesis)} % Expected risk (error) on Target distribution
 \newcommand{\sourcesampleerror}{\hat{\epsilon}_S(\hypothesis)} % Empirical risk on dataset S
@@ -48,6 +52,10 @@
 \newcommand{\confidence}{\delta} % Confidence parameter
 \newcommand{\loss}{\mathcal{L}} % Generic Loss function
 \newcommand{\modelparams}{\boldsymbol{\theta}} % Model parameters (weights)
+\newcommand{\Sperf}{\mathcal{S}_{\text{perf}}} % Performance-optimal hypothesis class
+\newcommand{\Seff}{\mathcal{S}_{\text{eff}}} % Efficiency-optimal hypothesis class
+\newcommand{\Sstab}{\mathcal{S}_{\text{stab}}} % Stability-optimal hypothesis class
+\newcommand{\Ssimp}{\mathcal{S}_{\text{simp}}} % Simplicity-optimal hypothesis class
 
 % PANDA Architecture
 \newcommand{\adaptmap}{\psi} % Domain adaptation mapping (TCA projection)
@@ -91,21 +99,24 @@
 \newcommand{\activation}{\sigma} % Activation function (e.g., sigmoid)
 \newcommand{\pandafunc}{f_{\text{PANDA}}} % PANDA composite function
 \newcommand{\tabpfnfunc}{f_{\text{TabPFN}}} % TabPFN classifier function
+\newcommand{\tabpfnfunci}[1]{f^{\text{TabPFN}}_{#1}} % i-th TabPFN classifier function (ensemble member)
+\newcommand{\tabpfnencoder}{\Phi} % TabPFN Transformer Encoder (Capital Phi to distinguish from RKHS map phi)
 \newcommand{\ceilogit}{l_i} % Logit for CEI calculation (generic)
 \newcommand{\numfeatureembed}{\mathbf{e}^{(j)}} % Embedding for j-th numerical feature
+\newcommand{\featureembed}{\mathbf{e}} % General feature embedding vector
 \newcommand{\numweightmat}{\mathbf{W}_{\text{num}}^{(j)}} % Weight matrix for j-th numerical feature
 \newcommand{\numbiasvec}{\mathbf{b}_{\text{num}}^{(j)}} % Bias vector for j-th numerical feature
 \newcommand{\catelembedmat}{\text{EmbeddingMatrix}^{(j)}} % Embedding matrix for j-th categorical feature
 \newcommand{\catindex}{c} % Categorical feature index
 \newcommand{\nanembed}{\mathbf{e}_{\text{nan}}} % Learnable token for missing values
 \newcommand{\samplesembed}{\mathbf{E}_{\text{sample}}} % Full sample embedding
+\newcommand{\posencoding}{\mathbf{P}_{\text{pos}}} % Positional encoding
 \newcommand{\mlp}{\text{MLP}} % Multi-Layer Perceptron
 \newcommand{\concat}{\text{Concat}} % Concatenation operation
-\newcommand{\posencoding}{\mathbf{P}_{\text{pos}}} % Positional encoding
 \newcommand{\preprocessingbranches}{\mathcal{B}} % Set of preprocessing functions
-\newcommand{\randomseeds}{\mathcal{S}} % Set of random seeds
+\newcommand{\randomseeds}{\mathcal{R}} % Set of random seeds
 \newcommand{\numpreprocessbranches}{B} % Number of preprocessing branches
-\newcommand{\numrandomseeds}{S} % Number of random seeds
+\newcommand{\numrandomseeds}{R} % Number of random seeds (size of set R)
 \newcommand{\rfecomponentweights}{w} % Generic weight for RFE components
 \newcommand{\rfeperformance}{S_{\text{perf}}} % Performance score for RFE
 \newcommand{\rfeefficiency}{S_{\text{eff}}} % Efficiency score for RFE
@@ -119,6 +130,7 @@
 \newcommand{\rbfK}{K_{\text{RBF}}} % RBF Kernel
 \newcommand{\gammaK}{\gamma} % Bandwidth hyperparameter for RBF kernel
 \newcommand{\onesvec}{\mathbf{1}} % Vector of ones
+\newcommand{\rfeop}{\pi_{\text{RFE}}} % RFE operation that restricts to selected features
 
 % Evaluation Metrics
 \newcommand{\tpr}{\text{TPR}} % True Positive Rate

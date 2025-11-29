@@ -23,23 +23,23 @@ Warning--entry type for "khoeini_fttransformer_2024" isn't style-file defined
 --line 2075 of file refs.bib
 Warning--entry type for "noauthor_welcome_nodate" isn't style-file defined
 --line 2088 of file refs.bib
-Warning--empty journal in garau_external_2020
-Warning--empty year in garau_external_2020
 Warning--empty journal in zhang_comprehensive_2022
 Warning--empty year in zhang_comprehensive_2022
 Warning--empty journal in liu_establishment_2024
 Warning--empty year in liu_establishment_2024
+Warning--empty journal in garau_external_2020
+Warning--empty year in garau_external_2020
 Warning--can't use both volume and number fields in arik2021tabnet
+Warning--empty journal in ardila_end--end_2019
+Warning--empty year in ardila_end--end_2019
+Warning--empty journal in zech_variable_2018
+Warning--empty year in zech_variable_2018
 Warning--empty journal in guo_evaluation_2022
 Warning--empty year in guo_evaluation_2022
 Warning--empty journal in orouji_domain_nodate
 Warning--empty year in orouji_domain_nodate
 Warning--empty journal in ahn_unsupervised_2023
 Warning--empty year in ahn_unsupervised_2023
-Warning--empty journal in ardila_end--end_2019
-Warning--empty year in ardila_end--end_2019
-Warning--empty journal in zech_variable_2018
-Warning--empty year in zech_variable_2018
 Warning--empty journal in fan_tabular_2024
 Warning--empty year in fan_tabular_2024
 Warning--empty journal in borisov_deep_2024
@@ -83,45 +83,45 @@ Warning--empty journal in lin_combined_2024
 Warning--empty year in lin_combined_2024
 Warning--empty journal in causey_highly_2018
 Warning--empty year in causey_highly_2018
-You've used 89 entries,
+You've used 93 entries,
             1791 wiz_defined-function locations,
-            877 strings with 22088 characters,
-and the built_in function-call counts, 21368 in all, are:
-= -- 1532
-> -- 1460
-< -- 8
-+ -- 520
-- -- 431
-* -- 1721
-:= -- 3415
-add.period$ -- 244
-call.type$ -- 89
-change.case$ -- 90
+            899 strings with 22519 characters,
+and the built_in function-call counts, 22344 in all, are:
+= -- 1629
+> -- 1490
+< -- 9
++ -- 532
+- -- 439
+* -- 1780
+:= -- 3558
+add.period$ -- 256
+call.type$ -- 93
+change.case$ -- 93
 chr.to.int$ -- 0
-cite$ -- 149
-duplicate$ -- 748
-empty$ -- 1977
-format.name$ -- 431
-if$ -- 4527
+cite$ -- 153
+duplicate$ -- 796
+empty$ -- 2073
+format.name$ -- 439
+if$ -- 4751
 int.to.chr$ -- 0
-int.to.str$ -- 89
-missing$ -- 59
-newline$ -- 424
-num.names$ -- 81
-pop$ -- 354
+int.to.str$ -- 93
+missing$ -- 64
+newline$ -- 444
+num.names$ -- 85
+pop$ -- 366
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 439
+skip$ -- 466
 stack$ -- 0
-substring$ -- 1309
-swap$ -- 124
-text.length$ -- 8
+substring$ -- 1390
+swap$ -- 139
+text.length$ -- 9
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 60
-while$ -- 169
-width$ -- 91
-write$ -- 818
+while$ -- 180
+width$ -- 95
+write$ -- 861
 (There were 70 warnings)

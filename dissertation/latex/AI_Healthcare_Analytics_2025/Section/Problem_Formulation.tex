@@ -2,32 +2,80 @@
 \label{sec:problem-formulation}
 \label{sec:pf-start}
 
-Cross-hospital medical diagnosis represents a complex intersection of small-sample learning, high-dimensional tabular data, and significant distribution shifts. In this chapter, we formalize the problem of predicting pulmonary nodule malignancy across different hospitals as an Unsupervised Domain Adaptation (UDA) task. We establish the mathematical foundations for our proposed PANDA framework, grounding it in the theory of Prior-Data Fitted Networks (PFNs), domain adaptation bounds, and kernel-based distribution alignment.
+Cross-hospital diagnostic risk prediction can be viewed as a constrained machine learning problem at
+the intersection of small-sample tabular learning and unsupervised domain adaptation (UDA). Rather
+than treating pulmonary nodule malignancy prediction as a purely clinical task, we explicitly formalize
+it as learning a robust classifier that transfers from a source hospital with limited labels to a target
+hospital with unlabeled data, under heterogeneous feature schemas and distribution shift.
 
-\subsection{Mathematical Notation and Preliminaries}
+Concretely, PANDA instantiates an AI system composed of three interacting components: a pre-trained
+tabular foundation model that supplies strong small-sample priors, a cross-domain feature selection
+module that enforces schema overlap and discards unstable biomarkers, and a kernel-based alignment
+module that reduces distributional discrepancy between hospitals. In this section, we formalize the
+underlying learning problem and connect it to standard UDA theory, so that the architectural choices
+of PANDA can be interpreted as explicit responses to the terms in a domain adaptation bound.
+
+\subsection{Task definition and notation}
 \label{subsec:notation}
 
-We consider a supervised classification task where the input space is a $\featuredim$-dimensional feature space $\inputspace \subseteq \mathbb{R}^{\featuredim}$ comprising mixed numerical and categorical variables (e.g., patient age, tumor diameter, smoking status), and the output space is a binary label space $\labelspace = \{0, 1\}$ (e.g., benign vs. malignant).
+We consider a binary classification problem with a $d$-dimensional tabular input space
+$\mathcal{X} \subseteq \mathbb{R}^d$ comprising mixed numerical and categorical variables
+(e.g., age, nodule diameter, smoking status), and a label space
+$\mathcal{Y} = \{0,1\}$ indicating benign or malignant nodules. A \emph{domain} is defined
+as a joint distribution $P(X,Y)$ over $\mathcal{X} \times \mathcal{Y}$.
 
-A \textbf{domain} is defined as a joint probability distribution $P(\inputspace, \labelspace)$ over $\inputspace \times \labelspace$. We are given data from two distinct domains:
+From an AI perspective, cross-hospital deployment naturally induces two domains:
+
 \begin{itemize}
-    \item \textbf{Source Domain (Hospital A):} We observe a labeled dataset $\sourcedata = \{(\featurevec_i^s, \labelval_i^s)\}_{i=1}^{\sourcedatasize}$ drawn i.i.d. from the source distribution $\sourcedomaindist$. Here, $\sourcedatasize$ is the number of labeled samples in the source hospital.
-    \item \textbf{Target Domain (Hospital B):} We observe an unlabeled dataset $\targetdata = \{\featurevec_j^t\}_{j=1}^{\targetdatasize}$ drawn i.i.d. from the marginal distribution $\marginaltargetdist$ of the target domain $\targetdomaindist$. The target labels $\targetlabels$ are unobserved during training, reflecting the real-world constraint of deploying models to new hospitals without local ground truth.
+    \item \textbf{Source domain (Hospital A).} We observe a labeled dataset
+    $\sourcedata = \{(x_i^s, y_i^s)\}_{i=1}^{\sourcedatasize}$ drawn i.i.d.\ from a source distribution
+    $\sourcedomaindist$ over $(X,Y)$. This is the only domain in which labels are available.
+    \item \textbf{Target domain (Hospital B).} We observe an unlabeled dataset
+    $\targetdata = \{x_j^t\}_{j=1}^{\targetdatasize}$ drawn i.i.d.\ from the marginal $P_T(X)$ of a target
+    distribution $\targetdomaindist$. Labels $Y_T$ are not available during training, reflecting
+    realistic privacy and annotation constraints in new hospitals.  
 \end{itemize}
 
-\textbf{Feature Heterogeneity:} In multi-center studies, hospitals often record different sets of variables. Let $\mathcal{F}_S$ and $\mathcal{F}_T$ be the sets of feature indices available in the source and target domains, respectively. We define the \textbf{shared feature subspace} as the intersection $\sharedfeatures = \mathcal{F}_S \cap \mathcal{F}_T$. The effective input dimensionality for the cross-domain model is $\intersectdim = |\sharedfeatures|$. Features in the set difference $\mathcal{F}_{\setminus} = (\mathcal{F}_S \cup \mathcal{F}_T) \setminus \sharedfeatures$ are considered site-specific and are typically discarded for alignment, though they may contain domain-specific predictive signals.
+Feature heterogeneity is modeled explicitly. Let $F_S$ and $F_T$ denote the feature-index sets
+available in the source and target hospitals, respectively, and define the shared schema
+$F_\cap = F_S \cap F_T$ with effective dimensionality $d_\cap = |F_\cap|$.
+Site-specific variables in $F_\setminus = (F_S \cup F_T) \setminus F_\cap$ are
+treated as non-transferable and are removed or marginalized before alignment.
 
-Table \ref{tab:notation} summarizes the key mathematical notations used throughout this thesis.
+We write $\mathcal{H}$ for a hypothesis class of classifiers $h : \mathcal{X} \rightarrow \{0,1\}$
+(or $h : \mathcal{X} \rightarrow [0,1]$ for probabilistic outputs). For any $h \in \mathcal{H}$,
+the expected risk on source and target domains under a loss function $L$ is
+\[
+  \sourceerror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \sourcedomaindist}[\loss(\hypothesis(X),Y)], \quad
+  \targeterror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \targetdomaindist}[\loss(\hypothesis(X),Y)].
+\]
+The empirical risks $\sourcesampleerror(\hypothesis)$ and $\targetsampleerror(\hypothesis)$ are defined
+analogously over $\sourcedata$ and $\targetdata$.
 
-\begin{table}[htbp]
-  \centering
+\textbf{Objective.} The AI task considered in this thesis is to learn a predictor
+$h^\star \in \mathcal{H}$ using labeled source data $S$ and unlabeled target data $T$ such that:
+
+\begin{enumerate}
+  \item $\epsilon_T(h^\star)$ is minimized (high AUC and clinically acceptable sensitivity on
+  the target hospital),
+  \item calibration on the target domain is preserved under prevalence and covariate shift, and
+  \item the solution respects privacy and data-governance constraints (no sharing of raw target labels
+  and only lightweight alignment on shared features).
+\end{enumerate}
+
+Table~\ref{tab:notation} summarizes the key mathematical symbols used throughout the thesis.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{p{0.25\textwidth} p{0.50\textwidth} p{0.15\textwidth}}
   \caption{Unified Mathematical Notation System}
-  \label{tab:notation}
-  \renewcommand{\arraystretch}{1.3}
-  \begin{tabular}{p{0.25\textwidth} p{0.50\textwidth} p{0.15\textwidth}}
-    \toprule
-    \textbf{Symbol} & \textbf{Definition} & \textbf{Dimensions} \\
-    \midrule
+  \label{tab:notation} \\
+  \toprule
+  \textbf{Symbol} & \textbf{Definition} & \textbf{Dimensions} \\
+  \midrule
+  \endhead
+
+  \bottomrule
+  \endfoot
     \multicolumn{3}{l}{\textit{Domains and Data}} \\
     $\inputspace$ & Input feature space (mixed numerical/categorical) & $\subseteq \mathbb{R}^d$ \\
     $\labelspace$ & Label space (0: Benign, 1: Malignant) & $\{0, 1\}$ \\
@@ -46,8 +94,16 @@ Table \ref{tab:notation} summarizes the key mathematical notations used througho
     $\confidence$ & Confidence parameter for generalization bound & Scalar $\in (0,1)$ \\
     $\loss$ & Loss function & $\labelspace \times \labelspace \to \mathbb{R}_{\ge 0}$ \\
     $\modelparams$ & Model parameters (weights) & Vector $\in \mathbb{R}^k$ \\
+    $\Hdeep$ & Deep Neural Network hypothesis class & $\Hdeep \subseteq \hypothesisclass$ \\
+    $\Sperf$ & Performance-optimal hypothesis class & Subset of $\hypothesisclass$ maximizing accuracy \\
+    $\Seff$ & Efficiency-optimal hypothesis class & Subset of $\hypothesisclass$ minimizing computational cost \\
+    $\Sstab$ & Stability-optimal hypothesis class & Subset of $\hypothesisclass$ minimizing variance \\
+    $\Ssimp$ & Simplicity-optimal hypothesis class & Subset of $\hypothesisclass$ minimizing complexity \\
+    $\ns, \nt$ & Alternative notation for source/target domain sizes & $\ns = \sourcedatasize$, $\nt = \targetdatasize$ \\
     
     \multicolumn{3}{l}{\textit{PANDA Architecture}} \\
+    $\rfeimportance$ & Permutation Importance (Feature Saliency) & Scalar $\in \mathbb{R}$ \\
+    $\rfeop(\cdot)$ & RFE operation that restricts features to $\rfeselectedfeatures$ & $\mathbb{R}^{d} \to \mathbb{R}^{\rfecurrentdim}$ \\
     $\adaptmap(\cdot)$ & Domain adaptation mapping (TCA projection) & $\mathbb{R}^{\rfecurrentdim} \to \mathbb{R}^{\tcaprojectdim}$ \\
     $\tcaprojectionmatrix$ & TCA Projection Matrix & $\mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ \\
     $\kernelmatrix$ & Kernel Matrix (Linear kernel on features) & $\mathbb{R}^{(\sourcedatasize+\targetdatasize)^2}$ \\
@@ -57,11 +113,20 @@ Table \ref{tab:notation} summarizes the key mathematical notations used througho
     $\gammaK$ & RBF Kernel Bandwidth Parameter & Scalar $> 0$ \\
     $\featuremap(\cdot)$ & Implicit Feature Map to RKHS & $\inputspace \to \rkhs$ \\
     $\ppd$ & Posterior Predictive Distribution $P(\labelval|\featurevec, \sourcedata)$ & Probability \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+    $\tabpfnfunci{i}(\cdot)$ & i-th TabPFN classifier function (ensemble member) & $\mathbb{R}^{\tcaprojectdim} \to [0,1]$ \\
+$\tabpfnfunc(\cdot)$ & TabPFN classifier function (general) & $\mathbb{R}^{\tcaprojectdim} \to [0,1]$ \\
+    $\tabpfnencoder$ & TabPFN Transformer Encoder & $\mathbb{R}^{\tcaprojectdim} \to \mathbb{R}^{\text{hidden}}$ \\
+    $\featureembed$ & General feature embedding vector & $\mathbb{R}^{\text{embed\_dim}}$ \\
+    $\samplesembed$ & Full sample embedding (concatenated feature embeddings) & $\mathbb{R}^{\text{hidden}}$ \\
+    $\posencoding$ & Positional encoding for feature sequence & $\mathbb{R}^{\text{hidden}}$ \\
+    $\numpreprocessbranches$ & Number of preprocessing branches & Scalar (integer) \\
+    $\numrandomseeds$ & Number of random seeds (ensemble size per branch) & Scalar (integer) \\
+    $\pandafunc(\cdot)$ & PANDA composite function & $\inputspace \to [0,1]$ \\
+    $\temperature$ & Temperature scaling parameter for calibration & Scalar $> 0$ \\
+    $\activation(\cdot)$ & Activation function (e.g., sigmoid) & $\mathbb{R} \to [0,1]$ \\
+\end{longtable}
 
-\subsection{The Tabular Data Generation Process: A PFN Perspective}
+\subsection{Prior-data fitted networks as tabular foundation models}
 \label{subsec:pfn-generation}
 
 Traditional machine learning assumes a fixed parametric form for the data generation process (e.g., a separating hyperplane for SVMs). In contrast, the TabPFN framework posits that the dataset $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^N$ is generated from a \textbf{prior distribution over functions}, denoted as $\priorfunc$.
@@ -111,7 +176,7 @@ Concept shift implies a fundamental change in the relationship between features 
 In pulmonary medicine, this arises from latent confounders such as geographic pathology. In regions like the Ohio River Valley (USA) or parts of East Asia, granulomatous diseases (e.g., Histoplasmosis, Tuberculosis) are endemic. These benign lesions often mimic the radiographic appearance of malignancy (e.g., spiculation, upper-lobe location). Consequently, a feature vector $\featurevec$ that indicates a 90\% probability of cancer in a non-endemic source hospital might only indicate a 40\% probability in a TB-endemic target hospital.
 
 \subsubsection{Theoretical Bound on Generalization Error}
-Following the seminal theory by Ben-David et al., the expected error of a hypothesis $\hypothesis$ on the target domain, $\targeterror$, is bounded by:
+Following the seminal theory by Ben-David et al. \cite{ben2010theory}, the expected error of a hypothesis $\hypothesis$ on the target domain, $\targeterror$, is bounded by:
 \begin{equation}
     \label{eq:ben-david}
     \targeterror \leq \sourceerror + \frac{1}{2} \domaindivergence(\sourcedomaindist, \targetdomaindist) + \adaptabilityterm
@@ -122,7 +187,33 @@ where:
     \item $\domaindivergence(\sourcedomaindist, \targetdomaindist)$ is the $\mathcal{H}\Delta\mathcal{H}$-divergence between the two domains.
     \item $\adaptabilityterm = \min_{\hypothesis \in \hypothesisclass} [\sourceerror + \targeterror]$ is the error of the ideal joint hypothesis.
 \end{itemize}
-This bound highlights that minimizing source error is insufficient; we must explicitly minimize the divergence $\domaindivergence(\sourcedomaindist, \targetdomaindist)$.
+This bound highlights that minimizing source error alone is insufficient; an effective cross-hospital
+system must simultaneously (i) keep $\sourceerror$ small, (ii) reduce the divergence term
+$\domaindivergence(\sourcedomaindist, \targetdomaindist)$, and (iii) control the joint error
+$\adaptabilityterm$ by avoiding features that admit no low-error classifier across both domains.
+
+From this perspective, the three components of PANDA align directly with the three terms in
+Eq.~\ref{eq:ben-david}:
+
+\begin{itemize}
+  \item \textbf{Tabular foundation model (TabPFN) $\rightarrow \sourceerror$.}
+  By treating the source cohort as a context set for a pre-trained PFN, PANDA reduces
+  $\sourceerror(\hypothesis)$ under small-sample, imbalanced conditions without extensive
+  hyperparameter tuning.
+  \item \textbf{Transfer Component Analysis (TCA) $\rightarrow \domaindivergence$.}
+  The TCA module learns a latent space in which the empirical Maximum Mean Discrepancy between
+  source and target representations is minimized, directly targeting the divergence term
+  $\domaindivergence(\sourcedomaindist, \targetdomaindist)$.
+  \item \textbf{Cross-domain RFE $\rightarrow \adaptabilityterm$.}
+  Recursive feature elimination explicitly searches for a subset of shared features
+  $\rfeselectedfeatures \subseteq \sharedfeatures$ that support a low-error joint classifier
+  across hospitals, thereby tightening the adaptability term $\adaptabilityterm$ by removing
+  unstable or hospital-specific biomarkers.
+\end{itemize}
+
+Thus, PANDA can be interpreted as an instantiation of the domain adaptation bound rather than
+an ad hoc composition of modules: each architectural choice is motivated by a specific term in
+Eq.~\ref{eq:ben-david}.
 
 \subsection{Theoretical Constraints of Existing Models}
 \label{subsec:model-constraints}
@@ -174,11 +265,13 @@ where:
 \subsection{The PANDA Framework: A Unified Formalization}
 \label{subsec:panda-formalization}
 
-We formalize our proposed \textbf{PANDA} (Pre-trained tAbular fouNdation model with Domain Adaptation) framework as a composite function $\pandafunc: \inputspace \rightarrow \labelspace$. The inference process for a target sample $\featurevec$ is defined as:
+We formalize our proposed \textbf{PANDA} (Pretrained Adaptation Network with Domain Alignment) framework as a composite function $\pandafunc: \inputspace \rightarrow \labelspace$. The inference process for a target sample $\featurevec$ is defined as:
 
 \begin{equation}
-    \pandafunc(\featurevec) = \hypothesis\left( \adaptmap(\featurevec; \rfeselectedfeatures) \right)
+    \label{eq:panda-formalization}
+    f_{\text{PANDA}}(\featurevec) = \hypothesis \circ \adaptmap \circ \pi_{\cap} \circ \rfeop (\featurevec),
 \end{equation}
+where $\rfeop$ selects the discriminative feature subset $\rfeselectedfeatures$, and $\pi_{\cap}$ enforces the schema intersection with the target domain (Feature Alignment).
 
 This composition involves distinct stages, grounded in the optimization of the feature subspace prior to alignment:
 
@@ -206,10 +299,29 @@ Let $\rfeset^{(0)} = \sharedfeatures$ be the initial set of shared features. The
 
 The final subset $\rfeselectedfeatures$ is selected to maximize stability and discriminative power, effectively reducing the $\adaptabilityterm$ term (joint error) in the Ben-David bound by removing concept-shifted features.
 
-\subsubsection{Stage 2: Foundation Model Encoding ($\phi$)} [Deprecated]
-\subsubsection{Stage 2: Domain Adaptation Mapping ($\adaptmap$) and Classification ($\hypothesis$)}
+\subsubsection{Stage 2: Feature Alignment ($\pi_{\cap}$)}
 
-Following RFE, the selected features are then adapted using TCA. The domain adaptation mapping $\adaptmap$ operates on the RFE-selected features $\rfeselectedfeatures$ to project them into a domain-invariant subspace. This transformed feature set, $\featurevec' = \adaptmap(\featurevec; \rfeselectedfeatures)$, is then fed into the TabPFN classifier. The classification function $\hypothesis$ represents the combined operation of the TabPFN classifier and the ensemble-based temperature scaling, which together yield the final calibrated malignancy probability.
+Given the selected feature subset $\rfeselectedfeatures$, this stage enforces schema consistency between hospitals. In our specific experimental setup, RFE identifies an optimal subset of $|\rfeselectedfeatures| = 9$ features. However, due to missingness shift in the target domain, the alignment operator $\pi_{\cap}$ restricts this to the intersection of available schemas:
+\begin{equation}
+    \sharedfeatures = \rfeselectedfeatures \cap \targetfeatureschema
+\end{equation}
+This dimensionality reduction (from 9 to 8) explicitly handles the constraint where specific biomarkers are unrecorded in the target hospital, ensuring that subsequent stages operate only on the biologically common subspace.
+
+\subsubsection{Stage 3: Domain Adaptation Mapping ($\adaptmap$)}
+
+The aligned features $\sharedfeatures$ are then adapted using Transfer Component Analysis (TCA). The domain adaptation mapping $\adaptmap$ projects these features into a Reproducing Kernel Hilbert Space (RKHS) where the Maximum Mean Discrepancy (MMD) between source and target distributions is minimized.
+\begin{equation}
+    \featurevec' = \adaptmap(\featurevec; \sharedfeatures) = \tcaprojectionmatrix^\top \featurevec
+\end{equation}
+This linear projection $\tcaprojectionmatrix$ is learned to align the marginal distributions $P_S(\sharedfeatures)$ and $P_T(\sharedfeatures)$, thereby reducing the domain divergence term $\domaindivergence$ in the generalization bound.
+
+\subsubsection{Stage 4: Classification and Ensemble ($\hypothesis$)}
+
+Finally, the classification function $\hypothesis$ processes the adapted features $\featurevec'$. This stage leverages the pre-trained TabPFN as a robust classifier, augmented by an ensemble mechanism to handle predictive uncertainty and label shift.
+\begin{equation}
+    \hypothesis(\featurevec') = \frac{1}{N} \sum_{i=1}^{N} \activation\left(\frac{\tabpfnfunci{i}(\featurevec')}{\temperature}\right)
+\end{equation}
+where $\temperature$ is a temperature scaling parameter optimized to calibrate the output probabilities against the prevalence differences between hospitals. The result is a calibrated malignancy probability that is robust to both covariate and label shifts.
 
 \subsection{Clinical-Statistical Mapping}
 \label{subsec:clinical-mapping}
@@ -238,7 +350,12 @@ Table \ref{tab:clinical-mapping} summarizes the correspondence between the clini
 
 Our formulation is bound by specific constraints inherent to the medical domain:
 \begin{itemize}
-    \item \textbf{Small Sample Size Constraint:} The sample sizes $\sourcedatasize, \targetdatasize$ are typically in the range of 100 to 1000. This prohibits the use of deep domain adaptation networks.
+    \item \textbf{Small Sample Size Constraint:} The sample sizes $\sourcedatasize, \targetdatasize$ are typically in the range of 100 to 1000, which is insufficient for training over-parameterized deep networks from scratch:
+    \begin{equation}
+        \label{eq:small-sample-constraint}
+        \sourcedatasize \ll \vcdim(\deepmodelclass)
+    \end{equation}
+    where $\vcdim(\deepmodelclass)$ represents the VC dimension required for standard deep domain adaptation networks to generalize.
     \item \textbf{Privacy and Data Silos:} We assume source data $\sourcedomaindist$ and target data $\targetdomaindist$ cannot be physically merged.
     \item \textbf{Class Imbalance:} The prevalence of the positive class is often low ($\prevalence < 0.3$), requiring \auc-centric optimization.
 \end{itemize}
