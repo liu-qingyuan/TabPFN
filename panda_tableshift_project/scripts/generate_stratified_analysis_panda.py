@@ -158,6 +158,7 @@ def main():
 
     # 4. Stratified Analysis
     print("\n📊 Generating Stratified Table...")
+    print(f"Available columns: {X_test_sub.columns.tolist()}")
     
     # Define Rules
     rules = get_stratification_rules(X_test_sub)

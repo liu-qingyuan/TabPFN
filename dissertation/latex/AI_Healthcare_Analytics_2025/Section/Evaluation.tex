@@ -226,7 +226,7 @@ Figure~\ref{fig:tableshift-heatmaps} summarizes the behavior of different models
 \label{fig:tableshift-heatmaps}
 \end{figure}
 
-\textbf{Discussion on Precision/Recall}: Readers may observe low $\fonescore$ values in BRFSS despite high $\accuracy$ (Fig.~\ref{fig:brfss-roc}). This pattern arises from the low $\prevalence$ (17.4\%) and the default 0.5 threshold: the model correctly identifies most negatives (high $\accuracy$) but, without class re-weighting, yields moderate $\precision$ on the minority positive class. For screening purposes, the ROC curves indicate adequate discriminative ability; the operating point can be adjusted via threshold tuning to prioritize $\recall$ when desired.
+\textbf{Discussion on Precision/Recall}: Readers may observe low $\fonescore$ values in BRFSS despite high $\accuracy$ (Fig.~\ref{fig:brfss-roc}). This pattern arises from the low positive-class prevalence $\pi = P(Y=1)$ (17.4\%) and the default 0.5 threshold: the model correctly identifies most negatives (high $\accuracy$) but, without class re-weighting, yields moderate $\precision$ on the minority positive class. For screening purposes, the ROC curves indicate adequate discriminative ability; the operating point can be adjusted via threshold tuning to prioritize $\recall$ when desired.
 
 \begin{figure}[htbp]
 \centering

@@ -82,6 +82,8 @@ Table~\ref{tab:notation} summarizes the key mathematical symbols used throughout
     $\sourcedomaindist, \targetdomaindist$ & Source and Target domain distributions & over $\inputspace \times \labelspace$ \\
     $\sourcedata, \targetdata$ & Empirical datasets drawn from $\sourcedomaindist, \targetdomaindist$ & Sets of size $\sourcedatasize, \targetdatasize$ \\
     $\featurevec, \labelval$ & Feature vector and corresponding label & $\featurevec \in \mathbb{R}^d, \labelval \in \labelspace$ \\
+    $\dimnum, \dimcat$ & Dimensionality of numerical and categorical features & Scalar (integers) \\
+    $\prevalence$ & Prevalence of positive class $P(Y=1)$ & Probability $\in [0,1]$ \\
     $\sharedfeatures, \rfeselectedfeatures$ & Shared feature schema and RFE-selected subset & Subsets of indices \\
     
     \multicolumn{3}{l}{\textit{Learning Theory}} \\
@@ -346,6 +348,7 @@ Table \ref{tab:clinical-mapping} summarizes the correspondence between the clini
 \end{table}
 
 \subsection{Problem Constraints and Research Scope}
+\label{sec:problem-constraints}
 \label{subsec:constraints}
 
 Our formulation is bound by specific constraints inherent to the medical domain:

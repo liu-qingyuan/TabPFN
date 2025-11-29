@@ -3,12 +3,12 @@
 
 \subsection{Summary of Contributions}
 
-This dissertation introduced PANDA, a framework that links pre-trained tabular foundation models to the practical constraints of medical tabular data, including small sample sizes, feature heterogeneity, and distribution shifts. Experiments on private cross-hospital cohorts and public benchmarks demonstrate that:
+This dissertation introduces PANDA, a framework that connects pre-trained tabular foundation models to the practical constraints of medical tabular data, including small sample sizes, heterogeneous feature schemas, and distribution shifts. Experiments on private cross-hospital cohorts and public benchmarks show that:
 
 \begin{enumerate}
-\item \textbf{Foundation Models as Robust Priors}: The pre-trained TabPFN backbone substantially outperforms traditional baselines (Random Forest, XGBoost) on small datasets ($n < 300$) by leveraging priors learned from millions of synthetic tasks. This in-context learning capability provides a strong initialization that is more resistant to overfitting than standard empirical risk minimization.
+\item \textbf{Foundation Models as Robust Priors}: The pre-trained TabPFN backbone substantially outperforms traditional baselines (Random Forest, XGBoost) on small datasets ($n < 300$) by exploiting priors learned from millions of synthetic tasks. This in-context learning capability provides a strong initialization that is more resistant to overfitting than standard empirical risk minimization.
 
-\item \textbf{Stability via Selection}: The Cross-Domain Recursive Feature Elimination (RFE) protocol is essential for filtering site-specific artifacts. By converging on a compact set of eight stable predictors, it reduces the dimensionality of the adaptation problem and enables linear alignment methods to succeed where non-linear approaches failed.
+\item \textbf{Stability via Selection}: The Cross-Domain Recursive Feature Elimination (RFE) protocol is essential for removing site-specific artifacts. By converging on a compact set of eight stable predictors, it reduces the dimensionality of the adaptation problem and enables linear alignment methods to succeed where non-linear approaches fail.
 
 \item \textbf{Latent Space Alignment}: Transfer Component Analysis (TCA) applied in the Transformer embedding space effectively reduces the Maximum Mean Discrepancy (MMD) between domains. This alignment yields a consistent performance gain (AUC +0.007) and, more importantly, improves calibration in the target domain.
 \end{enumerate}
@@ -38,10 +38,6 @@ Privacy regulations (such as GDPR and HIPAA) often prevent the centralization of
 \subsubsection{Multimodal Integration}
 
 Pulmonary nodule diagnosis inherently combines imaging (computed tomography scans) with clinical data. Future work should investigate a multimodal variant of PANDA that aligns tabular embeddings from TabPFN with visual embeddings from a convolutional neural network or Vision Transformer. A cross-attention mechanism could then weight the relative contributions of clinical history and radiological appearance in a domain-aware manner, placing greater emphasis on the modality that remains stable when the other is affected by artifacts.
-
-\subsubsection{Continual Learning for Temporal Drift}
-
-The BRFSS analysis indicated that model performance degrades over time (2015 $\to$ 2022) as populations and coding standards evolve. Extending PANDA to a continual learning setting, in which the alignment matrix $\mathbf{W}$ is updated incrementally as new data arrive (online TCA), would allow the system to adapt to temporal drift while avoiding catastrophic forgetting of the original source knowledge.
 
 \subsection{Final Remarks}
 

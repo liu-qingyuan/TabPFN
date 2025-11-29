@@ -28,6 +28,7 @@ This architecture is explicitly designed so that each component addresses a spec
 The feature engineering pipeline in PANDA is designed to accommodate the heterogeneity of medical data sources while preserving domain-invariant signals. This component directly targets the feature mismatch and feature heterogeneity challenges by enforcing that downstream models operate only on features that are consistently available and stable across hospitals. It comprises two stages: global feature selection via Cross-Domain RFE and local feature transformation via TabPFN's internal preprocessing branches.
 
 \subsubsection{Cross-Domain Recursive Feature Elimination (RFE)}
+\label{sec:methods-rfe}
 \label{subsubsec:rfe_implementation}
 To address the \emph{feature mismatch} challenge, we implement a Cross-Domain Recursive Feature Elimination (RFE) strategy. Unlike standard RFE, which optimizes for a single dataset, this approach seeks a feature subset $\rfeselectedfeatures$ that maximizes predictive performance on the source domain $\sourcedomaindist$ while satisfying availability constraints in the target domain $\targetdomaindist$.
 
@@ -76,28 +77,28 @@ Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechan
 Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring a consistent mapping.
 
 \subsection{Foundation Model Integration Mechanism}
+\label{sec:methods-tabpfn}
 \label{subsec:foundation_model_integration}
 
 PANDA employs TabPFN as a probabilistic classifier within an integrated framework. This module directly addresses the challenge of training in small, high-dimensional clinical cohorts by reusing structural priors learned from synthetic tasks and producing calibrated probability estimates that can subsequently be adjusted for label imbalance. While TabPFN internally processes features, its role in PANDA is to produce calibrated predictions on adapted tabular data. The integration involves specific in-context serialization and ensemble construction steps.
 
 \subsubsection{In-Context Serialization and Tokenization}
-Unlike BERT-style models, which require textual input, TabPFN operates directly on raw numerical and categorical values. The serialization mechanism maps a heterogeneous row $\featurevec \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
+Unlike BERT-style models, which require textual input, TabPFN operates directly on raw numerical and categorical values through a sophisticated per-feature processing architecture. The serialization mechanism maps a heterogeneous row $\featurevec \in \mathbb{R}^{d_{\text{num}}} \times \mathbb{Z}^{d_{\text{cat}}}$ into a sequence of continuous embeddings.
 
-For a numerical feature $\featurevec^{(j)}$, the embedding is a linear projection:
-\begin{equation}
-    \numfeatureembed = \numweightmat \featurevec^{(j)} + \numbiasvec
-\end{equation}
-For a categorical feature with index $\catindex$, we use a lookup table:
-\begin{equation}
-    \numfeatureembed = \catelembedmat[\catindex]
-\end{equation}
-Missing values are handled by a specialized learnable token $\nanembed$. The full sample embedding is the sum of feature embeddings plus a positional encoding:
-\begin{equation}
-    \samplesembed = \mlp(\concat(\mathbf{e}^{(1)}, \dots, \mathbf{e}^{(\featuredim)})) + \posencoding
-\end{equation}
-This representation allows the Transformer to attend to distinct patients within the context window.
+The feature processing pipeline involves several key steps:
+\begin{itemize}
+    \item \textbf{Preprocessing and Encoding:} Features undergo preprocessing such as quantile and power transformations. Categorical variables are primarily handled via ordinal encoding, converting categories to integers, or processed as mixed types, rather than relying solely on traditional embedding lookup tables.
+    \item \textbf{Missing Value Handling:} Instead of a single learnable token, missing values are handled by a robust mechanism where they are replaced by the feature mean (learned during training). Simultaneously, separate indicator channels are generated to explicitly flag missing values or infinite entries, preserving the structural information of data unavailability.
+    \item \textbf{Linear Projection:} Each preprocessed feature is linearly projected into the embedding space.
+    \begin{equation}
+        \mathbf{e}^{(j)} = \text{Linear}(\text{Preprocess}(\featurevec^{(j)}))
+    \end{equation}
+\end{itemize}
+
+Distinct from architectures that concatenate all features into a single vector ($\samplesembed = \text{MLP}(\text{Concat}(\dots))$), TabPFN maintains a per-feature representation. The Transformer architecture utilizes attention mechanisms that operate across both features and samples, allowing the model to learn complex interactions between specific covariates while attending to relevant patients within the context window.
 
 \subsubsection{Ensemble Construction and Inference}
+\label{sec:methods-ensemble}
 The final prediction is obtained by averaging over 32 diverse forward passes. Let $\preprocessingbranches = \{P_1, \dots, P_4\}$ denote the set of preprocessing functions and $\randomseeds = \{s_1, \dots, s_8\}$ a set of random seeds that control the subsampling of the context set (the \emph{support set} of labeled examples). The ensemble probability estimate is
 \begin{equation}
     \ensembleprob = \frac{1}{32} \sum_{P \in \preprocessingbranches} \sum_{s \in \randomseeds} \activation\left( \frac{\transformerbackbone(P(\querypatient) \mid P(\contextdata))}{\temperature} \right)
@@ -133,6 +134,7 @@ Algorithm~\ref{alg:tabpfn_inference} summarizes the inference procedure.
 \end{algorithm}
 
 \subsubsection{Transfer Component Analysis (TCA)}
+\label{sec:methods-tca}
 \label{subsubsec:tca_implementation}
 
 TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. This module directly targets the covariate shift and mixed acquisition-protocol challenges highlighted in Table~\ref{tab:challenge_mapping} by enforcing a shared latent representation across hospitals. We implement this alignment via Transfer Component Analysis (TCA), which solves the optimization problem through a generalized eigenvalue decomposition \cite{de2021adapt, noauthor_welcome_nodate}. Algorithm \ref{alg:tca_optimization} outlines the computational procedure.
