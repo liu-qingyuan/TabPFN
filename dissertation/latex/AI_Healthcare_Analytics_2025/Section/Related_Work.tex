@@ -8,7 +8,7 @@ In this section, we review prior work from an AI perspective on cross-hospital d
 
 The literature on structured-data learning has progressed from classical ensembles
 to deep tabular networks and, most recently, to tabular foundation models that
-mirror the trends in NLP and computer vision~\cite{bommasani2021opportunities,
+mirror the trends in NLP and computer vision~\cite{bommasani2022opportunities,
 schneider2024foundation}. We separate the discussion into tree ensembles, deep
 tabular architectures, and tabular foundation models to highlight where each excels
 and why none alone solves cross-hospital robustness. In medical settings, the same
@@ -155,7 +155,7 @@ foundation models beyond flat tables~\cite{chen_tabpfn_2025,eremeev_turning_2025
 liu_tabular_2025}. Tabular Large Language Models (TabLLMs) serialize rows or mini
 tables into prompts so that general-purpose LLMs can reason over discrete entries,
 but they remain computationally prohibitive for high-throughput risk prediction and
-struggle with precise numeric calibration~\cite{brown2020language,eremeev_turning_2025,
+struggle with precise numeric calibration~\cite{brown2020language,hegselmann2023tabllm,
 jayawardhana_transformers_2025}. Recent analyses of high-dimensional omics
 applications reinforce that even TabPFN requires aggressive feature selection or
 prior-guided embeddings to stay calibrated, underscoring its closed-world
@@ -430,7 +430,7 @@ thereby coupling representation learning with domain-aware feature governance.
 \textbf{Method} & \textbf{Model family} & \textbf{Small-sample / imbalance handling} & \textbf{Interpretability characteristics} & \textbf{Representative biomedical use cases} \\
 \midrule
 Recursive feature elimination (RFE) with linear or tree models & Wrapper around SVM, logistic regression, or tree ensembles & Wrapper search over feature subsets can overfit when $N$ is small and features are correlated; often combined with cross-validation and class-balanced sampling & Produces explicit ranked feature lists and compact subsets; easy to inspect and map to clinical variables~\cite{guyon2002gene} & Widely used in early gene-expression and biomarker panels; basis for many clinical risk-score and radiomics pipelines \\
-LASSO / elastic-net logistic regression & Embedded linear models & $\ell_1$ or $\ell_1{+}\ell_2$ penalties shrink coefficients, providing some robustness to high dimensionality; still assumes linear log-odds and can be unstable under heavy collinearity & Sparse coefficients directly indicate selected features; compatible with odds-ratio interpretation familiar to clinicians~\cite{guyon2002gene} & Common in radiomics and EHR risk models where interpretability and coefficient-based reporting are required \\
+LASSO / elastic-net logistic regression & Embedded linear models & $\ell_1$ or $\ell_1{+}\ell_2$ penalties shrink coefficients, providing some robustness to high dimensionality; still assumes linear log-odds and can be unstable under heavy collinearity & Sparse coefficients directly indicate selected features; compatible with odds-ratio interpretation familiar to clinicians~\cite{tibshirani1996regression} & Common in radiomics and EHR risk models where interpretability and coefficient-based reporting are required \\
 GRACES & Graph-convolutional-network-based FS~\cite{chen2023graces} & Specifically targets high-dimensional, low-sample-size data by modeling feature relations on a graph; alleviates overfitting compared with independent filters & Outputs a compact subset informed by graph structure; can be visualized as a network of interacting biomarkers & Demonstrated on omics-style datasets; suitable when prior knowledge or correlations between biomarkers are important \\
 DeepFS & Deep feature screening with autoencoders~\cite{liu2022deepfs,li2023deep} & Uses deep encoders to learn low-dimensional representations and rank features, handling ultra-high-dimensional, sparse, and potentially imbalanced data & Provides importance scores for each original feature; retains flexibility to operate in supervised or unsupervised mode & Evaluated on synthetic and biomedical high-dimensional datasets; useful when the number of variables far exceeds the number of patients \\
 Domain-aware FS (FSDA-style) & Feature selection for domain adaptation~\cite{luo2021fsda} & Encourages selection of features that remain predictive across domains, implicitly handling covariate shift between sites & Produces subsets that are jointly predictive and domain-stable, supporting cross-hospital deployment & Applied to benchmark DA tasks; conceptually aligned with cross-hospital biomarker selection in multi-center medical studies \\
@@ -447,15 +447,18 @@ Pulmonary nodule malignancy prediction is a canonical testbed for cross-domain
 robustness. Classical logistic scores---Mayo Clinic, Veterans Affairs, Brock
 (PanCan), PKUPH, Li, and derivatives---achieve internal AUCs above 0.85 but
 regularly drop to 0.60--0.80 in external validations, especially in Asian or
-community-screening cohorts where prevalence and granulomatous disease burdens
-diverge~\cite{swensen1997chest,swensen1997archives,mcwilliams2013probability,
+community-screening cohorts where disease prevalence and case mix differ from the original
+development populations~\cite{swensen1997chest,swensen1997archives,mcwilliams2013probability,
 li2011development,he2021novel,garau_external_2020,zhang_comprehensive_2022,
 liu_establishment_2024}. These scores typically combine age, smoking history,
 nodule size, location, and morphology into a logit-based risk function. Meta-analyses
 covering tens of thousands of nodules confirm that calibration deteriorates most
 severely in subgroups such as solitary upper-lobe nodules and specific ethnic
 groups, reflecting both label-shift and covariate-shift mechanisms~\cite{garau_external_2020,
-zhang_comprehensive_2022,liu_establishment_2024,chen_pulmonary_2025}. While
+zhang_comprehensive_2022,chen_pulmonary_2025}. Recent Chinese multi-centre studies further report that Brock- and PKUPH-type models can
+experience substantial AUC declines when applied to contemporary Chinese screening cohorts, even
+after refitting, consistent with shifts in underlying prevalence and competing benign conditions~\cite{zhang_comprehensive_2022,
+liu_establishment_2024}. While
 recalibration or re-estimation of coefficients can partially restore performance,
 these fixes require local labels and do not address feature-mismatch: new hospitals
 may lack some variables (e.g., emphysema grading) or measure them differently.
