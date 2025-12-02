@@ -175,7 +175,27 @@ Concept shift implies a fundamental change in the relationship between features 
 \begin{equation}
     \conditionalps \neq \conditionalpt
 \end{equation}
-In pulmonary medicine, this arises from latent confounders such as geographic pathology. In regions like the Ohio River Valley (USA) or parts of East Asia, granulomatous diseases (e.g., Histoplasmosis, Tuberculosis) are endemic. These benign lesions often mimic the radiographic appearance of malignancy (e.g., spiculation, upper-lobe location). Consequently, a feature vector $\featurevec$ that indicates a 90\% probability of cancer in a non-endemic source hospital might only indicate a 40\% probability in a TB-endemic target hospital.
+
+In pulmonary medicine, apparent model failures often reflect latent confounders
+arising from regional disease ecology. In regions such as the Mississippi and
+Ohio River Valleys in North America or parts of East Asia, granulomatous
+infections (e.g., histoplasmosis, tuberculosis) are endemic and generate a high
+burden of benign pulmonary nodules and granulomas%
+~\cite{barros_pulmonary_2023,yang_comparison_2018}. 
+These benign lesions frequently mimic malignant nodules on imaging, including
+solid or spiculated nodules with appreciable metabolic uptake on PET--CT, and
+therefore constitute an important source of diagnostic ambiguity in lung cancer
+screening and workup~\cite{shipe_validation_2021,lang_asymptomatic_2017}. 
+Consequently, radiographic patterns that are highly predictive of malignancy in
+low-endemic Western cohorts may correspond to a substantially lower cancer
+probability in these settings, representing a form of concept shift.
+
+Formally, this means that the same feature vector $\featurevec$ can be
+associated with markedly different posterior malignancy probabilities across
+hospitals: a model calibrated in a non-endemic source hospital might assign
+$P_S(Y=1 \mid \featurevec) \approx 0.9$, whereas the true probability in a
+TB-endemic target hospital could be closer to
+$P_T(Y=1 \mid \featurevec) \approx 0.4$~\cite{ben2010theory}.
 
 \subsubsection{Theoretical Bound on Generalization Error}
 Following the seminal theory by Ben-David et al. \cite{ben2010theory}, the expected error of a hypothesis $\hypothesis$ on the target domain, $\targeterror$, is bounded by:

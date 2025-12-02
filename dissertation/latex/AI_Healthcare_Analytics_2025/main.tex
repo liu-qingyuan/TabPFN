@@ -88,7 +88,18 @@
 \begin{abstract}
 Accurate diagnostic risk prediction increasingly depends on machine learning models that can operate reliably across hospitals, populations, and data-collection protocols. In practice, however, clinical prediction models are often trained on small, imbalanced tabular cohorts with heterogeneous feature schemas and substantial distribution shift, so performance deteriorates once they leave the development site. To address this gap, we propose PANDA (Pretrained Adaptation Network with Domain Alignment), a framework that combines a pre-trained tabular foundation model with domain-aware feature selection and unsupervised alignment to stabilize diagnostic decision support. PANDA uses a TabPFN-style transformer backbone meta-trained on synthetic tabular tasks to provide data-efficient priors; a cross-cohort recursive feature elimination step identifies a compact set of shared biomarkers that remain predictive across sites; and Transfer Component Analysis (TCA) projects source and target cohorts into a shared latent space using unlabeled target data, mitigating covariate shift under strict privacy constraints.
 
-We evaluate PANDA in two representative diagnostic settings. For cross-hospital pulmonary nodule malignancy prediction using structured clinical data from two Chinese cancer centers, PANDA achieves an internal AUC of 0.811 and, with TCA, attains an external AUC of 0.705 and recall of 0.944 on the target hospital, outperforming tree ensembles and classical clinical scores such as Mayo and PKUPH ($\text{AUC} < 0.64$). In the TableShift BRFSS Diabetes benchmark with a race-driven shift from White to non-White respondents, PANDA with TCA reaches an out-of-distribution AUC of 0.804 with only a -0.009 gap relative to in-distribution performance, while standard gradient boosting and random forests exhibit larger degradation. Together, these results indicate that pairing tabular foundation-model priors with cross-domain feature pruning and lightweight statistical alignment can make diagnostic machine learning systems more robust and data-efficient in realistic cross-hospital and cross-population deployments.
+We evaluate PANDA in two representative diagnostic settings. For cross-hospital pulmonary
+nodule malignancy prediction using structured clinical data from two Chinese cancer centers,
+PANDA achieves an internal AUC of 0.811 and, with TCA, attains an external AUC of 0.705
+and recall of 0.944 on the target hospital, outperforming tree ensembles and classical clinical
+scores such as Mayo and PKUPH (AUC < 0.64). In the TableShift BRFSS Diabetes benchmark
+with a race-driven shift from White to non-White respondents, PANDA with TCA reaches an
+out-of-distribution AUC of 0.804, comparable to its in-distribution AUC of 0.802, while standard
+gradient boosting and random forests exhibit larger degradation. Together, these results indicate
+that pairing tabular foundation-model priors with cross-domain feature pruning and lightweight
+statistical alignment can make diagnostic machine learning systems more robust and data-efficient
+in realistic cross-hospital and cross-population deployments.
+
 \end{abstract}
 
 \clearpage
