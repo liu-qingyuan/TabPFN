@@ -1,6 +1,7 @@
 tableTitle: "Table"
 figTitle: "Figure"
 nameInLink: true
+chapters: false
 listingTitle: "Algorithm"
 lstPrefix:
   - "Algorithm"

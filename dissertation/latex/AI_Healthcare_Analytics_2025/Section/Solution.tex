@@ -15,22 +15,20 @@ where $\pi_{\text{RFE}}$ performs cross-domain feature selection, $\pi_{\cap}$ e
 The PANDA framework operates as a directed acyclic graph (DAG) of data transformations that progressively refine the representation of each patient from raw features to domain-invariant embeddings and, finally, to a calibrated risk estimate. Table~\ref{tab:data-flow} summarizes this data flow, while Figure~\ref{fig:model_details} provides a comprehensive visual overview of the architecture. Conceptually, the pipeline consists of four sequential stages:
 
 \begin{table}[htbp]
-    \centering
-    \caption{Data flow and transformations in the PANDA framework. The pipeline progressively refines raw, high-dimensional inputs into low-dimensional, domain-invariant embeddings and, ultimately, a calibrated probability. In the pulmonary nodule experiments, $k = 8$, $d_{\cap} = 8$, and $m = 15$, but these dimensions are dataset-dependent.}
-    \label{tab:data-flow}
-    \resizebox{\textwidth}{!}{%
-        \begin{tabular}{lllll}
-            \toprule
-            \textbf{Stage} & \textbf{Component} & \textbf{Input Space} & \textbf{Core Operation} & \textbf{Output Space} \\
-            \midrule
-            1 & Cross-Domain RFE & $\mathbb{R}^{\rawdim}$ & Iterative elimination via $\rfeimportance(\func)$ & $\mathbb{R}^{k}$ ($\rfeselectedfeatures$, $k = |\rfeselectedfeatures|$) \\
-            2 & Feature Alignment & $\mathbb{R}^{k}$ & Schema intersection on $\sharedfeatures$ & $\mathbb{R}^{d_{\cap}}$ ($d_{\cap} = |\sharedfeatures|$) \\
-            3 & Latent TCA & $\mathbb{R}^{d_{\cap}}$ & Projection $\featurevec' = \tcaprojectionmatrix^\top \featurevec$ & $\mathbb{R}^{m}$ ($m$ = latent dimension) \\
-            4 & TabPFN Classifier & $\mathbb{R}^{m}$ & Classification $\tabpfnfunc(\featurevec')$ & $[0, 1]$ (Prob.) \\
-            5 & Ensemble & $[0, 1]^{\numpreprocessbranches \times \numrandomseeds}$ & Temperature-scaled averaging & $[0, 1]$ (Final) \\
-            \bottomrule
-        \end{tabular}%
-    }
+\centering
+\caption{Data flow and transformations in the PANDA framework. The pipeline progressively refines raw, high-dimensional inputs into low-dimensional, domain-invariant embeddings and, ultimately, a calibrated probability. In the pulmonary nodule experiments, $k = 8$, $d_{\cap} = 8$, and $m = 15$, but these dimensions are dataset-dependent.}
+\label{tab:data-flow}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Stage} & \textbf{Component} & \textbf{Input Space} & \textbf{Core Operation} & \textbf{Output Space} \\
+\midrule
+1 & Cross-Domain RFE & $\mathbb{R}^{\rawdim}$ & Iterative elimination via $\rfeimportance(\func)$ & $\mathbb{R}^{k}$ ($\rfeselectedfeatures$, $k = |\rfeselectedfeatures|$) \\
+2 & Feature Alignment & $\mathbb{R}^{k}$ & Schema intersection on $\sharedfeatures$ & $\mathbb{R}^{d_{\cap}}$ ($d_{\cap} = |\sharedfeatures|$) \\
+3 & Latent TCA & $\mathbb{R}^{d_{\cap}}$ & Projection $\featurevec' = \tcaprojectionmatrix^\top \featurevec$ & $\mathbb{R}^{m}$ ($m$ = latent dimension) \\
+4 & TabPFN Classifier & $\mathbb{R}^{m}$ & Classification $\tabpfnfunc(\featurevec')$ & $[0, 1]$ (Prob.) \\
+5 & Ensemble & $[0, 1]^{\numpreprocessbranches \times \numrandomseeds}$ & Temperature-scaled averaging & $[0, 1]$ (Final) \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{enumerate}

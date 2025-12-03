@@ -88,7 +88,6 @@ Table~\ref{tab:theory_empirics} summarizes the connection between the theoretica
 \centering
 \caption{Mapping theoretical error terms to PANDA components and empirical results.}
 \label{tab:theory_empirics}
-\resizebox{\textwidth}{!}{%
 \begin{tabular}{llll}
 \toprule
 \textbf{Error Term} & \textbf{Statistical Challenge} & \textbf{PANDA Component} & \textbf{Empirical Impact} \\
@@ -102,8 +101,7 @@ $\domaindivergence$ & Covariate shift & TCA on RFE-selected features & Target re
 $\adaptabilityterm$ & Concept shift & Cross-domain RFE & Target AUC gap: $<0.01$ (TableShift) \\
 & (TB vs cancer) & (Stability filtering) & (Robustness to population shift) \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \end{table}
 
 \subsection{Summary of Theoretical Insights}
