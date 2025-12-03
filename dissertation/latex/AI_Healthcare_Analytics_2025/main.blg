@@ -6,34 +6,31 @@ Database file #1: refs.bib
 Warning--entry type for "noauthor_multi-center_nodate" isn't style-file defined
 --line 459 of file refs.bib
 Warning--entry type for "noauthor_prior_nodate" isn't style-file defined
---line 1041 of file refs.bib
+--line 1046 of file refs.bib
 Warning--entry type for "noauthor_closer_nodate" isn't style-file defined
---line 1062 of file refs.bib
+--line 1067 of file refs.bib
 Warning--entry type for "noauthor_realistic_nodate" isn't style-file defined
---line 1069 of file refs.bib
+--line 1074 of file refs.bib
 Warning--entry type for "noauthor_automldrift-resilient_tabpfn_2025" isn't style-file defined
---line 1075 of file refs.bib
+--line 1080 of file refs.bib
 Warning--entry type for "noauthor_mlfoundationstableshift_nodate" isn't style-file defined
---line 1160 of file refs.bib
+--line 1165 of file refs.bib
 Warning--entry type for "bytezcom_tabicl_2025" isn't style-file defined
---line 1380 of file refs.bib
+--line 1385 of file refs.bib
 Warning--entry type for "gardner_tableshift_nodate" isn't style-file defined
---line 2043 of file refs.bib
+--line 2049 of file refs.bib
 Warning--entry type for "khoeini_fttransformer_2024" isn't style-file defined
---line 2088 of file refs.bib
+--line 2094 of file refs.bib
 Warning--entry type for "noauthor_welcome_nodate" isn't style-file defined
---line 2101 of file refs.bib
+--line 2107 of file refs.bib
 Warning--I didn't find a database entry for "barros_pulmonary_2023"
 Warning--I didn't find a database entry for "shipe_validation_2021"
 Warning--I didn't find a database entry for "lang_asymptomatic_2017"
-Warning--empty journal in zhang_comprehensive_2022
 Warning--empty year in zhang_comprehensive_2022
-Warning--empty journal in liu_establishment_2024
 Warning--empty year in liu_establishment_2024
 Warning--empty journal in garau_external_2020
 Warning--empty year in garau_external_2020
 Warning--can't use both volume and number fields in arik2021tabnet
-Warning--empty journal in ardila_end--end_2019
 Warning--empty year in ardila_end--end_2019
 Warning--empty journal in zech_variable_2018
 Warning--empty year in zech_variable_2018
@@ -48,7 +45,6 @@ Warning--empty year in fan_tabular_2024
 Warning--empty journal in borisov_deep_2024
 Warning--empty year in borisov_deep_2024
 Warning--can't use both volume and number fields in margeloiu2023weight
-Warning--empty journal in hollmann_accurate_2025
 Warning--empty year in hollmann_accurate_2025
 Warning--empty journal in liu_tabular_2025
 Warning--empty year in liu_tabular_2025
@@ -76,7 +72,6 @@ Warning--empty journal in cui_comparison_2019
 Warning--empty year in cui_comparison_2019
 Warning--empty journal in li_evaluation_2020
 Warning--empty year in li_evaluation_2020
-Warning--empty journal in herder_clinical_2005
 Warning--empty year in herder_clinical_2005
 Warning--empty journal in perandini_solid_2016
 Warning--empty year in perandini_solid_2016
@@ -84,47 +79,48 @@ Warning--empty journal in li_predicting_2019
 Warning--empty year in li_predicting_2019
 Warning--empty journal in lin_combined_2024
 Warning--empty year in lin_combined_2024
-Warning--empty journal in causey_highly_2018
 Warning--empty year in causey_highly_2018
-You've used 95 entries,
+Warning--empty journal in wu_strategy_2023
+Warning--empty year in wu_strategy_2023
+You've used 97 entries,
             1791 wiz_defined-function locations,
-            912 strings with 24940 characters,
-and the built_in function-call counts, 24173 in all, are:
-= -- 1658
-> -- 1844
+            924 strings with 25789 characters,
+and the built_in function-call counts, 25090 in all, are:
+= -- 1718
+> -- 1944
 < -- 9
-+ -- 651
-- -- 556
-* -- 2027
-:= -- 3947
-add.period$ -- 260
-call.type$ -- 95
-change.case$ -- 95
++ -- 685
+- -- 588
+* -- 2130
+:= -- 4117
+add.period$ -- 266
+call.type$ -- 97
+change.case$ -- 97
 chr.to.int$ -- 0
-cite$ -- 155
-duplicate$ -- 807
-empty$ -- 2119
-format.name$ -- 556
-if$ -- 5059
+cite$ -- 153
+duplicate$ -- 825
+empty$ -- 2174
+format.name$ -- 588
+if$ -- 5238
 int.to.chr$ -- 0
-int.to.str$ -- 95
-missing$ -- 64
-newline$ -- 452
-num.names$ -- 87
-pop$ -- 378
+int.to.str$ -- 97
+missing$ -- 66
+newline$ -- 462
+num.names$ -- 89
+pop$ -- 371
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 474
+skip$ -- 480
 stack$ -- 0
-substring$ -- 1415
-swap$ -- 141
+substring$ -- 1489
+swap$ -- 148
 text.length$ -- 9
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 60
-while$ -- 184
-width$ -- 97
-write$ -- 878
-(There were 73 warnings)
+warning$ -- 56
+while$ -- 190
+width$ -- 99
+write$ -- 904
+(There were 69 warnings)

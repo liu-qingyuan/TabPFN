@@ -35,13 +35,13 @@ Kai Zhang, Zihan Wei, Yuntao Nie, Haifeng Shen, Xin Wang, Jun Wang, Fan Yang,
   and Kezhong Chen.
 \newblock Comprehensive analysis of clinical logistic and machine
   learning-based models for the evaluation of pulmonary nodules.
-\newblock 3(4):100299.
+\newblock {\em {JTO} Clinical and Research Reports}, 3(4):100299.
 
 \bibitem{liu_establishment_2024}
 Qiao Liu, Xue Lv, Daiquan Zhou, Na~Yu, Yuqin Hong, and Yan Zeng.
 \newblock Establishment and validation of multiclassification prediction models
   for pulmonary nodules based on machine learning.
-\newblock 18(5):e13769.
+\newblock {\em The Clinical Respiratory Journal}, 18(5):e13769.
 
 \bibitem{garau_external_2020}
 Noemi Garau, Chiara Paganelli, Paul Summers, Wookjin Choi, Sadegh Alam, Wei Lu,
@@ -94,7 +94,7 @@ Diego Ardila, Atilla~P. Kiraly, Sujeeth Bharadwaj, Bokyung Choi, Joshua~J.
   David~P. Naidich, and Shravya Shetty.
 \newblock End-to-end lung cancer screening with three-dimensional deep learning
   on low-dose chest computed tomography.
-\newblock 25(6):954--961.
+\newblock {\em Nature Medicine}, 25(6):954--961.
 
 \bibitem{zech_variable_2018}
 John~R. Zech, Marcus~A. Badgeley, Manway Liu, Anthony~B. Costa, Joseph~J.
@@ -181,6 +181,13 @@ Seong-Ho Ahn, Seeun Kim, and Dong-Hwa Jeong.
 \bibitem{gardner_benchmarking_2024}
 Josh Gardner, Zoran Popovic, and Ludwig Schmidt.
 \newblock Benchmarking distribution shift in tabular data with {TableShift}.
+
+\bibitem{yao2022wild}
+Huaxiu Yao, Caroline Choi, Bochuan Cao, Yoonho Lee, Pang Wei~W Koh, and Chelsea
+  Finn.
+\newblock Wild-time: A benchmark of in-the-wild distribution shift over time.
+\newblock {\em Advances in Neural Information Processing Systems},
+  35:10309--10324, 2022.
 
 \bibitem{sun2019informative}
 Feng Sun, Hanrui Wu, Zhihang Luo, Wenwen Gu, Yuguang Yan, and Qing Du.
@@ -291,7 +298,7 @@ Weijieying Ren, Tianxiang Zhao, Yuqing Huang, and Vasant Honavar.
 Noah Hollmann, Samuel Müller, Lennart Purucker, Arjun Krishnakumar, Max
   Körfer, Shi~Bin Hoo, Robin~Tibor Schirrmeister, and Frank Hutter.
 \newblock Accurate predictions on small data with a tabular foundation model.
-\newblock 637(8045):319--326.
+\newblock {\em Nature}, 637(8045):319--326.
 \newblock Publisher: Nature Publishing Group.
 
 \bibitem{helli_drift-resilient_2024}
@@ -511,7 +518,7 @@ Gerarda~J. Herder, Harm van Tinteren, Richard~P. Golding, Piet~J. Kostense,
 \newblock Clinical prediction model to characterize pulmonary nodules:
   validation and added value of 18f-fluorodeoxyglucose positron emission
   tomography.
-\newblock 128(4):2490--2496.
+\newblock {\em Medical Physics}, 128(4):2490--2496.
 
 \bibitem{perandini_solid_2016}
 Simone Perandini, Gian~Alberto Soardi, Massimiliano Motton, Arianna Rossi,
@@ -539,8 +546,17 @@ Jason~L. Causey, Junyu Zhang, Shiqian Ma, Bo~Jiang, Jake~A. Qualls, David~G.
   Politte, Fred Prior, Shuzhong Zhang, and Xiuzhen Huang.
 \newblock Highly accurate model for prediction of lung nodule malignancy with
   {CT} scans.
-\newblock 8(1):9286.
+\newblock {\em Scientific Reports}, 8(1):9286.
 \newblock Publisher: Nature Publishing Group.
+
+\bibitem{wu_strategy_2023}
+Zheng Wu, Fengwei Tan, Yaozeng Xie, Wei Tang, Fei Wang, Yongjie Xu, Wei Cao,
+  Chao Qin, Xuesi Dong, Yadi Zheng, Zilin Luo, Chenran Wang, Liang Zhao,
+  Changfa Xia, Jiang Li, Renda Li, Feiyue Feng, Jibin Li, Jiansong Ren, Jufang
+  Shi, Hong Cui, Sipeng Shen, Ning Wu, Wanqing Chen, Ni~Li, and Jie He.
+\newblock A strategy to reduce the false-positive rate after low-dose computed
+  tomography in lung cancer screening: A multicenter prospective cohort study.
+\newblock 12(13):14781--14793.
 
 \bibitem{ben2010theory}
 Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and
