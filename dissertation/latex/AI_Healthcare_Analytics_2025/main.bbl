@@ -1,4 +1,4 @@
-\begin{thebibliography}{10}
+\begin{thebibliography}{100}
 
 \bibitem{swensen1997chest}
 Stephen~J. Swensen, Michael~D. Silverstein, Duane~M. Ilstrup, Charles~D.
@@ -557,6 +557,25 @@ Zheng Wu, Fengwei Tan, Yaozeng Xie, Wei Tang, Fei Wang, Yongjie Xu, Wei Cao,
 \newblock A strategy to reduce the false-positive rate after low-dose computed
   tomography in lung cancer screening: A multicenter prospective cohort study.
 \newblock 12(13):14781--14793.
+
+\bibitem{barros_pulmonary_2023}
+Nicolas Barros, Joseph~L. Wheat, and Chadi Hage.
+\newblock Pulmonary histoplasmosis: A clinical update.
+\newblock 9(2):236.
+
+\bibitem{shipe_validation_2021}
+Maren~E. Shipe, Stephen~A. Deppen, Shelbi Sullivan, Michael Kammer, Sandra~L.
+  Starnes, David~O. Wilson, Pierre~P. Massion, and Eric~L. Grogan.
+\newblock Validation of histoplasmosis enzyme immunoassay to evaluate
+  suspicious lung nodules.
+\newblock 111(2):416--420.
+
+\bibitem{lang_asymptomatic_2017}
+Shan Lang, Junping Sun, Xuning Wang, Yongjiu Xiao, Juan Wang, Mingyue Zhang,
+  Ting Ao, and Jianxin Wang.
+\newblock Asymptomatic pulmonary tuberculosis mimicking lung cancer on imaging:
+  A retrospective study.
+\newblock 14(3):2180--2188.
 
 \bibitem{ben2010theory}
 Shai Ben-David, John Blitzer, Koby Crammer, Alex Kulesza, Fernando Pereira, and

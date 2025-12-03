@@ -215,7 +215,7 @@ $\domaindivergence(\sourcedomaindist, \targetdomaindist)$, and (iii) control the
 $\adaptabilityterm$ by avoiding features that admit no low-error classifier across both domains.
 
 From this perspective, the three components of PANDA align directly with the three terms in
-Eq.~\ref{eq:ben-david}:
+Eq.~\eqref{eq:ben-david}:
 
 \begin{itemize}
   \item \textbf{Tabular foundation model (TabPFN) $\rightarrow \sourceerror$.}
@@ -235,7 +235,7 @@ Eq.~\ref{eq:ben-david}:
 
 Thus, PANDA can be interpreted as an instantiation of the domain adaptation bound rather than
 an ad hoc composition of modules: each architectural choice is motivated by a specific term in
-Eq.~\ref{eq:ben-david}.
+Eq.~\eqref{eq:ben-david}.
 
 \subsection{Theoretical Constraints of Existing Models}
 \label{subsec:model-constraints}
@@ -259,7 +259,7 @@ Deep learning models (e.g., TabNet, FT-Transformer) offer differentiability but 
 \subsection{Transfer Component Analysis (TCA) Optimization Objective}
 \label{subsec:tca-optimization}
 
-To minimize the divergence term in Eq. \ref{eq:ben-david}, we employ Transfer Component Analysis (TCA). TCA seeks a feature map $\featuremap: \inputspace \rightarrow \rkhs$ such that the Maximum Mean Discrepancy (MMD) between source and target distributions in the Reproducing Kernel Hilbert Space (RKHS) is minimized.
+To minimize the divergence term in Eq. \eqref{eq:ben-david}, we employ Transfer Component Analysis (TCA). TCA seeks a feature map $\featuremap: \inputspace \rightarrow \rkhs$ such that the Maximum Mean Discrepancy (MMD) between source and target distributions in the Reproducing Kernel Hilbert Space (RKHS) is minimized.
 
 The empirical MMD distance is defined as:
 \begin{equation}
@@ -269,10 +269,7 @@ The empirical MMD distance is defined as:
 TCA aims to learn a transformation matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that reduces the data dimensionality to $\tcaprojectdim \ll \featuredim$ while minimizing MMD. The optimization problem is formally:
 
 \begin{equation}
-    \begin{aligned}
-    & \min_{\tcaprojectionmatrix} \quad \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \mu \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \\
-    & \text{s.t.} \quad {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix
-    \end{aligned}
+    \min_{\tcaprojectionmatrix} \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \mu \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \,\text{s.t.}\, {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix
 \end{equation}
 
 where:

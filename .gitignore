@@ -204,5 +204,8 @@ panda_tableshift_project/data/raw/LLCP2021XPT.zip
 # Reproduce doc artifacts (avoid LFS upload limits)
 reproduce/
 
+# Local Word conversion helper (not tracked)
+dissertation/word/tex2docx/
+
 # Ignore embedded TableShift repo (treated as plain folder)
 panda_tableshift_project/src/tableshift_repo/

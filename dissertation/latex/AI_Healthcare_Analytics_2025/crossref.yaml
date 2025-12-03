@@ -1,3 +1,7 @@
 tableTitle: "Table"
 figTitle: "Figure"
 nameInLink: true
+listingTitle: "Algorithm"
+lstPrefix:
+  - "Algorithm"
+  - "Algorithms"

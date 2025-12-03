@@ -38,31 +38,23 @@ The process uses a wrapper around the TabPFN classifier to compute permutation i
 \end{equation}
 where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative elimination process.
 
-\begin{algorithm}[H]
-\caption{Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}
+\paragraph{Algorithm \ref{alg:cross_domain_rfe}: Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}
 \label{alg:cross_domain_rfe}
-\begin{algorithmic}[1]
-\REQUIRE Source Data $\sourcedatafeatures, \sourcedatalabels$, Target Feature Count Range $[k_{\min}, k_{\max}]$
-\ENSURE Optimal Feature Subset $\rfeselectedfeatures$
-\STATE \textbf{Initialize TabPFN Wrapper} with permutation importance computation
-\STATE \textbf{Initialize performance records:} $\mathcal{M} \leftarrow \emptyset$
-\FOR{$k = k_{\max}$ \TO $k_{\min}$}
-    \STATE \textbf{Configure sklearn RFE:} estimator=TabPFNWrapper, $n\_features\_to\_select = k$, step=1
-    \STATE \textbf{Fit RFE:} $(\rfeset_k, \text{ranking}_k) \leftarrow \text{RFE.fit}(\sourcedatafeatures, \sourcedatalabels)$
-    \STATE \textbf{Evaluate performance:} $\metrick(k) = \text{CV-AUC}(\rfeset_k)$ using $\numfolds$-fold CV
-    \STATE \textbf{Compute CEI components:}
-    \STATE \quad $\rfeperformance(k) = \metrick(k)$ \COMMENT{Performance score}
-    \STATE \quad $\rfeefficiency(k) = 1 - \frac{\text{Cost}(\rfeset_k)}{\text{Cost}(\text{all features})}$ \COMMENT{Cost efficiency}
-    \STATE \quad $\rfestability(k) = 1 - \text{Std}(\text{AUC across CV folds})$ \COMMENT{Stability score}
-    \STATE \quad $\rfesimplicity(k) = \exp(-\sparsityparam \cdot k)$ \COMMENT{Sparsity penalty}
-    \STATE \textbf{Compute CEI:} $\text{CEI}(k) = \rfecomponentweights_1 \rfeperformance(k) + \rfecomponentweights_2 \rfeefficiency(k) + \rfecomponentweights_3 \rfestability(k) + \rfecomponentweights_4 \rfesimplicity(k)$
-    \STATE $\mathcal{M} \leftarrow \mathcal{M} \cup \{(k, \rfeset_k, \text{CEI}(k))\}$
-\ENDFOR
-\STATE \textbf{Select optimal subset:} $\rfecurrentdim^* = \argmax_k \text{CEI}(k)$
-\STATE $\rfeselectedfeatures \leftarrow \rfeset_{\rfecurrentdim^*}$
-\RETURN $\rfeselectedfeatures$
-\end{algorithmic}
-\end{algorithm}
+\begin{enumerate}
+  \item \textbf{Input:} source data $(\sourcedatafeatures, \sourcedatalabels)$; target feature count range $[k_{\min}, k_{\max}]$.
+  \item Initialize the TabPFN wrapper (permutation importance enabled) and records $\mathcal{M} \leftarrow \emptyset$.
+  \item For each $k$ from $k_{\max}$ down to $k_{\min}$:
+  \begin{enumerate}
+    \item Configure sklearn RFE: estimator=TabPFNWrapper, $n\_features\_to\_select=k$, step=1.
+    \item Fit RFE to obtain $(\rfeset_k, \text{ranking}_k)$ on $(\sourcedatafeatures, \sourcedatalabels)$.
+    \item Evaluate $\metrick(k) = \text{CV-AUC}(\rfeset_k)$ with $\numfolds$-fold CV.
+    \item Compute CEI components $\rfeperformance(k)$, $\rfeefficiency(k)$, $\rfestability(k)$, $\rfesimplicity(k)$.
+    \item Compute $\text{CEI}(k)$ from the weighted sum of the four components.
+    \item Append $(k, \rfeset_k, \text{CEI}(k))$ to $\mathcal{M}$.
+  \end{enumerate}
+  \item Select $\rfecurrentdim^* = \argmax_k \text{CEI}(k)$ and set $\rfeselectedfeatures \leftarrow \rfeset_{\rfecurrentdim^*}$.
+  \item \textbf{Output:} optimal feature subset $\rfeselectedfeatures$.
+\end{enumerate}
 
 This algorithm yields the standard feature subsets referenced throughout the study (for example, ``best8'').
 
@@ -113,25 +105,21 @@ where
 
 Algorithm~\ref{alg:tabpfn_inference} summarizes the inference procedure.
 
-\begin{algorithm}[H]
-\caption{PANDA Inference with TabPFN Backbone}
-\label{alg:tabpfn_inference}
-\begin{algorithmic}[1]
-\REQUIRE Query $\querypatient$, Context $\mathcal{D}_{\text{train}}$, Ensemble $N=32$
-\ENSURE Malignancy probability $\hat{\labelval}$
-\STATE $\text{Logits} \leftarrow []$
-\FOR{$i=1$ \TO $N$}
-    \STATE Sample preprocessing $P \sim \preprocessingbranches$ and context subset $\mathcal{D}_i \subset \mathcal{D}_{\text{train}}$
-    \STATE $\mathbf{x}'_q, \mathcal{D}'_i \leftarrow P(\querypatient), P(\mathcal{D}_i)$ \COMMENT{Apply branch}
-    \STATE $\mathbf{E} \leftarrow \text{Serialize}(\mathbf{x}'_q, \mathcal{D}'_i)$ \COMMENT{Tokenize}
-    \STATE $\mathbf{z} \leftarrow \text{Transformer}(\mathbf{E})$ \COMMENT{Forward pass}
-    \STATE $\ceilogit \leftarrow \text{ClassifierHead}(\mathbf{z})$
-    \STATE $\text{Logits}.\text{append}(\ceilogit)$
-\ENDFOR
-\STATE $\hat{\labelval} \leftarrow \text{Softmax}(\text{Mean}(\text{Logits}) / \temperature)$
-\RETURN $\hat{\labelval}$
-\end{algorithmic}
-\end{algorithm}
+\paragraph{Algorithm \ref{alg:tabpfn_inference}: PANDA Inference with TabPFN Backbone}\label{alg:tabpfn_inference}
+\begin{enumerate}
+  \item \textbf{Input:} query $\querypatient$, context $\mathcal{D}_{\text{train}}$, ensemble size $N=32$.
+  \item Initialize an empty list of logits.
+  \item For $i=1$ to $N$:
+  \begin{enumerate}
+    \item Sample preprocessing $P \sim \preprocessingbranches$ and a context subset $\mathcal{D}_i \subset \mathcal{D}_{\text{train}}$.
+    \item Apply the branch: $(\mathbf{x}'_q, \mathcal{D}'_i) \leftarrow P(\querypatient), P(\mathcal{D}_i)$.
+    \item Serialize tokens $\mathbf{E} \leftarrow \text{Serialize}(\mathbf{x}'_q, \mathcal{D}'_i)$.
+    \item Forward through the Transformer to get $\mathbf{z}$; compute $\ceilogit = \text{ClassifierHead}(\mathbf{z})$.
+    \item Append $\ceilogit$ to the logits list.
+  \end{enumerate}
+  \item Compute $\hat{\labelval} = \text{Softmax}(\text{Mean}(\text{Logits}) / \temperature)$.
+  \item \textbf{Output:} malignancy probability $\hat{\labelval}$.
+\end{enumerate}
 
 \subsubsection{Transfer Component Analysis (TCA)}
 \label{sec:methods-tca}
@@ -139,27 +127,18 @@ Algorithm~\ref{alg:tabpfn_inference} summarizes the inference procedure.
 
 TCA is applied to the RFE-selected feature space to align the marginal distributions of the source and target domains. This module directly targets the covariate shift and mixed acquisition-protocol challenges highlighted in Table~\ref{tab:challenge_mapping} by enforcing a shared latent representation across hospitals. We implement this alignment via Transfer Component Analysis (TCA), which solves the optimization problem through a generalized eigenvalue decomposition \cite{de2021adapt, noauthor_welcome_nodate}. Algorithm \ref{alg:tca_optimization} outlines the computational procedure.
 
-\begin{algorithm}[H]
-\caption{Transfer Component Analysis (TCA) Optimization}
+\paragraph{Algorithm \ref{alg:tca_optimization}: Transfer Component Analysis (TCA) Optimization}
 \label{alg:tca_optimization}
-\begin{algorithmic}[1]
-\REQUIRE Source Features $\sourcedatafeatures$, Target Features $\targetfeatureschema$, Kernel $k(\cdot, \cdot)$, Dim $\tcaprojectdim$, Reg $\regularizationparam$
-\ENSURE Projection Matrix $\tcaprojectionmatrix$
-\STATE \textbf{Construct Kernel Matrix:}
-\STATE Compute blocks $\kernelmatrix_{SS}, \kernelmatrix_{ST}, \kernelmatrix_{TT}$ using $k(\cdot, \cdot)$
-\STATE $\kernelmatrix \leftarrow \begin{bmatrix} \kernelmatrix_{SS} & \kernelmatrix_{ST} \\ \kernelmatrix_{ST}^\top & \kernelmatrix_{TT} \end{bmatrix}$
-\STATE \textbf{Construct MMD Matrix $\mmdmatrix$:}
-\STATE $\mmdmatrix_{ij} \leftarrow \frac{1}{\sourcedatasize^2}$ if $x_i, x_j \in \sourcedata$; $\frac{1}{\targetdatasize^2}$ if $x_i, x_j \in \targetdata$; else $\frac{-1}{\sourcedatasize \targetdatasize}$
-\STATE \textbf{Construct Centering Matrix $\centeringmatrix$:}
-\STATE $\centeringmatrix \leftarrow \identitymatrix - \frac{1}{\sourcedatasize+\targetdatasize}\onesvec\onesvec^\top$
-\STATE \textbf{Solve Generalized Eigenproblem:}
-\STATE $\mathbf{A} \leftarrow \identitymatrix + \regularizationparam \kernelmatrix \mmdmatrix \kernelmatrix$
-\STATE $\mathbf{B} \leftarrow \kernelmatrix \centeringmatrix \kernelmatrix$
-\STATE Compute eigenvectors $\mathbf{V}$ of $\mathbf{A}^{-1}\mathbf{B}$
-\STATE $\tcaprojectionmatrix \leftarrow \text{SelectTop}(\mathbf{V}, \tcaprojectdim)$ \COMMENT{Top $m$ eigenvectors}
-\RETURN $\tcaprojectionmatrix$
-\end{algorithmic}
-\end{algorithm}
+\begin{enumerate}
+  \item \textbf{Input:} source features $\sourcedatafeatures$, target features $\targetfeatureschema$, kernel $k(\cdot,\cdot)$, target dimension $\tcaprojectdim$, regularization $\regularizationparam$.
+  \item Build kernel blocks $\kernelmatrix_{SS}, \kernelmatrix_{ST}, \kernelmatrix_{TT}$ and assemble
+        $\kernelmatrix = \begin{bmatrix} \kernelmatrix_{SS} & \kernelmatrix_{ST} \\ \kernelmatrix_{ST}^\top & \kernelmatrix_{TT} \end{bmatrix}$.
+  \item Construct the MMD matrix $\mmdmatrix$ with entries $\frac{1}{\sourcedatasize^2}$ (source-source), $\frac{1}{\targetdatasize^2}$ (target-target), and $-\frac{1}{\sourcedatasize \targetdatasize}$ (cross-domain).
+  \item Construct the centering matrix $\centeringmatrix = \identitymatrix - \frac{1}{\sourcedatasize+\targetdatasize}\onesvec\onesvec^\top$.
+  \item Form $\mathbf{A} = \identitymatrix + \regularizationparam \kernelmatrix \mmdmatrix \kernelmatrix$ and $\mathbf{B} = \kernelmatrix \centeringmatrix \kernelmatrix$.
+  \item Solve the generalized eigenproblem for $\mathbf{A}^{-1}\mathbf{B}$; take the top $\tcaprojectdim$ eigenvectors as $\tcaprojectionmatrix$.
+  \item \textbf{Output:} projection matrix $\tcaprojectionmatrix$.
+\end{enumerate}
 
 \paragraph{Mathematical Formulation}
 The core optimization problem seeks a projection matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that maps the kernel matrix $\kernelmatrix$ to a low-dimensional latent space. The objective is to minimize the Maximum Mean Discrepancy (MMD) between domains while preserving data variance.

@@ -244,9 +244,6 @@ INPUT ./Section/Methods.tex
 INPUT ./Section/Methods.tex
 INPUT ./Section/Methods.tex
 INPUT Section/Methods.tex
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
-INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm
@@ -299,6 +296,9 @@ INPUT Section/Acknowledgements.tex
 INPUT ./main.bbl
 INPUT ./main.bbl
 INPUT main.bbl
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/tex/latex/base/omscmr.fd
 INPUT main.aux
 INPUT ./main.out
 INPUT ./main.out
