@@ -64,10 +64,7 @@ Aligning raw features is often suboptimal because medical variables exhibit comp
 \subsubsection{The TCA Optimization Objective}
 We employ Transfer Component Analysis (TCA) to find a projection $\tcaprojectionmatrix \in \mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target features (after RFE). The objective is
 \begin{equation}
-\begin{aligned}
-\min_{\tcaprojectionmatrix} \quad & \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \regularizationparam , \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \
-\text{s.t.} \quad & {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix,
-\end{aligned}
+    \min_{\tcaprojectionmatrix} \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \regularizationparam\, \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \quad \text{s.t.} \quad {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix,
 \end{equation}
 where $\kernelmatrix$ is the kernel matrix of the RFE-selected features ($K_{ij} = \langle \featurevec_i, \featurevec_j \rangle$), $\mmdmatrix$ is the MMD indicator matrix, and $\centeringmatrix$ is the centering matrix. The constraint ${\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix$ preserves data variance, ensuring that the projection does not collapse informative signal while aligning means. Here, $\rfecurrentdim$ denotes the dimensionality of the RFE-selected features.
 
@@ -85,12 +82,12 @@ Discarding unstable features (such as subjective morphological scores) can sligh
 \subsection{Synthesis: Linking Theory to Empirical Results}
 \label{subsec:analysis_synthesis}
 
-Table~\ref{tbl:theory_empirics} summarizes the connection between the theoretical components and our experimental findings, and illustrates how each PANDA component targets a specific term in the Ben-David bound.
+Table~\ref{tab:theory_empirics} summarizes the connection between the theoretical components and our experimental findings, and illustrates how each PANDA component targets a specific term in the Ben-David bound.
 
 \begin{table}[htbp]
 \centering
 \caption{Mapping theoretical error terms to PANDA components and empirical results.}
-\label{tbl:theory_empirics}
+\label{tab:theory_empirics}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llll}
 \toprule

@@ -5,3 +5,6 @@ listingTitle: "Algorithm"
 lstPrefix:
   - "Algorithm"
   - "Algorithms"
+tblPrefix:
+  - "Table"
+  - "Tables"

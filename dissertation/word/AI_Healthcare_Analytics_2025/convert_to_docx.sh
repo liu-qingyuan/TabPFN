@@ -11,8 +11,8 @@ cd "/Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025"
   --reference-doc=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/reference.docx \
   --lua-filter=/Users/lqy/work/TabPFN/dissertation/word/tex2docx/include_files.lua \
   --lua-filter=/Users/lqy/work/TabPFN/dissertation/word/tex2docx/map_math_macros.lua \
+  --lua-filter=/Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025/fix_latex_tables.lua \
   --lua-filter=normalize_algorithms.lua \
-  --lua-filter=fix_latex_tables.lua \
   --filter=pandoc-crossref \
   --lua-filter=latex_toc_to_word.lua \
   --metadata-file=crossref.yaml \

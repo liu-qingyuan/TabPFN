@@ -31,3 +31,54 @@ function Link(el)
   end
   return el
 end
+
+function Inlines(inlines)
+  local out = {}
+  local i = 1
+  while i <= #inlines do
+    local cur = inlines[i]
+    local nxt = inlines[i + 1]
+
+    -- Pattern: Str "Table ef" + Span {tab:foo}
+    if cur.t == "Str" and nxt and nxt.t == "Span" then
+      local span_text = pandoc.utils.stringify(nxt)
+      if span_text and (span_text:match("^tab:") or span_text:match("^tbl:")) then
+        local label = span_text:gsub("^tab:", "tbl:")
+        local head = cur.c or ""
+        head = head:gsub("ef", "")
+        table.insert(out, pandoc.Str(head))
+        table.insert(out, pandoc.Str("@" .. label))
+        i = i + 2
+        goto continue
+      end
+    end
+
+    -- Standalone Span with tab:/tbl: (e.g., produced without the Str "ef")
+    if cur.t == "Span" then
+      local span_text = pandoc.utils.stringify(cur)
+      if span_text and (span_text:match("^tab:") or span_text:match("^tbl:")) then
+        local label = span_text:gsub("^tab:", "tbl:")
+        -- If previous output ends with "ef", trim it
+        if #out > 0 and out[#out].t == "Str" then
+          out[#out].c = out[#out].c:gsub("ef", "")
+        end
+        table.insert(out, pandoc.Str("@" .. label))
+        i = i + 1
+        goto continue
+      end
+    end
+
+    table.insert(out, cur)
+    i = i + 1
+    ::continue::
+  end
+  return out
+end
+
+function Table(el)
+  -- Normalize table identifiers from tab: to tbl: for crossref
+  if el.identifier and el.identifier:match("^tab:") then
+    el.identifier = el.identifier:gsub("^tab:", "tbl:")
+  end
+  return el
+end
