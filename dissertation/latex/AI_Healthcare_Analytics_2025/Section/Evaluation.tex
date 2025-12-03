@@ -23,24 +23,52 @@ out-of-distribution (OOD) domain.
 
 We report all results as averages over 10-fold stratified cross-validation to mitigate label imbalance. The metrics are defined as follows:
 
-\[
-\begin{aligned}
-&\text{True Positive Rate:} && \tpr(\tau) = \frac{\tp(\tau)}{\tp(\tau) + \fn(\tau)} \\
-&\text{False Positive Rate:} && \fpr(\tau) = \frac{\fp(\tau)}{\fp(\tau) + \tn(\tau)} \\
-&\text{AUC:} && \auc = \int_0^1 \tpr(\tau)\, d(\fpr(\tau)) \\
-&\text{Accuracy:} && \frac{\tp + \tn}{\tp + \tn + \fp + \fn} \\
-&\text{Precision:} && \frac{\tp}{\tp + \fp} \\
-&\text{Recall (Sensitivity):} && \frac{\tp}{\tp + \fn} \\
-&\text{F1 Score:} && \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} \\
-&\text{Specificity:} && \frac{\tn}{\tn + \fp}
-\end{aligned}
-\]
+\begin{equation}
+    \label{eq:tpr}
+    \text{True Positive Rate:} \quad \tpr(\tau) = \frac{\tp(\tau)}{\tp(\tau) + \fn(\tau)}
+\end{equation}
+
+\begin{equation}
+    \label{eq:fpr}
+    \text{False Positive Rate:} \quad \fpr(\tau) = \frac{\fp(\tau)}{\fp(\tau) + \tn(\tau)}
+\end{equation}
+
+\begin{equation}
+    \label{eq:auc}
+    \text{AUC:} \quad \auc = \int_0^1 \tpr(\tau)\, d(\fpr(\tau))
+\end{equation}
+
+\begin{equation}
+    \label{eq:accuracy}
+    \text{Accuracy:} \quad \frac{\tp + \tn}{\tp + \tn + \fp + \fn}
+\end{equation}
+
+\begin{equation}
+    \label{eq:precision}
+    \text{Precision:} \quad \frac{\tp}{\tp + \fp}
+\end{equation}
+
+\begin{equation}
+    \label{eq:recall}
+    \text{Recall (Sensitivity):} \quad \frac{\tp}{\tp + \fn}
+\end{equation}
+
+\begin{equation}
+    \label{eq:f1}
+    \text{F1 Score:} \quad \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+
+\begin{equation}
+    \label{eq:specificity}
+    \text{Specificity:} \quad \frac{\tn}{\tn + \fp}
+\end{equation}
 
 Let $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^n$ denote the full dataset, and let $\mathcal{D}_k$ be the $k$-th fold. For a metric $M$, the mean and standard deviation over $\numfolds=10$ folds are
 
-\[
-\meanmetric = \frac{1}{\numfolds}\sum_{k=1}^{\numfolds} \metrick, \quad \stdmetric = \sqrt{\frac{1}{\numfolds-1} \sum_{k=1}^{\numfolds} (\metrick - \meanmetric)^2}.
-\]
+\begin{equation}
+    \label{eq:cross-validation-stats}
+    \meanmetric = \frac{1}{\numfolds}\sum_{k=1}^{\numfolds} \metrick, \quad \stdmetric = \sqrt{\frac{1}{\numfolds-1} \sum_{k=1}^{\numfolds} (\metrick - \meanmetric)^2}.
+\end{equation}
 
 \subsubsection{Visualization-Based Evaluation}
 
@@ -48,19 +76,22 @@ Let $\mathcal{D} = \{(\featurevec_i, \labelval_i)\}_{i=1}^n$ denote the full dat
 \item \textbf{ROC Curves:} We plot $\tpr(\tau)$ versus $\fpr(\tau)$ for $\tau \in [0,1]$ to characterize the trade-off between sensitivity and specificity across operating thresholds.
 
 \item \textbf{Calibration Curves:} We assess the agreement between the predicted probability $\predprob$ and the observed frequency $\labelval_i$. For $\numfolds$ equal-width bins $\calibbin = [k/\numfolds, (k+1)/\numfolds)$, we compute
-\[
-\meanpredprob = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \predprob, \quad \meanobservedfreq = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \labelval_i.
-\]
+\begin{equation}
+    \label{eq:calibration-bins}
+    \meanpredprob = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \predprob, \quad \meanobservedfreq = \frac{1}{|\calibbin|} \sum_{i \in \calibbin} \labelval_i.
+\end{equation}
 These quantities summarize both over- and underestimation of risk across the probability range.
 
 \item \textbf{Decision Curve Analysis (DCA):} For a given probability threshold $\probthreshold$, the net benefit is
-\[
-\netbenefit = \frac{\tp(\probthreshold)}{n} - \frac{\fp(\probthreshold)}{n} \cdot \frac{\probthreshold}{1 - \probthreshold},
-\]
+\begin{equation}
+    \label{eq:net-benefit}
+    \netbenefit = \frac{\tp(\probthreshold)}{n} - \frac{\fp(\probthreshold)}{n} \cdot \frac{\probthreshold}{1 - \probthreshold},
+\end{equation}
 with benchmark strategies
-\[
-\nball(\probthreshold) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{\probthreshold}{1 - \probthreshold}, \quad \nbnone = 0.
-\]
+\begin{equation}
+    \label{eq:benchmark-strategies}
+    \nball(\probthreshold) = \text{Prevalence} - (1 - \text{Prevalence}) \cdot \frac{\probthreshold}{1 - \probthreshold}, \quad \nbnone = 0.
+\end{equation}
 DCA therefore quantifies the clinical utility of a model across plausible decision thresholds relative to treating all or no patients.
 \end{itemize}
 

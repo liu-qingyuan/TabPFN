@@ -45,10 +45,11 @@ treated as non-transferable and are removed or marginalized before alignment.
 We write $\mathcal{H}$ for a hypothesis class of classifiers $h : \mathcal{X} \rightarrow \{0,1\}$
 (or $h : \mathcal{X} \rightarrow [0,1]$ for probabilistic outputs). For any $h \in \mathcal{H}$,
 the expected risk on source and target domains under a loss function $L$ is
-\[
-  \sourceerror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \sourcedomaindist}[\loss(\hypothesis(X),Y)], \quad
-  \targeterror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \targetdomaindist}[\loss(\hypothesis(X),Y)].
-\]
+\begin{equation}
+    \label{eq:risk-definition}
+    \sourceerror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \sourcedomaindist}[\loss(\hypothesis(X),Y)], \quad
+    \targeterror(\hypothesis) = \mathbb{E}_{(X,Y) \sim \targetdomaindist}[\loss(\hypothesis(X),Y)].
+\end{equation}
 The empirical risks $\sourcesampleerror(\hypothesis)$ and $\targetsampleerror(\hypothesis)$ are defined
 analogously over $\sourcedata$ and $\targetdata$.
 
@@ -141,6 +142,7 @@ Formally, a dataset $\mathcal{D}$ is sampled in two steps:
 
 The learning objective of a Prior-Data Fitted Network (PFN) is to approximate the \textbf{posterior predictive distribution} (\ppd) for a query sample $\queryvec$ given the context dataset $\sourcedata$:
 \begin{equation}
+    \label{eq:ppd-definition}
     \ppd(\labelvalq \mid \queryvec, \sourcedata) = \int P(\labelvalq \mid \queryvec, \func) \, P(\func \mid \sourcedata) \, d\func
 \end{equation}
 TabPFN approximates this integral using a Transformer-based architecture that attends to the entire context $\sourcedata$ (In-Context Learning). This perspective is particularly advantageous for the medical small-sample setting ($\sourcedatasize < 500$) because:
@@ -159,6 +161,7 @@ The core challenge in our research is that $\sourcedomaindist \neq \targetdomain
 \subsubsection{Covariate Shift: The Acquisition Gap}
 Covariate shift occurs when the marginal feature distributions differ, $\marginalsourcedist \neq \marginaltargetdist$, while the conditional probability of the label remains constant, $\conditionalps = \conditionalpt$.
 \begin{equation}
+    \label{eq:covariate-shift}
     \marginalsourcedist \neq \marginaltargetdist \quad \text{and} \quad \conditionalps = \conditionalpt
 \end{equation}
 In pulmonary nodule diagnosis, this is often driven by technological heterogeneity. For instance, CT scanners use different reconstruction kernels (e.g., "Sharp" vs. "Smooth"). A nodule scanned with a sharp kernel will systematically exhibit higher values for texture features like "entropy" or "spiculation" compared to the same nodule scanned with a smooth kernel, shifting the probability density function $P(\featurevectexture)$ without changing the underlying malignancy risk. TabPFN is particularly sensitive to this because its attention mechanism relies on finding similar examples in the support set; if the target $\featurevect$ lies in a region unsupported by $\marginalsourcedist$, the attention weights become diffuse.
@@ -166,6 +169,7 @@ In pulmonary nodule diagnosis, this is often driven by technological heterogenei
 \subsubsection{Label Shift: The Prevalence Gap}
 Label shift, or prior probability shift, is defined by a change in the marginal label distribution:
 \begin{equation}
+    \label{eq:label-shift}
     \marginalsourcelabel \neq \marginaltargetlabel
 \end{equation}
 This is endemic to healthcare referrals. A tertiary cancer center (Source) typically receives high-risk referrals with a malignancy prevalence of $P(\labelspace=1) \approx 60\%$. In contrast, a community screening program (Target) encounters a broader population with many benign incidental findings, where $P(\labelspace=1) \approx 5\%-20\%$. A model trained on the balanced source will learn a prior $\prevalence_S$ and systematically overestimate risk on the target, leading to poor calibration and excessive false positives.
@@ -173,6 +177,7 @@ This is endemic to healthcare referrals. A tertiary cancer center (Source) typic
 \subsubsection{Concept Shift: The Definition Gap}
 Concept shift implies a fundamental change in the relationship between features and labels:
 \begin{equation}
+    \label{eq:concept-shift}
     \conditionalps \neq \conditionalpt
 \end{equation}
 
@@ -263,12 +268,14 @@ To minimize the divergence term in Eq. \eqref{eq:ben-david}, we employ Transfer 
 
 The empirical MMD distance is defined as:
 \begin{equation}
+    \label{eq:mmd-empirical}
     \text{MMD}(\sourcedomaindist, \targetdomaindist) = \left\| \frac{1}{\sourcedatasize} \sum_{i=1}^{\sourcedatasize} \featuremap(\featurevec_i^s) - \frac{1}{\targetdatasize} \sum_{j=1}^{\targetdatasize} \featuremap(\featurevec_j^t) \right\|_{\hypothesisclass}^2
 \end{equation}
 
 TCA aims to learn a transformation matrix $\tcaprojectionmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times \tcaprojectdim}$ that reduces the data dimensionality to $\tcaprojectdim \ll \featuredim$ while minimizing MMD. The optimization problem is formally:
 
 \begin{equation}
+    \label{eq:tca-optimization}
     \min_{\tcaprojectionmatrix} \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \mu \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \,\text{s.t.}\, {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix
 \end{equation}
 
@@ -305,11 +312,13 @@ Let $\rfeset^{(0)} = \sharedfeatures$ be the initial set of shared features. The
     \item \textbf{Model Fitting:} We define the TabPFN posterior predictive distribution conditioned on the current subset $\rfeiterateset$ using the source data $\sourcedata$.
     \item \textbf{Importance Estimation ($\rfeimportance$):} Unlike linear models, TabPFN is a non-parametric meta-learned model. We approximate feature importance using \textbf{Permutation Importance}. For each feature $\featurevecj \in \rfeiterateset$, we compute the degradation in the \auc metric when feature $\featurevecj$ is randomly permuted in the validation set:
     \begin{equation}
+        \label{eq:permutation-loss}
         \rfeimportance(\featurevecj; \rfeiterateset) = \lossauc(\hypothesissubset, \sourcedata) - \lossauc(\hypothesissubset, \sourcedata^{\text{perm}(j)})
     \end{equation}
     
     \item \textbf{Elimination:} We identify and remove the feature with the minimal contribution:
     \begin{equation}
+        \label{eq:feature-elimination}
         \minfeature = \argmin_{\featurevecj \in \rfeiterateset} \rfeimportance(\featurevecj; \rfeiterateset)
         \quad \longrightarrow \quad
         \rfeset^{(t+1)} = \rfeiterateset \setminus \{\minfeature\}
@@ -322,6 +331,7 @@ The final subset $\rfeselectedfeatures$ is selected to maximize stability and di
 
 Given the selected feature subset $\rfeselectedfeatures$, this stage enforces schema consistency between hospitals. In our specific experimental setup, RFE identifies an optimal subset of $|\rfeselectedfeatures| = 9$ features. However, due to missingness shift in the target domain, the alignment operator $\pi_{\cap}$ restricts this to the intersection of available schemas:
 \begin{equation}
+    \label{eq:feature-alignment}
     \sharedfeatures = \rfeselectedfeatures \cap \targetfeatureschema
 \end{equation}
 This dimensionality reduction (from 9 to 8) explicitly handles the constraint where specific biomarkers are unrecorded in the target hospital, ensuring that subsequent stages operate only on the biologically common subspace.
@@ -330,6 +340,7 @@ This dimensionality reduction (from 9 to 8) explicitly handles the constraint wh
 
 The aligned features $\sharedfeatures$ are then adapted using Transfer Component Analysis (TCA). The domain adaptation mapping $\adaptmap$ projects these features into a Reproducing Kernel Hilbert Space (RKHS) where the Maximum Mean Discrepancy (MMD) between source and target distributions is minimized.
 \begin{equation}
+    \label{eq:domain-adaptation-map}
     \featurevec' = \adaptmap(\featurevec; \sharedfeatures) = \tcaprojectionmatrix^\top \featurevec
 \end{equation}
 This linear projection $\tcaprojectionmatrix$ is learned to align the marginal distributions $P_S(\sharedfeatures)$ and $P_T(\sharedfeatures)$, thereby reducing the domain divergence term $\domaindivergence$ in the generalization bound.
@@ -338,6 +349,7 @@ This linear projection $\tcaprojectionmatrix$ is learned to align the marginal d
 
 Finally, the classification function $\hypothesis$ processes the adapted features $\featurevec'$. This stage leverages the pre-trained TabPFN as a robust classifier, augmented by an ensemble mechanism to handle predictive uncertainty and label shift.
 \begin{equation}
+    \label{eq:ensemble-hypothesis}
     \hypothesis(\featurevec') = \frac{1}{N} \sum_{i=1}^{N} \activation\left(\frac{\tabpfnfunci{i}(\featurevec')}{\temperature}\right)
 \end{equation}
 where $\temperature$ is a temperature scaling parameter optimized to calibrate the output probabilities against the prevalence differences between hospitals. The result is a calibrated malignancy probability that is robust to both covariate and label shifts.

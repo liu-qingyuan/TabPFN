@@ -34,6 +34,7 @@ To address the \emph{feature mismatch} challenge, we implement a Cross-Domain Re
 
 The process uses a wrapper around the TabPFN classifier to compute permutation importance. We define the importance of feature $j$ as the degradation in \auc when its values are randomly shuffled:
 \begin{equation}
+    \label{eq:permutation-importance}
     \rfeimportance_j = \lossauc(\mathcal{D}_{\text{val}}) - \frac{1}{\numfolds} \sum_{k=1}^{\numfolds} \lossauc(\mathcal{D}_{\text{val}}^{(j, \text{shuffled})})
 \end{equation}
 where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative elimination process.
@@ -83,6 +84,7 @@ The feature processing pipeline involves several key steps:
     \item \textbf{Missing Value Handling:} Instead of a single learnable token, missing values are handled by a robust mechanism where they are replaced by the feature mean (learned during training). Simultaneously, separate indicator channels are generated to explicitly flag missing values or infinite entries, preserving the structural information of data unavailability.
     \item \textbf{Linear Projection:} Each preprocessed feature is linearly projected into the embedding space.
     \begin{equation}
+        \label{eq:feature-embedding}
         \mathbf{e}^{(j)} = \text{Linear}(\text{Preprocess}(\featurevec^{(j)}))
     \end{equation}
 \end{itemize}
@@ -93,6 +95,7 @@ Distinct from architectures that concatenate all features into a single vector (
 \label{sec:methods-ensemble}
 The final prediction is obtained by averaging over 32 diverse forward passes. Let $\preprocessingbranches = \{P_1, \dots, P_4\}$ denote the set of preprocessing functions and $\randomseeds = \{s_1, \dots, s_8\}$ a set of random seeds that control the subsampling of the context set (the \emph{support set} of labeled examples). The ensemble probability estimate is
 \begin{equation}
+    \label{eq:ensemble-probability}
     \ensembleprob = \frac{1}{32} \sum_{P \in \preprocessingbranches} \sum_{s \in \randomseeds} \activation\left( \frac{\transformerbackbone(P(\querypatient) \mid P(\contextdata))}{\temperature} \right)
 \end{equation}
 where
@@ -145,18 +148,21 @@ The core optimization problem seeks a projection matrix $\tcaprojectionmatrix \i
 
 The kernel matrix $\kernelmatrix \in \mathbb{R}^{(\sourcedatasize+\targetdatasize) \times (\sourcedatasize+\targetdatasize)}$ is constructed as a block matrix:
 \begin{equation}
+    \label{eq:kernel-matrix}
     \kernelmatrix = \begin{bmatrix} \kernelmatrix_{SS} & \kernelmatrix_{ST} \\ \kernelmatrix_{TS} & \kernelmatrix_{TT} \end{bmatrix}
 \end{equation}
 where $\kernelmatrix_{SS}, \kernelmatrix_{TT}, \kernelmatrix_{ST}$ represent the kernel evaluations within the source domain, within the target domain, and between source and target samples, respectively.
 
 The MMD matrix $\mmdmatrix$ and centering matrix $\centeringmatrix$ are defined as
 \begin{equation}
+    \label{eq:mmd-centering}
     \mmdmatrix_{ij} = \begin{cases} \frac{1}{\sourcedatasize^2} & x_i, x_j \in \sourcedata \\ \frac{1}{\targetdatasize^2} & x_i, x_j \in \targetdata \\ -\frac{1}{\sourcedatasize \targetdatasize} & \text{otherwise} \end{cases}, \quad
     \centeringmatrix = \identitymatrix - \frac{1}{\sourcedatasize+\targetdatasize}\onesvec\onesvec^\top
 \end{equation}
 
 The ADAPT implementation solves for the projection $\tcaprojectionmatrix$ by addressing a generalized eigenvalue problem. Specifically, it computes
 \begin{equation}
+    \label{eq:ab-matrices}
     \mathbf{A} = \identitymatrix + \regularizationparam \kernelmatrix \mmdmatrix \kernelmatrix, \quad \mathbf{B} = \kernelmatrix \centeringmatrix \kernelmatrix
 \end{equation}
 and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. The optimal projection matrix $\tcaprojectionmatrix$ consists of the $\tcaprojectdim$ eigenvectors corresponding to the largest eigenvalues of $\mathbf{A}^{-1}\mathbf{B}$, which we denote as $\tcaprojectionmatrix = \texttt{vectors\_}[:\tcaprojectdim]$. This formulation maximizes the ratio of data variance ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{B} \tcaprojectionmatrix)$) to the regularized domain divergence ($\operatorname{tr}(\tcaprojectionmatrix^\top \mathbf{A} \tcaprojectionmatrix)$). The top $\tcaprojectdim$ eigenvectors form the projection matrix $\tcaprojectionmatrix$.
@@ -164,6 +170,7 @@ and solves for the eigenvectors of $\mathbf{A}^{-1} \mathbf{B}$. The optimal pro
 \paragraph{Data Flow and Transformation}
 In the \texttt{fit\_transform} phase, we utilize the \textbf{RFE-selected feature vectors} as the input representations for both the source ($\sourcedatafeatures$) and target ($\targetfeatureschema$) domains. These feature matrices are concatenated to compute the kernel matrix. The solver then computes $\tcaprojectionmatrix$ using the top $\tcaprojectdim$ eigenvectors (`vectors\_`) of the matrix product. For a new query sample $\queryvec$, the transformation projects it into the shared subspace by computing the inner product of the query's kernel vector with these eigenvectors:
 \begin{equation}
+    \label{eq:new-projection}
     \mathbf{z}_{\text{new}} = \mathbf{k}_{\text{new}}^\top \tcaprojectionmatrix
 \end{equation}
 where $\mathbf{k}_{\text{new}} = [k(\queryvec, x_1), \dots, k(\queryvec, x_{n+m})]^\top$ is the kernel vector between the query and all training samples, and $\tcaprojectionmatrix$ contains the learned alignment directions. This mapping allows the model to embed unseen target samples into the aligned space using the learned support vectors.

@@ -29,7 +29,8 @@ Inequality~\eqref{eq:ben_david_bound} shows that reducing the target error $\tar
 \subsubsection{The $\mathcal{H}\Delta\mathcal{H}$-Divergence}
 A central quantity in the theory of Ben-David et al. is the $\mathcal{H}\Delta\mathcal{H}$-divergence, which quantifies domain distance with respect to the hypothesis class $\mathcal{H}$. It is defined as
 \begin{equation}
-\domaindivergence(\sourcedomaindist, \targetdomaindist) = 2 \sup_{h, h' \in \mathcal{H}} \left| \Pr_{x \sim \sourcedomaindist}[h(x) \neq h'(x)] - \Pr_{x \sim \targetdomaindist}[h(x) \neq h'(x)] \right|.
+    \label{eq:hdhd-divergence}
+    \domaindivergence(\sourcedomaindist, \targetdomaindist) = 2 \sup_{h, h' \in \mathcal{H}} \left| \Pr_{x \sim \sourcedomaindist}[h(x) \neq h'(x)] - \Pr_{x \sim \targetdomaindist}[h(x) \neq h'(x)] \right|.
 \end{equation}
 Intuitively, this metric measures the maximal discrepancy in classifier disagreement across the two domains. If there exist two classifiers $h, h'$ that exhibit low disagreement on the source domain but high disagreement on the target domain, the divergence is large. In this case, the source domain does not sufficiently constrain classifier behavior on the target domain, which can lead to negative transfer. Alignment methods such as TCA and CORAL aim to transform the feature space so that this divergence is reduced.
 
@@ -41,13 +42,15 @@ The first challenge is the small sample size ($\sourcedatasize \approx 295$). In
 \subsubsection{Prior-Data Fitted Networks vs. Parametric Learning}
 Traditional parametric learning optimizes weights $\modelparams$ to minimize loss on $\sourcedata$,
 \begin{equation}
-\hat{\modelparams} = \arg\min_{\modelparams} \sum_{({\featurevec},{\labelval}) \in \sourcedata} \loss(f_{\modelparams}({\featurevec}), {\labelval}),
+    \label{eq:erm}
+    \hat{\modelparams} = \arg\min_{\modelparams} \sum_{({\featurevec},{\labelval}) \in \sourcedata} \loss(f_{\modelparams}({\featurevec}), {\labelval}),
 \end{equation}
 starting from largely uninformative priors and therefore requiring substantial data.
 
 In contrast, PANDA uses TabPFN, a \textbf{Prior-Data Fitted Network (PFN)}. It reduces $\sourceerror$ not by performing gradient descent on $\sourcedata$, but by approximating the \textbf{Posterior Predictive Distribution (PPD)} using a Transformer pre-trained on millions of synthetic causal models:
 \begin{equation}
-P({\labelval}_{\text{query}} \mid \queryvec, \sourcedata) \approx \int P({\labelval} \mid \featurevec, M) P(M \mid \sourcedata) , dM.
+    \label{eq:ppd}
+    P({\labelval}_{\text{query}} \mid \queryvec, \sourcedata) \approx \int P({\labelval} \mid \featurevec, M) P(M \mid \sourcedata) , dM.
 \end{equation}
 TabPFN treats the source dataset $\sourcedata$ as context for Bayesian inference rather than as a training set for parameter optimization, and thus acts as a strong regularizer that imposes inductive biases favoring sparsity and piecewise smoothness.
 
@@ -64,6 +67,7 @@ Aligning raw features is often suboptimal because medical variables exhibit comp
 \subsubsection{The TCA Optimization Objective}
 We employ Transfer Component Analysis (TCA) to find a projection $\tcaprojectionmatrix \in \mathbb{R}^{\rfecurrentdim \times \tcaprojectdim}$ that minimizes the Maximum Mean Discrepancy (MMD) between source and target features (after RFE). The objective is
 \begin{equation}
+    \label{eq:tca-objective}
     \min_{\tcaprojectionmatrix} \tr({\tcaprojectionmatrix}^\top \kernelmatrix \mmdmatrix \kernelmatrix \tcaprojectionmatrix) + \regularizationparam\, \tr({\tcaprojectionmatrix}^\top \tcaprojectionmatrix) \quad \text{s.t.} \quad {\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix,
 \end{equation}
 where $\kernelmatrix$ is the kernel matrix of the RFE-selected features ($K_{ij} = \langle \featurevec_i, \featurevec_j \rangle$), $\mmdmatrix$ is the MMD indicator matrix, and $\centeringmatrix$ is the centering matrix. The constraint ${\tcaprojectionmatrix}^\top \kernelmatrix \centeringmatrix \kernelmatrix \tcaprojectionmatrix = \identitymatrix$ preserves data variance, ensuring that the projection does not collapse informative signal while aligning means. Here, $\rfecurrentdim$ denotes the dimensionality of the RFE-selected features.
@@ -75,7 +79,8 @@ The third term, $\adaptabilityterm$, represents the irreducible error of the bes
 
 PANDA reduces $\adaptabilityterm$ through \textbf{Cross-Domain Recursive Feature Elimination (RFE)}. By intersecting feature-importance rankings from the source with availability and stability constraints, it effectively restricts the hypothesis class $\hypothesisclass$ to a subspace $\rfeselectedfeatures$ in which the conditional distributions are approximately invariant:
 \begin{equation}
-\conditionalps({\labelval} \mid \featurevec_{\rfeselectedfeatures}) \approx \conditionalpt({\labelval} \mid \featurevec_{\rfeselectedfeatures}).
+    \label{eq:concept-invariance}
+    \conditionalps({\labelval} \mid \featurevec_{\rfeselectedfeatures}) \approx \conditionalpt({\labelval} \mid \featurevec_{\rfeselectedfeatures}).
 \end{equation}
 Discarding unstable features (such as subjective morphological scores) can slightly increase the intrinsic source error $\sourceerror$ (bias), but it substantially reduces $\adaptabilityterm$, yielding a tighter overall bound on the target error.
 

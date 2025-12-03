@@ -15,6 +15,7 @@ trap 'rm -f "$tmp_tex"' EXIT
   --output=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/AI_Healthcare_Analytics_2025.docx \
   --reference-doc=/Users/lqy/work/TabPFN/dissertation/word/AI_Healthcare_Analytics_2025/reference.docx \
   --lua-filter=/Users/lqy/work/TabPFN/dissertation/word/tex2docx/convert_refs.lua \
+  --lua-filter=/Users/lqy/work/TabPFN/dissertation/word/tex2docx/normalize_equations.lua \
   --lua-filter=/Users/lqy/work/TabPFN/dissertation/word/tex2docx/map_math_macros.lua \
   --lua-filter=/Users/lqy/work/TabPFN/dissertation/latex/AI_Healthcare_Analytics_2025/fix_latex_tables.lua \
   --lua-filter=normalize_algorithms.lua \
