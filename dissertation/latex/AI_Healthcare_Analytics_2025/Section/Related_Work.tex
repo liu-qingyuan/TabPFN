@@ -394,31 +394,31 @@ focuses on hospital identifiers or acquisition artifacts rather than pathology.
 
 \subsubsection{Domain-aware and cross-site feature selection}
 
-Standard feature selection treats all samples as exchangeable, implicitly assuming
-that feature-importance rankings are identical across domains. Domain-aware methods
+Standard feature selection methods treat all samples as exchangeable, implicitly assuming
+that feature-importance rankings are identical across domains. Domain-aware approaches
 instead optimize a subset that is simultaneously predictive in multiple hospitals
 or under multiple sampling schemes. FSDA and related frameworks extend DA
 objectives with feature-level penalties, rewarding variables whose contributions
 remain stable after alignment~\cite{luo2021fsda,sun2019informative}. Multi-site
 studies on EHR and imaging data show that such cross-domain criteria can discard
 site-specific surrogates (e.g., local procedure codes) while preserving clinically
-meaningful biomarkers. PANDA adopts this philosophy in a pragmatic way: TabPFN is
-used as a strong scoring model, but feature elimination is guided jointly by
-source-site performance and cross-site stability, leading to a compact
+meaningful biomarkers. PANDA adopts this philosophy in a pragmatic way: TabPFN serves
+as a strong scoring model, whereas feature elimination is guided jointly by
+source-site performance and cross-site stability, yielding a compact
 ``best8'' subset that is consistently informative in both hospitals. These
 domain-aware subsets provide low-dimensional, harmonized inputs to TCA, reducing
 the risk of negative transfer and making the subsequent alignment problem better
 posed.
 Viewed through this lens, feature selection becomes a form of implicit domain
-alignment: instead of matching full distributions in a high-dimensional space, one
-first discards variables whose predictive contribution is strongly domain-specific
+alignment: rather than matching full distributions in a high-dimensional space, one
+first discards variables whose predictive contributions are strongly domain-specific
 and focuses on biomarkers that are consistently informative across sites. This is
 particularly valuable when hospitals measure different panels or exhibit pronounced
 missingness shift, because aligning on a smaller, shared subset of stable features
-is both statistically and operationally simpler. PANDA effectively instantiates
+is both statistically and operationally simpler. PANDA instantiates
 this principle by using a pre-trained tabular foundation model to rank features
 jointly across two hospitals and retaining only those with robust importance,
-thereby coupling representation learning with domain-aware feature governance.
+thereby coupling representation learning with domain-aware feature governance. As summarized in Table~\ref{tab:fs_methods}, recent feature selection methods for small, imbalanced, high-dimensional biomedical tabular data span classical wrappers, sparsity-regularized linear models, graph-based approaches, and deep feature screening.
 
 \begin{table}[htbp]
 \centering
@@ -534,29 +534,31 @@ regulatory demands for calibration and subgroup transparency.
 \subsubsection{Radiomics pipelines with traditional machine learning}
 
 Radiomics pipelines extract hundreds to thousands of hand-crafted features from CT
-volumes, offering richer representations than clinical risk scores but introducing
+volumes, providing richer representations than clinical risk scores but introducing
 major reproducibility hazards. Texture and wavelet descriptors vary with voxel
 spacing, reconstruction kernel, and segmentation protocol; ComBat-style harmonization
-reduces scanner effects yet requires batch labels and can blur subtle lesions~\cite{hellin2024unraveling,
+reduces scanner effects but requires batch labels and can blur subtle lesions~\cite{hellin2024unraveling,
 garau_external_2020}. In internal validation, radiomics-based classifiers that pair
 LASSO- or stability-selected feature subsets with SVMs, random forests, or GBDTs
-typically report AUCs in the 0.75--0.90 range, but these numbers rarely carry over
+typically report AUCs in the 0.75--0.90 range, yet these values rarely carry over
 to new scanners or hospitals. External validations on LIDC-IDRI, LUNA16, and NLST
-repeatedly report double-digit AUC drops when deployed to scanners with different
+repeatedly report double-digit AUC drops when models are deployed to scanners with different
 kernels or patient mixes, while shortcut-learning analyses show that models sometimes
 rely on grid artifacts or reconstruction noise rather than morphology~\cite{ardila_end--end_2019,
-zech_variable_2018,koch2024distribution}. These failures illustrate that radiomics
-alone cannot guarantee transportability and that alignment plus feature vetting are
-required before cross-hospital use.
+zech_variable_2018,koch2024distribution}. These failures indicate that radiomics
+alone does not guarantee transportability and that alignment plus feature vetting are
+required before cross-hospital deployment.
 
-Concrete exemplars reinforce that fragility. The Bayesian Integrated Malignancy
+Representative radiomics-based pulmonary nodule malignancy models and their reported generalization behavior across scanners and centers are summarized in Table~\ref{tab:radiomics_models}.
+
+Concrete exemplars reinforce this fragility. The Bayesian Integrated Malignancy
 Calculator (BIMC) blended radiomics with clinical covariates and modestly
 outperformed Mayo, Brock, and PKUPH (AUC $\approx$0.90 vs. $\approx$0.78) on an
 Italian derivation cohort, yet its advantage diminished when scanners, slice
 thickness, or kernels changed~\cite{perandini_solid_2016}. Hawkins-style NLST
 radiomics achieved AUC $\approx$0.83 without external validation, and retrospective
 audits show that a single reconstruction tweak can reorder the features selected by
-LASSO~\cite{garau_external_2020,hellin2024unraveling}. Radiomics therefore supplies
+LASSO~\cite{garau_external_2020,hellin2024unraveling}. Radiomics therefore provides
 richer morphology descriptors but still requires harmonization, feature governance,
 and domain-aware alignment rather than assuming reproducibility across hospitals.
 

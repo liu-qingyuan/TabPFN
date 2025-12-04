@@ -271,7 +271,9 @@ Figure~\ref{fig:tableshift-heatmaps} summarizes the behavior of different models
 
 \subsection{Interpretability and Stability}
 
-From an interpretability perspective, recursive feature elimination (RFE) identified a stable subset of 8 features (Age, Spiculation, etc.) that maximized the cost-effectiveness index (Fig.~\ref{fig:rfe-performance}). This \texttt{best8} set performed within 1\% of the full 63-feature set while providing substantially better cross-center stability. In source-domain evaluation, we also report RFE curves (Fig.~\ref{fig:rfe-performance}) that track AUC, accuracy, and F1 as functions of the retained subset size, together with stability and cost-effectiveness metrics. Performance plateaus around 9--13 features, consistent with the feature subset used in the final experiments.
+Figure~\ref{fig:combined_analysis} compares ROC curves, calibration, and decision curves for PANDA and baseline models on the source and target hospitals. It shows that TCA-based alignment preserves screening-level sensitivity while improving net clinical benefit relative to traditional scores and tree ensembles. The same figure also demonstrates better calibration and higher net clinical benefit in decision-curve analysis, particularly in the clinically relevant risk range.
+
+From an interpretability perspective, recursive feature elimination (RFE) identified a stable subset of eight features (Age, Spiculation, etc.) that maximized the cost-effectiveness index (Fig.~\ref{fig:rfe-performance}). This \texttt{best8} set performed within 1\% of the full 63-feature set while providing substantially greater cross-center stability. In source-domain evaluation, the RFE curves (Fig.~\ref{fig:rfe-performance}) track AUC, accuracy, and F1 as functions of the retained subset size, together with stability and cost-effectiveness metrics. Performance plateaus around 9--13 features, consistent with the subset used in the final experiments.
 
 \begin{figure}[htbp]
 \centering
