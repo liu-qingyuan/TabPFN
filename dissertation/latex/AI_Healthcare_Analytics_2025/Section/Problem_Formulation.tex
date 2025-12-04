@@ -1,6 +1,4 @@
-\section{Problem Formulation}
-\label{sec:problem-formulation}
-\label{sec:pf-start}
+\section{Problem Formulation}\label{sec:problem-formulation}\label{sec:pf-start}
 
 Cross-hospital diagnostic risk prediction can be viewed as a constrained machine learning problem at
 the intersection of small-sample tabular learning and unsupervised domain adaptation (UDA). Rather
@@ -172,7 +170,10 @@ Label shift, or prior probability shift, is defined by a change in the marginal 
     \label{eq:label-shift}
     \marginalsourcelabel \neq \marginaltargetlabel
 \end{equation}
-This is endemic to healthcare referrals. A tertiary cancer center (Source) typically receives high-risk referrals with a malignancy prevalence of $P(\labelspace=1) \approx 60\%$. In contrast, a community screening program (Target) encounters a broader population with many benign incidental findings, where $P(\labelspace=1) \approx 5\%-20\%$. A model trained on the balanced source will learn a prior $\prevalence_S$ and systematically overestimate risk on the target, leading to poor calibration and excessive false positives.
+It commonly arises in healthcare referral pathways. A tertiary cancer center (Source) typically receives high-risk referrals with a malignancy prevalence of $P(\labelspace=1) \approx 60\%$. In contrast, a community screening program (Target) encounters a broader population with many benign incidental findings, where $P(\labelspace=1) \approx 5\%-20\%$. A model trained on the balanced source will learn a prior $\prevalence_S$ and systematically overestimate risk on the target, leading to poor calibration and excessive false positives. This stylized example illustrates the mechanics of label shift in pulmonary screening, whereas our specific development cohorts are enriched case-control samples rather than low-prevalence screening registries; the concrete scope of label shift in our experiment is discussed below.
+
+\paragraph{Scope of label shift in our pulmonary experiment.}
+Cross-hospital pulmonary nodule prediction is primarily characterized by covariate and concept shift rather than classic label shift. In real-world LDCT screening programs, malignancy prevalence is typically around 5\%, which motivates concerns about label shift. However, our development cohorts are enriched case-control samples with a higher malignancy rate (around 65\%). As a result, the dominant challenges in our pulmonary experiment are differences in covariate distributions (e.g., demographics, risk factors, scanner protocols) and potential concept shift in how radiologists label and manage nodules across centers.
 
 \subsubsection{Concept Shift: The Definition Gap}
 Concept shift implies a fundamental change in the relationship between features and labels:
@@ -347,12 +348,14 @@ This linear projection $\tcaprojectionmatrix$ is learned to align the marginal d
 
 \subsubsection{Stage 4: Classification and Ensemble ($\hypothesis$)}
 
-Finally, the classification function $\hypothesis$ processes the adapted features $\featurevec'$. This stage leverages the pre-trained TabPFN as a robust classifier, augmented by an ensemble mechanism to handle predictive uncertainty and label shift.
+Finally, the classification function $\hypothesis$ processes the adapted features $\featurevec'$. This stage leverages the pre-trained TabPFN as a robust classifier, augmented by an ensemble mechanism to handle predictive uncertainty and distribution shift.
 \begin{equation}
     \label{eq:ensemble-hypothesis}
     \hypothesis(\featurevec') = \frac{1}{N} \sum_{i=1}^{N} \activation\left(\frac{\tabpfnfunci{i}(\featurevec')}{\temperature}\right)
 \end{equation}
-where $\temperature$ is a temperature scaling parameter optimized to calibrate the output probabilities against the prevalence differences between hospitals. The result is a calibrated malignancy probability that is robust to both covariate and label shifts.
+where $\temperature$ is a temperature scaling parameter optimized to calibrate the output probabilities against the prevalence differences between hospitals. The result is a calibrated malignancy probability that is robust to both covariate and concept shifts.
+
+While PANDA is in principle applicable under covariate, concept, and label shift, in this thesis we evaluate these regimes in two distinct settings. In our pulmonary nodule experiment, the primary challenges are covariate and concept shift across hospitals, as discussed in Section~\ref{sec:problem-constraints}, rather than a canonical low-prevalence label-shift scenario. The ability of PANDA to tolerate substantial label shift and prevalence changes is evaluated separately on the TableShift BRFSS Diabetes benchmark, where the positive-class prevalence differs markedly across race-defined domains.
 
 \subsection{Clinical-Statistical Mapping}
 \label{subsec:clinical-mapping}
@@ -369,16 +372,14 @@ Table~\ref{tab:clinical-mapping} summarizes the correspondence between the clini
     \midrule
     Scanner Variance (Sharp vs. Smooth Kernels) & Covariate Shift: $\marginalsourcedist \neq \marginaltargetdist$ & Latent TCA on RFE-selected features & Minimizes MMD divergence $\domaindivergence$ in RKHS. \\
     \midrule
-    Referral Patterns (Cancer Center vs. Screening) & Label Shift: $\marginalsourcelabel \neq \marginaltargetlabel$ & Ensemble Aggregation \& Temperature Scaling & Calibrates posteriors; smooths overconfidence from prior mismatch. \\
+    Referral Patterns (Cancer Center vs. Screening) & Distribution Shift: $\marginalsourcelabel \neq \marginaltargetlabel$ (dominant in TableShift) & Ensemble Aggregation \& Temperature Scaling & Calibrates posteriors; smooths overconfidence from prior mismatch. \\
     \midrule
     Biological Confounders (TB vs. Cancer) & Concept Shift: $\conditionalps \neq \conditionalpt$ & Cross-Domain RFE & Minimizes joint error $\adaptabilityterm$ by removing unstable features. \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{Problem Constraints and Research Scope}
-\label{sec:problem-constraints}
-\label{subsec:constraints}
+\subsection{Problem Constraints and Research Scope}\label{sec:problem-constraints}\label{subsec:constraints}
 
 Our formulation is bound by specific constraints inherent to the medical domain:
 \begin{itemize}
@@ -389,7 +390,7 @@ Our formulation is bound by specific constraints inherent to the medical domain:
     \end{equation}
     where $\vcdim(\deepmodelclass)$ represents the VC dimension required for standard deep domain adaptation networks to generalize.
     \item \textbf{Privacy and Data Silos:} We assume source data $\sourcedomaindist$ and target data $\targetdomaindist$ cannot be physically merged.
-    \item \textbf{Class Imbalance:} The prevalence of the positive class is often low ($\prevalence < 0.3$), requiring \auc-centric optimization.
+    \item \textbf{Class Imbalance:} In real-world screening settings, the prevalence of the positive class is often low ($\prevalence < 0.3$), which motivates \auc-centric optimization. Although our development cohorts are enriched case-control samples with higher malignancy rates, we retain AUC-focused evaluation criteria to maintain relevance to such low-prevalence deployments.
 \end{itemize}
 
 This formalization sets the stage for the specific methodological implementations detailed in Chapter 4.

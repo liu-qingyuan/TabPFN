@@ -112,6 +112,9 @@ show distributional differences between the two hospitals.
 These discrepancies capture the covariate shift that motivates domain adaptation
 in this setting.
 
+\paragraph{Prevalence and label shift.}
+Real-world LDCT screening cohorts typically exhibit malignancy prevalences of approximately 5\%. In contrast, both of our internal pulmonary nodule cohorts are enriched case-control datasets with a higher malignancy proportion (around 65\%), constructed to ensure sufficient malignant samples for model development and cross-hospital comparison. Consequently, these cohorts do not constitute a canonical low-prevalence label-shift scenario. Instead, our pulmonary experiment focuses on covariate shift (e.g., shifts in age, smoking history, and acquisition protocols) and concept shift arising from differences in local labeling and management practices across hospitals.
+
 \begin{table}[htbp]
 \centering
 \caption{Training (Cohort A) and testing (Cohort B) cohorts.}

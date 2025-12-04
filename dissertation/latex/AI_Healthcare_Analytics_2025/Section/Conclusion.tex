@@ -29,6 +29,10 @@ The current approach assumes that missing values are either Missing Completely A
 
 In contrast to decision trees, which can run on embedded central processing units, TabPFN requires a graphical processing unit for efficient inference (approximately 20 ms per patient). While this cost is negligible for a cloud-based service, it creates a barrier to deployment on edge devices, such as older hospital workstations without dedicated hardware acceleration. The $O(N^2)$ complexity of the Transformer attention mechanism also limits the context size and necessitates subsampling strategies for larger datasets such as BRFSS.
 
+\subsubsection{Scope of Distribution Shift in the Pulmonary Experiment}
+
+While PANDA is in principle applicable under label shift, our cross-hospital pulmonary nodule experiment is not a canonical low-prevalence screening setting. The internal cohorts are enriched case-control datasets with higher malignancy rates (around 65\%), and the dominant sources of shift are covariate and concept differences between hospitals. Label-shift robustness is instead assessed on the TableShift BRFSS Diabetes benchmark. Future work could incorporate additional screening cohorts with realistic prevalences to further stress-test PANDA under extreme label imbalance.
+
 \subsection{Future Directions}
 
 \subsubsection{Federated Domain Adaptation}

@@ -13,6 +13,7 @@ To study the generalization properties of PANDA, we adopt the seminal learning-t
 
 \begin{theorem}[Ben-David et al., 2010]
 Let $\hypothesisclass$ be a hypothesis space of VC-dimension $\vcdim$. If $\sourcedata$ and $\targetdata$ are samples of size $n$ drawn from source distribution $\sourcedomaindist$ and target distribution $\targetdomaindist$ respectively, then for any $\confidence \in (0, 1)$, with probability at least $1 - \confidence$, for every $\hypothesis \in \hypothesisclass$:
+
 \begin{equation}
 \label{eq:ben_david_bound}
 \targeterror \leq \sourceerror + \frac{1}{2} \domaindivergence(\sourcedomaindist, \targetdomaindist) + \adaptabilityterm + \mathcal{O}\left(\sqrt{\frac{\vcdim \log n}{n} + \log \frac{1}{\confidence}}\right)
