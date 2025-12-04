@@ -25,14 +25,18 @@ This architecture is explicitly designed so that each component addresses a spec
 The feature engineering pipeline in PANDA is designed to accommodate the heterogeneity of medical data sources while preserving domain-invariant signals. This component directly targets the feature mismatch and feature heterogeneity challenges by enforcing that downstream models operate only on features that are consistently available and stable across hospitals. It comprises two stages: global feature selection via Cross-Domain RFE and local feature transformation via TabPFN's internal preprocessing branches.
 
 \subsubsection{Cross-Domain Recursive Feature Elimination (RFE)}\label{sec:methods-rfe}\label{subsubsec:rfe_implementation}
-To address the \emph{feature mismatch} challenge, we implement a Cross-Domain Recursive Feature Elimination (RFE) strategy. Unlike standard RFE, which optimizes for a single dataset, this approach seeks a feature subset $\rfeselectedfeatures$ that maximizes predictive performance on the source domain $\sourcedomaindist$ while satisfying availability constraints in the target domain $\targetdomaindist$.
+To instantiate the abstract operator $\pi_{\mathrm{RFE}}$ from Section~\ref{subsubsec:cross-domain-rfe}, PANDA employs a concrete cross-domain RFE procedure on the source cohort. The goal is to identify a compact subset $\rfeselectedfeatures$ that remains available in the target schema while preserving strong source-domain discrimination under TabPFN-based inference.
 
-The process uses a wrapper around the TabPFN classifier to compute permutation importance. We define the importance of feature $j$ as the degradation in \auc when its values are randomly shuffled:
+The RFE procedure relies on permutation importance computed on cross-validated source-domain folds. Specifically, for each feature $j$ we compute its importance as the degradation in AUC when its values are randomly shuffled within the validation folds of the \emph{source} dataset. Let $D^{\text{(cv)}}_{\text{S,val}}$ denote the union of held-out folds in a $K$-fold cross-validation on $(X_{\mathrm{S}}, y_{\mathrm{S}})$. We define:
 \begin{equation}
     \label{eq:permutation-importance}
-    \rfeimportance_j = \lossauc(\mathcal{D}_{\text{val}}) - \frac{1}{\numfolds} \sum_{k=1}^{\numfolds} \lossauc(\mathcal{D}_{\text{val}}^{(j, \text{shuffled})})
+    I_j = L_{\text{AUC}}\!\bigl(D^{\text{(cv)}}_{\text{S,val}}\bigr)
+      - \frac{1}{K} \sum_{k=1}^K
+        L_{\text{AUC}}\!\bigl(D^{\text{(cv)},(j,\text{shuffled})}_{\text{S,val},k}\bigr),
 \end{equation}
-where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the iterative elimination process.
+where $D^{\text{(cv)},(j,\text{shuffled})}_{\text{S,val},k}$ is obtained by independently permuting feature $j$ in the $k$-th validation fold while keeping all other features and labels fixed.
+
+Importantly, permutation importance and CEI are computed \emph{only} on source-domain cross-validation folds; the external validation cohort and the target hospital are never used during feature selection, avoiding any leakage of test-set information into the RFE procedure.
 
 \paragraph{Algorithm \ref{alg:cross_domain_rfe}: Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}
 \label{alg:cross_domain_rfe}
@@ -55,14 +59,16 @@ where $\numfolds=5$ repeats. Algorithm~\ref{alg:cross_domain_rfe} details the it
 This algorithm yields the standard feature subsets referenced throughout the study (for example, ``best8'').
 
 \subsubsection{Multi-Branch Preprocessing Strategy}
-Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechanism to handle distribution shifts in feature scaling and encoding. This step primarily addresses the variance introduced by different preprocessing choices and minor covariate shifts in the marginal feature distributions. This mechanism can be viewed as a form of test-time augmentation for tabular data. The ensemble generation mechanism produces 32 distinct views of the data through four preprocessing pipelines:
+Once the feature set is fixed, PANDA leverages TabPFN's internal ensemble mechanism to handle distribution shifts in feature scaling and encoding. This step primarily addresses the variance introduced by different preprocessing choices and minor covariate shifts in the marginal feature distributions. This mechanism can be viewed as a form of test-time augmentation for tabular data.
+
+We instantiate four preprocessing configurations that differ in their distributional transform and categorical-feature handling (Fig.~\ref{fig:model_details}). Specifically:
 \begin{enumerate}
-    \item \textbf{No-Op Branch:} Raw features are passed directly, preserving their original distributions, which is useful for tree-like decision logic.
-    \item \textbf{Quantile Branch:} Features are transformed via $F^{-1}(\Phi(\featurevec))$, mapping the empirical CDF to a standard Normal $\mathcal{N}(0,1)$. This transformation mitigates extreme outliers and skewed distributions common in medical markers (for example, CEA levels).
-    \item \textbf{Ordinal Branch:} All unique values are ranked and replaced by their integer rank. This transformation removes magnitude information but preserves order, making the model robust to unit changes (for example, centimetres vs millimetres).
-    \item \textbf{Power Transform Branch:} Applies $\featurevec \mapsto \featurevec^\powertransformparam$ (for example, square root or logarithm) to stabilize variance.
+    \item \textbf{No-transform + numeric categoricals:} no distributional transformation and treating categorical features as numeric.
+    \item \textbf{Quantile + ordinal:} quantile transformation of continuous features and ordinal encoding of categorical variables.
+    \item \textbf{No-transform + ordinal:} no distributional transformation and ordinal encoding of categorical variables.
+    \item \textbf{Quantile + numeric categoricals:} quantile transformation of continuous features and treating categorical features as numeric.
 \end{enumerate}
-Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring a consistent mapping.
+For each configuration, TabPFN applies random feature-order rotations and runs eight parallel forward passes, yielding a $4 \times 8 = 32$-member ensemble that is subsequently aggregated. Each branch is applied to both support (train) and query (test) sets simultaneously, ensuring a consistent mapping.
 
 \subsection{Foundation Model Integration Mechanism}\label{sec:methods-tabpfn}\label{subsec:foundation_model_integration}
 
@@ -191,8 +197,6 @@ We explicitly choose a \textbf{linear kernel} ($\linearK(x, y) = x^\top y$) over
 \end{enumerate}
 This configuration allows PANDA to benefit from domain alignment without incurring the instability often associated with kernel methods on small datasets.
 
-\subsubsection{Parameter Sensitivity Diagnostics}\label{sec:param_sensitivity}
-To ensure that the chosen defaults are numerically stable and that the TCA hyperparameters do not introduce hidden instabilities or negative transfer, the automated regression test suite exercises the same Adapt wrapper on the Mayo~$\rightarrow$~PKUPH split with stress configurations (letting Adapt infer \texttt{n\_components=None} and shrinking $\mu$ to $0.1$). The test reports $\accuracy$, $\auc$, $\fonescore$, $\precision$, and $\recall$ and asserts that the predicted probabilities remain in $[0,1]$. Because both the production path and the test harness rely on the identical Adapt pipeline, these executions provide our practical parameter-sensitivity verification for PANDA.
 
 \subsection{Experimental Configuration}\label{subsec:experimental_config}
 
@@ -238,7 +242,7 @@ We implemented five machine learning baseline models for comprehensive compariso
 \end{itemize}
 All ML baseline models used default hyperparameters with consistent random state management and class imbalance handling, ensuring comparison reflects inherent model capabilities rather than extensive optimization.
 
-We do not include deep tabular architectures such as TabNet, TabTransformer, SAINT, or FT-Transformer as baselines in our main experiments. Large-scale benchmarking studies on tabular data have shown that, on small heterogeneous datasets with fewer than 1,000 samples, well-regularized gradient-boosted trees typically outperform deep tabular networks, which are highly sensitive to hyperparameters and require extensive tuning and GPU resources to reach competitive performance \cite{gorishniy2021revisiting,borisov2022deep}. In our setting, each hospital cohort contains only 295 patients with 63 candidate features and pronounced class imbalance, placing us squarely in the small-sample, high-variance regime where these studies report that deep tabular models are unstable and often underperform tree ensembles. Following these findings, we treat tuned tree ensembles and our pre-trained tabular foundation model as the most informative baselines for this regime and focus our experimental budget on robust cross-validation and ablations within the PANDA pipeline rather than underpowered and potentially misleading deep-tabular comparisons.
+We do not include deep tabular architectures such as TabNet, TabTransformer, SAINT, or FT-Transformer as baselines in our main experiments. Large-scale benchmarking studies on tabular data have shown that, on small heterogeneous datasets with fewer than 1,000 samples, well-regularized gradient-boosted trees typically outperform deep tabular networks, which are highly sensitive to hyperparameters and require extensive tuning and GPU resources to reach competitive performance \cite{gorishniy2021revisiting,borisov2022deep}. In our setting, each hospital cohort contains only 295 patients with 63 candidate features and a moderately imbalanced outcome distribution (approximately a 1:1.78 ratio between normal and abnormal cases). This places us in the small-sample, high-variance regime where prior studies report that deep tabular models are unstable and often underperform tree ensembles. Guided by these findings, we treat tuned tree ensembles and our pre-trained tabular foundation model as the most informative baselines for this regime and allocate our experimental budget to robust cross-validation and ablations within the PANDA pipeline rather than to underpowered and potentially misleading deep-tabular comparisons.
 
 \subsubsection{Computational Framework}
 All experiments were conducted on the High Performance Computing platform at the Hong Kong Polytechnic University Department of Computing, equipped with

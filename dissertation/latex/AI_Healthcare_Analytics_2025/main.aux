@@ -401,16 +401,14 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.6}The PANDA Framework: A Unified Formalization}{22}{subsection.3.6}\protected@file@percent }
 \newlabel{subsec:panda-formalization}{{3.6}{22}{The PANDA Framework: A Unified Formalization}{subsection.3.6}{}}
 \newlabel{eq:panda-formalization}{{9}{22}{The PANDA Framework: A Unified Formalization}{equation.9}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.1}Stage 1: Recursive Feature Elimination (RFE) with TabPFN}{23}{subsubsection.3.6.1}\protected@file@percent }
-\newlabel{subsubsec:rfe-formalization}{{3.6.1}{23}{Stage 1: Recursive Feature Elimination (RFE) with TabPFN}{subsubsection.3.6.1}{}}
-\newlabel{eq:permutation-loss}{{10}{23}{Stage 1: Recursive Feature Elimination (RFE) with TabPFN}{equation.10}{}}
-\newlabel{eq:feature-elimination}{{11}{23}{Stage 1: Recursive Feature Elimination (RFE) with TabPFN}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.1}Stage 1: Cross-Domain Recursive Feature Elimination (RFE)}{23}{subsubsection.3.6.1}\protected@file@percent }
+\newlabel{subsubsec:cross-domain-rfe}{{3.6.1}{23}{Stage 1: Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.3.6.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.2}Stage 2: Feature Alignment ($\pi _{\cap }$)}{23}{subsubsection.3.6.2}\protected@file@percent }
-\newlabel{eq:feature-alignment}{{12}{23}{Stage 2: Feature Alignment ($\pi _{\cap }$)}{equation.12}{}}
+\newlabel{eq:feature-alignment}{{10}{23}{Stage 2: Feature Alignment ($\pi _{\cap }$)}{equation.10}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.3}Stage 3: Domain Adaptation Mapping ($\psi $)}{23}{subsubsection.3.6.3}\protected@file@percent }
-\newlabel{eq:domain-adaptation-map}{{13}{23}{Stage 3: Domain Adaptation Mapping ($\adaptmap $)}{equation.13}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.4}Stage 4: Classification and Ensemble ($h$)}{24}{subsubsection.3.6.4}\protected@file@percent }
-\newlabel{eq:ensemble-hypothesis}{{14}{24}{Stage 4: Classification and Ensemble ($\hypothesis $)}{equation.14}{}}
+\newlabel{eq:domain-adaptation-map}{{11}{23}{Stage 3: Domain Adaptation Mapping ($\adaptmap $)}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.4}Stage 4: Classification and Ensemble ($h$)}{23}{subsubsection.3.6.4}\protected@file@percent }
+\newlabel{eq:ensemble-hypothesis}{{12}{23}{Stage 4: Classification and Ensemble ($\hypothesis $)}{equation.12}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Clinical-Statistical Mapping}{24}{subsection.3.7}\protected@file@percent }
 \newlabel{subsec:clinical-mapping}{{3.7}{24}{Clinical-Statistical Mapping}{subsection.3.7}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Mathematical Mapping of Clinical Problems to PANDA Components}}{24}{table.7}\protected@file@percent }
@@ -418,10 +416,10 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Problem Constraints and Research Scope}{24}{subsection.3.8}\protected@file@percent }
 \newlabel{sec:problem-constraints}{{3.8}{24}{Problem Constraints and Research Scope}{subsection.3.8}{}}
 \newlabel{subsec:constraints}{{3.8}{24}{Problem Constraints and Research Scope}{subsection.3.8}{}}
-\newlabel{eq:small-sample-constraint}{{15}{24}{Problem Constraints and Research Scope}{equation.15}{}}
-\newlabel{sec:pf-end}{{3.8}{25}{Problem Constraints and Research Scope}{equation.15}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Solution}{25}{section.4}\protected@file@percent }
-\newlabel{sec:solution}{{4}{25}{Solution}{section.4}{}}
+\newlabel{eq:small-sample-constraint}{{13}{24}{Problem Constraints and Research Scope}{equation.13}{}}
+\newlabel{sec:pf-end}{{3.8}{24}{Problem Constraints and Research Scope}{equation.13}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Solution}{24}{section.4}\protected@file@percent }
+\newlabel{sec:solution}{{4}{24}{Solution}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Architectural Overview}{25}{subsection.4.1}\protected@file@percent }
 \newlabel{sec:solution-architecture}{{4.1}{25}{Architectural Overview}{subsection.4.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Data flow and transformations in the PANDA framework. The pipeline progressively refines raw, high-dimensional inputs into low-dimensional, domain-invariant embeddings and, ultimately, a calibrated probability. In the pulmonary nodule experiments, $k = 8$, $d_{\cap } = 8$, and $m = 15$, but these dimensions are dataset-dependent.}}{25}{table.8}\protected@file@percent }
@@ -430,21 +428,21 @@
 \newlabel{sec:solution-mapping}{{4.2}{26}{Mapping to the Formal Problem Formulation}{subsection.4.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Pointers to Implementation Details}{26}{subsection.4.3}\protected@file@percent }
 \newlabel{sec:solution-pointers}{{4.3}{26}{Pointers to Implementation Details}{subsection.4.3}{}}
-\newlabel{sec:sol-end}{{4.3}{27}{Pointers to Implementation Details}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Methods}{27}{section.5}\protected@file@percent }
-\newlabel{sec:methods}{{5}{27}{Methods}{section.5}{}}
-\newlabel{sec:meth-start}{{5}{27}{Methods}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Motivating Challenges and Methodological Response}{27}{subsection.5.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task.}}{27}{table.9}\protected@file@percent }
-\newlabel{tab:challenge_mapping}{{9}{27}{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task}{table.9}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {PANDA framework architecture.} (a) Compositional pipeline from original tabular data through ensemble training, prediction aggregation, class-imbalance adjustment, and final classification output. (b) Multi-branch ensemble with $B=4$ preprocessing strategies, each generating $R=8$ ensemble members via different random seeds.}}{28}{figure.1}\protected@file@percent }
-\newlabel{fig:model_details}{{1}{28}{\textbf {PANDA framework architecture.} (a) Compositional pipeline from original tabular data through ensemble training, prediction aggregation, class-imbalance adjustment, and final classification output. (b) Multi-branch ensemble with $\numpreprocessbranches =4$ preprocessing strategies, each generating $\numrandomseeds =8$ ensemble members via different random seeds}{figure.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Feature Engineering and Selection Implementation}{29}{subsection.5.2}\protected@file@percent }
-\newlabel{subsec:feature_engineering}{{5.2}{29}{Feature Engineering and Selection Implementation}{subsection.5.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Cross-Domain Recursive Feature Elimination (RFE)}{29}{subsubsection.5.2.1}\protected@file@percent }
-\newlabel{sec:methods-rfe}{{5.2.1}{29}{Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.5.2.1}{}}
-\newlabel{subsubsec:rfe_implementation}{{5.2.1}{29}{Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.5.2.1}{}}
-\newlabel{eq:permutation-importance}{{16}{29}{Cross-Domain Recursive Feature Elimination (RFE)}{equation.16}{}}
+\newlabel{sec:sol-end}{{4.3}{26}{Pointers to Implementation Details}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Methods}{26}{section.5}\protected@file@percent }
+\newlabel{sec:methods}{{5}{26}{Methods}{section.5}{}}
+\newlabel{sec:meth-start}{{5}{26}{Methods}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Motivating Challenges and Methodological Response}{26}{subsection.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {PANDA framework architecture.} (a) Compositional pipeline from original tabular data through ensemble training, prediction aggregation, class-imbalance adjustment, and final classification output. (b) Multi-branch ensemble with $B=4$ preprocessing strategies, each generating $R=8$ ensemble members via different random seeds.}}{27}{figure.1}\protected@file@percent }
+\newlabel{fig:model_details}{{1}{27}{\textbf {PANDA framework architecture.} (a) Compositional pipeline from original tabular data through ensemble training, prediction aggregation, class-imbalance adjustment, and final classification output. (b) Multi-branch ensemble with $\numpreprocessbranches =4$ preprocessing strategies, each generating $\numrandomseeds =8$ ensemble members via different random seeds}{figure.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task.}}{28}{table.9}\protected@file@percent }
+\newlabel{tab:challenge_mapping}{{9}{28}{Challenge--mechanism mapping in PANDA. Each component targets a known failure mode, and the same design is applied to pulmonary nodules and the TableShift BRFSS race-shift task}{table.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Feature Engineering and Selection Implementation}{28}{subsection.5.2}\protected@file@percent }
+\newlabel{subsec:feature_engineering}{{5.2}{28}{Feature Engineering and Selection Implementation}{subsection.5.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Cross-Domain Recursive Feature Elimination (RFE)}{28}{subsubsection.5.2.1}\protected@file@percent }
+\newlabel{sec:methods-rfe}{{5.2.1}{28}{Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.5.2.1}{}}
+\newlabel{subsubsec:rfe_implementation}{{5.2.1}{28}{Cross-Domain Recursive Feature Elimination (RFE)}{subsubsection.5.2.1}{}}
+\newlabel{eq:permutation-importance}{{14}{29}{Cross-Domain Recursive Feature Elimination (RFE)}{equation.14}{}}
 \newlabel{alg:cross_domain_rfe}{{5.2.1}{29}{Algorithm \ref {alg:cross_domain_rfe}: Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}{section*.2}{}}
 \@writefile{toc}{\contentsline {paragraph}{Algorithm \ref {alg:cross_domain_rfe}: Cross-Domain Recursive Feature Elimination (RFE) with CEI Optimization}{29}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Multi-Branch Preprocessing Strategy}{29}{subsubsection.5.2.2}\protected@file@percent }
@@ -452,10 +450,10 @@
 \newlabel{sec:methods-tabpfn}{{5.3}{30}{Foundation Model Integration Mechanism}{subsection.5.3}{}}
 \newlabel{subsec:foundation_model_integration}{{5.3}{30}{Foundation Model Integration Mechanism}{subsection.5.3}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}In-Context Serialization and Tokenization}{30}{subsubsection.5.3.1}\protected@file@percent }
-\newlabel{eq:feature-embedding}{{17}{30}{In-Context Serialization and Tokenization}{equation.17}{}}
+\newlabel{eq:feature-embedding}{{15}{30}{In-Context Serialization and Tokenization}{equation.15}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}Ensemble Construction and Inference}{30}{subsubsection.5.3.2}\protected@file@percent }
 \newlabel{sec:methods-ensemble}{{5.3.2}{30}{Ensemble Construction and Inference}{subsubsection.5.3.2}{}}
-\newlabel{eq:ensemble-probability}{{18}{30}{Ensemble Construction and Inference}{equation.18}{}}
+\newlabel{eq:ensemble-probability}{{16}{30}{Ensemble Construction and Inference}{equation.16}{}}
 \citation{de2021adapt}
 \citation{noauthor_welcome_nodate}
 \newlabel{alg:tabpfn_inference}{{5.3.2}{31}{Algorithm \ref {alg:tabpfn_inference}: PANDA Inference with TabPFN Backbone}{section*.3}{}}
@@ -466,81 +464,79 @@
 \newlabel{alg:tca_optimization}{{5.3.3}{31}{Algorithm \ref {alg:tca_optimization}: Transfer Component Analysis (TCA) Optimization}{section*.4}{}}
 \@writefile{toc}{\contentsline {paragraph}{Algorithm \ref {alg:tca_optimization}: Transfer Component Analysis (TCA) Optimization}{31}{section*.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Mathematical Formulation}{31}{section*.5}\protected@file@percent }
-\newlabel{eq:kernel-matrix}{{19}{31}{Mathematical Formulation}{equation.19}{}}
-\newlabel{eq:mmd-centering}{{20}{32}{Mathematical Formulation}{equation.20}{}}
-\newlabel{eq:ab-matrices}{{21}{32}{Mathematical Formulation}{equation.21}{}}
+\newlabel{eq:kernel-matrix}{{17}{31}{Mathematical Formulation}{equation.17}{}}
+\newlabel{eq:mmd-centering}{{18}{32}{Mathematical Formulation}{equation.18}{}}
+\newlabel{eq:ab-matrices}{{19}{32}{Mathematical Formulation}{equation.19}{}}
 \@writefile{toc}{\contentsline {paragraph}{Data Flow and Transformation}{32}{section*.6}\protected@file@percent }
-\newlabel{eq:new-projection}{{22}{32}{Data Flow and Transformation}{equation.22}{}}
+\newlabel{eq:new-projection}{{20}{32}{Data Flow and Transformation}{equation.20}{}}
 \@writefile{toc}{\contentsline {paragraph}{Hyperparameter Configuration and Kernel Choice}{32}{section*.7}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces TCA hyperparameter configuration in PANDA}}{32}{table.10}\protected@file@percent }
 \newlabel{tab:tca_hyperparams}{{10}{32}{TCA hyperparameter configuration in PANDA}{table.10}{}}
 \citation{swensen1997chest}
 \citation{li2011development}
 \citation{he2021novel}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.4}Parameter Sensitivity Diagnostics}{33}{subsubsection.5.3.4}\protected@file@percent }
-\newlabel{sec:param_sensitivity}{{5.3.4}{33}{Parameter Sensitivity Diagnostics}{subsubsection.5.3.4}{}}
+\citation{cortes1995support}
+\citation{breiman1984classification}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Experimental Configuration}{33}{subsection.5.4}\protected@file@percent }
 \newlabel{subsec:experimental_config}{{5.4}{33}{Experimental Configuration}{subsection.5.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Baseline Hyperparameters}{33}{subsubsection.5.4.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Configuration for baseline models. Default parameters were used with basic settings for reproducibility and class imbalance handling.}}{33}{table.11}\protected@file@percent }
 \newlabel{tab:hyperparams}{{11}{33}{Configuration for baseline models. Default parameters were used with basic settings for reproducibility and class imbalance handling}{table.11}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Clinical Scoring Models}{33}{subsubsection.5.4.2}\protected@file@percent }
-\citation{cortes1995support}
-\citation{breiman1984classification}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}ML Baseline Models}{33}{subsubsection.5.4.3}\protected@file@percent }
 \citation{breiman2001random}
 \citation{friedman2001greedy}
 \citation{chen2016xgboost}
 \citation{gorishniy2021revisiting}
 \citation{borisov2022deep}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}ML Baseline Models}{34}{subsubsection.5.4.3}\protected@file@percent }
+\citation{ben2010theory}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.4}Computational Framework}{34}{subsubsection.5.4.4}\protected@file@percent }
 \newlabel{sec:meth-end}{{5.4.4}{34}{Computational Framework}{subsubsection.5.4.4}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6}Analysis}{34}{section.6}\protected@file@percent }
 \newlabel{sec:analysis}{{6}{34}{Analysis}{section.6}{}}
-\citation{ben2010theory}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Theoretical Foundation: The Generalization Bound}{35}{subsection.6.1}\protected@file@percent }
 \newlabel{subsec:generalization_bound}{{6.1}{35}{Theoretical Foundation: The Generalization Bound}{subsection.6.1}{}}
-\newlabel{eq:ben_david_bound}{{23}{35}{Ben-David et al., 2010}{equation.23}{}}
+\newlabel{eq:ben_david_bound}{{21}{35}{Ben-David et al., 2010}{equation.21}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}The $\mathcal  {H}\Delta \mathcal  {H}$-Divergence}{35}{subsubsection.6.1.1}\protected@file@percent }
-\newlabel{eq:hdhd-divergence}{{24}{35}{The $\mathcal {H}\Delta \mathcal {H}$-Divergence}{equation.24}{}}
+\newlabel{eq:hdhd-divergence}{{22}{35}{The $\mathcal {H}\Delta \mathcal {H}$-Divergence}{equation.22}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Minimizing Source Risk $\epsilon _S(h)$: The TabPFN Mechanism}{35}{subsection.6.2}\protected@file@percent }
 \newlabel{subsec:analysis_source_risk}{{6.2}{35}{Minimizing Source Risk $\sourceerror $: The TabPFN Mechanism}{subsection.6.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Prior-Data Fitted Networks vs. Parametric Learning}{36}{subsubsection.6.2.1}\protected@file@percent }
-\newlabel{eq:erm}{{25}{36}{Prior-Data Fitted Networks vs. Parametric Learning}{equation.25}{}}
-\newlabel{eq:ppd}{{26}{36}{Prior-Data Fitted Networks vs. Parametric Learning}{equation.26}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Prior-Data Fitted Networks vs. Parametric Learning}{35}{subsubsection.6.2.1}\protected@file@percent }
+\newlabel{eq:erm}{{23}{35}{Prior-Data Fitted Networks vs. Parametric Learning}{equation.23}{}}
+\newlabel{eq:ppd}{{24}{35}{Prior-Data Fitted Networks vs. Parametric Learning}{equation.24}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Minimizing Divergence $d_{\mathcal  {H}\Delta \mathcal  {H}}$: Latent Space TCA}{36}{subsection.6.3}\protected@file@percent }
 \newlabel{subsec:analysis_divergence}{{6.3}{36}{Minimizing Divergence $\domaindivergence $: Latent Space TCA}{subsection.6.3}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.1}Why Feature Space Alignment?}{36}{subsubsection.6.3.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.2}The TCA Optimization Objective}{36}{subsubsection.6.3.2}\protected@file@percent }
-\newlabel{eq:tca-objective}{{27}{36}{The TCA Optimization Objective}{equation.27}{}}
+\newlabel{eq:tca-objective}{{25}{36}{The TCA Optimization Objective}{equation.25}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Minimizing Adaptability Error $\lambda $: Cross-Domain RFE}{36}{subsection.6.4}\protected@file@percent }
 \newlabel{subsec:analysis_adaptability}{{6.4}{36}{Minimizing Adaptability Error $\adaptabilityterm $: Cross-Domain RFE}{subsection.6.4}{}}
-\newlabel{eq:concept-invariance}{{28}{36}{Minimizing Adaptability Error $\adaptabilityterm $: Cross-Domain RFE}{equation.28}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Synthesis: Linking Theory to Empirical Results}{37}{subsection.6.5}\protected@file@percent }
-\newlabel{subsec:analysis_synthesis}{{6.5}{37}{Synthesis: Linking Theory to Empirical Results}{subsection.6.5}{}}
+\newlabel{eq:concept-invariance}{{26}{36}{Minimizing Adaptability Error $\adaptabilityterm $: Cross-Domain RFE}{equation.26}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Synthesis: Linking Theory to Empirical Results}{36}{subsection.6.5}\protected@file@percent }
+\newlabel{subsec:analysis_synthesis}{{6.5}{36}{Synthesis: Linking Theory to Empirical Results}{subsection.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Summary of Theoretical Insights}{36}{subsection.6.6}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Mapping theoretical error terms to PANDA components and empirical results.}}{37}{table.12}\protected@file@percent }
 \newlabel{tab:theory_empirics}{{12}{37}{Mapping theoretical error terms to PANDA components and empirical results}{table.12}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Summary of Theoretical Insights}{37}{subsection.6.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Evaluation}{37}{section.7}\protected@file@percent }
 \newlabel{sec:eval-start}{{7}{37}{Evaluation}{section.7}{}}
 \newlabel{sec:evaluation}{{7}{37}{Evaluation}{section.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Evaluation Protocols for Cross-Domain Diagnostic Models}{37}{subsection.7.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}Classification Performance Metrics}{37}{subsubsection.7.1.1}\protected@file@percent }
-\newlabel{eq:tpr}{{29}{37}{Classification Performance Metrics}{equation.29}{}}
-\newlabel{eq:fpr}{{30}{37}{Classification Performance Metrics}{equation.30}{}}
-\newlabel{eq:auc}{{31}{37}{Classification Performance Metrics}{equation.31}{}}
-\newlabel{eq:accuracy}{{32}{38}{Classification Performance Metrics}{equation.32}{}}
-\newlabel{eq:precision}{{33}{38}{Classification Performance Metrics}{equation.33}{}}
-\newlabel{eq:recall}{{34}{38}{Classification Performance Metrics}{equation.34}{}}
-\newlabel{eq:f1}{{35}{38}{Classification Performance Metrics}{equation.35}{}}
-\newlabel{eq:specificity}{{36}{38}{Classification Performance Metrics}{equation.36}{}}
-\newlabel{eq:cross-validation-stats}{{37}{38}{Classification Performance Metrics}{equation.37}{}}
+\newlabel{eq:tpr}{{27}{37}{Classification Performance Metrics}{equation.27}{}}
+\newlabel{eq:fpr}{{28}{37}{Classification Performance Metrics}{equation.28}{}}
+\newlabel{eq:auc}{{29}{37}{Classification Performance Metrics}{equation.29}{}}
+\newlabel{eq:accuracy}{{30}{37}{Classification Performance Metrics}{equation.30}{}}
+\newlabel{eq:precision}{{31}{37}{Classification Performance Metrics}{equation.31}{}}
+\newlabel{eq:recall}{{32}{37}{Classification Performance Metrics}{equation.32}{}}
+\newlabel{eq:f1}{{33}{37}{Classification Performance Metrics}{equation.33}{}}
+\newlabel{eq:specificity}{{34}{38}{Classification Performance Metrics}{equation.34}{}}
+\newlabel{eq:cross-validation-stats}{{35}{38}{Classification Performance Metrics}{equation.35}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}Visualization-Based Evaluation}{38}{subsubsection.7.1.2}\protected@file@percent }
-\newlabel{eq:calibration-bins}{{38}{38}{Visualization-Based Evaluation}{equation.38}{}}
-\newlabel{eq:net-benefit}{{39}{38}{Visualization-Based Evaluation}{equation.39}{}}
-\newlabel{eq:benchmark-strategies}{{40}{38}{Visualization-Based Evaluation}{equation.40}{}}
+\newlabel{eq:calibration-bins}{{36}{38}{Visualization-Based Evaluation}{equation.36}{}}
+\newlabel{eq:net-benefit}{{37}{38}{Visualization-Based Evaluation}{equation.37}{}}
+\newlabel{eq:benchmark-strategies}{{38}{38}{Visualization-Based Evaluation}{equation.38}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Experiment 1 (E1): Cross-Hospital Pulmonary Nodule Malignancy Prediction}{38}{subsection.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Prevalence and label shift.}{39}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Prevalence and label shift.}{38}{section*.8}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Training (Cohort A) and testing (Cohort B) cohorts.}}{39}{table.13}\protected@file@percent }
 \newlabel{tab:cohort_summary}{{13}{39}{Training (Cohort A) and testing (Cohort B) cohorts}{table.13}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.3}E1: Internal and Cross-Hospital Generalization}{39}{subsection.7.3}\protected@file@percent }
@@ -548,39 +544,34 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.2}Stratified Analysis}{39}{subsubsection.7.3.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Comprehensive performance comparison. Source results are from 10-fold cross-validation; target results are from external validation on Cohort B. Best values are bolded.}}{40}{table.14}\protected@file@percent }
 \newlabel{tab:main_results_table}{{14}{40}{Comprehensive performance comparison. Source results are from 10-fold cross-validation; target results are from external validation on Cohort B. Best values are bolded}{table.14}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Stratified performance of PANDA+TCA on the target cohort.}}{40}{table.15}\protected@file@percent }
+\newlabel{tab:stratified_analysis}{{15}{40}{Stratified performance of PANDA+TCA on the target cohort}{table.15}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Performance comparison across domains.} \textbf  {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf  {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift.}}{41}{figure.2}\protected@file@percent }
 \newlabel{fig:performance-heatmaps}{{2}{41}{\textbf {Performance comparison across domains.} \textbf {a} Source-domain 10-fold cross-validation heatmap over five metrics, showing PANDA’s leading performance in AUC, accuracy, and precision. \textbf {b} Cross-domain external validation heatmap; the TCA-enhanced PANDA model maintains the highest AUC and recall, highlighting its stability under domain shift}{figure.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Stratified performance of PANDA+TCA on the target cohort.}}{42}{table.15}\protected@file@percent }
-\newlabel{tab:stratified_analysis}{{15}{42}{Stratified performance of PANDA+TCA on the target cohort}{table.15}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Experiment 2 (E2): Cross-Population Validation on TableShift}{42}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Interpretability and Stability}{42}{subsection.7.5}\protected@file@percent }
+\newlabel{sec:eval-end}{{7.5}{42}{Interpretability and Stability}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{42}{section.8}\protected@file@percent }
+\newlabel{sec:concl-start}{{8}{42}{Conclusion}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Summary of Contributions}{42}{subsection.8.1}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Performance comparison on the TableShift BRFSS Diabetes benchmark.} Heatmaps summarize multiple metrics for PANDA and baseline models across the training split and the race-shifted evaluation split. PANDA with TCA remains competitive with strong tree ensembles and does not exhibit pronounced degradation under race shift.}}{43}{figure.3}\protected@file@percent }
 \newlabel{fig:tableshift-heatmaps}{{3}{43}{\textbf {Performance comparison on the TableShift BRFSS Diabetes benchmark.} Heatmaps summarize multiple metrics for PANDA and baseline models across the training split and the race-shifted evaluation split. PANDA with TCA remains competitive with strong tree ensembles and does not exhibit pronounced degradation under race shift}{figure.3}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {TableShift BRFSS Diabetes analysis.} \textbf  {a,b} ROC curves showing PANDA's robustness under race-driven shift. \textbf  {c,d} Calibration curves assessing probability estimates. \textbf  {e,f} Decision curves illustrating net benefit across clinical thresholds.}}{44}{figure.4}\protected@file@percent }
 \newlabel{fig:brfss-roc}{{4}{44}{\textbf {TableShift BRFSS Diabetes analysis.} \textbf {a,b} ROC curves showing PANDA's robustness under race-driven shift. \textbf {c,d} Calibration curves assessing probability estimates. \textbf {e,f} Decision curves illustrating net benefit across clinical thresholds}{figure.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Interpretability and Stability}{45}{subsection.7.5}\protected@file@percent }
-\newlabel{sec:eval-end}{{7.5}{45}{Interpretability and Stability}{figure.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{45}{section.8}\protected@file@percent }
-\newlabel{sec:concl-start}{{8}{45}{Conclusion}{section.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Summary of Contributions}{45}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Limitations}{45}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Closed-World Assumption}{45}{subsubsection.8.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Missing Data Mechanisms}{45}{subsubsection.8.2.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance$\times $0.45 + Simplicity$\times $0.25 + Efficiency$\times $0.15 + Stability$\times $0.15) to identify a feature count that balances accuracy with practical deployment considerations.}}{46}{figure.5}\protected@file@percent }
-\newlabel{fig:rfe-performance}{{5}{46}{\textbf {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance$\times $0.45 + Simplicity$\times $0.25 + Efficiency$\times $0.15 + Stability$\times $0.15) to identify a feature count that balances accuracy with practical deployment considerations}{figure.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Performance and utility across source and target domains.} \textbf  {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf  {c,d} Calibration plots for the same splits. \textbf  {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension.}}{47}{figure.6}\protected@file@percent }
-\newlabel{fig:combined_analysis}{{6}{47}{\textbf {Performance and utility across source and target domains.} \textbf {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf {c,d} Calibration plots for the same splits. \textbf {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance$\times $0.45 + Simplicity$\times $0.25 + Efficiency$\times $0.15 + Stability$\times $0.15) to identify a feature count that balances accuracy with practical deployment considerations.}}{45}{figure.5}\protected@file@percent }
+\newlabel{fig:rfe-performance}{{5}{45}{\textbf {Comprehensive feature selection and performance analysis using recursive feature elimination (RFE).} (a) AUC, accuracy, and F1 curves as functions of the number of selected features; performance plateaus around 9--13 features, aligning with the preference for simpler models. Shaded regions show variance across 10-fold cross-validation. (b) Class-specific accuracy for malignant and benign cases across subset sizes, illustrating how predictive balance shifts as features are removed. (c) Training-time analysis (seconds per fold) as a function of feature dimensionality, highlighting the computational gain from smaller subsets. (d) Stability assessment using the coefficient of variation across folds; lower values indicate steadier performance. (e) Cost-effectiveness index combining multiple criteria (Performance$\times $0.45 + Simplicity$\times $0.25 + Efficiency$\times $0.15 + Stability$\times $0.15) to identify a feature count that balances accuracy with practical deployment considerations}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Performance and utility across source and target domains.} \textbf  {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf  {c,d} Calibration plots for the same splits. \textbf  {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension.}}{46}{figure.6}\protected@file@percent }
+\newlabel{fig:combined_analysis}{{6}{46}{\textbf {Performance and utility across source and target domains.} \textbf {a,b} ROC curves comparing source (Cohort A) and external (Cohort B) behavior. \textbf {c,d} Calibration plots for the same splits. \textbf {e,f} Decision curves illustrating the net clinical benefit of PANDA and its TCA extension}{figure.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Limitations}{47}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Closed-World Assumption}{47}{subsubsection.8.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Missing Data Mechanisms}{47}{subsubsection.8.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Computational Resource Requirements}{47}{subsubsection.8.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.4}Scope of Distribution Shift in the Pulmonary Experiment}{47}{subsubsection.8.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Future Directions}{47}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}Federated Domain Adaptation}{47}{subsubsection.8.3.1}\protected@file@percent }
 \bibstyle{unsrt}
 \bibdata{refs}
 \bibcite{swensen1997chest}{1}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Computational Resource Requirements}{48}{subsubsection.8.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.4}Scope of Distribution Shift in the Pulmonary Experiment}{48}{subsubsection.8.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Future Directions}{48}{subsection.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.1}Federated Domain Adaptation}{48}{subsubsection.8.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}Multimodal Integration}{48}{subsubsection.8.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Final Remarks}{48}{subsection.8.4}\protected@file@percent }
-\newlabel{sec:concl-end}{{8.4}{48}{Final Remarks}{subsection.8.4}{}}
-\newlabel{sec:ack-start}{{8.4}{48}{Acknowledgements}{section*.9}{}}
-\newlabel{sec:ack-end}{{8.4}{48}{Acknowledgements}{section*.9}{}}
 \bibcite{mcwilliams2013probability}{2}
 \bibcite{li2011development}{3}
 \bibcite{he2021novel}{4}
@@ -588,6 +579,11 @@
 \bibcite{liu_establishment_2024}{6}
 \bibcite{garau_external_2020}{7}
 \bibcite{chen2016xgboost}{8}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.3.2}Multimodal Integration}{48}{subsubsection.8.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Final Remarks}{48}{subsection.8.4}\protected@file@percent }
+\newlabel{sec:concl-end}{{8.4}{48}{Final Remarks}{subsection.8.4}{}}
+\newlabel{sec:ack-start}{{8.4}{48}{Acknowledgements}{section*.9}{}}
+\newlabel{sec:ack-end}{{8.4}{48}{Acknowledgements}{section*.9}{}}
 \bibcite{gorishniy2021revisiting}{9}
 \bibcite{arik2021tabnet}{10}
 \bibcite{huang2020tabtransformer}{11}

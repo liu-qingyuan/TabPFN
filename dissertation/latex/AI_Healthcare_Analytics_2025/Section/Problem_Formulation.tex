@@ -302,31 +302,14 @@ where $\rfeop$ selects the discriminative feature subset $\rfeselectedfeatures$,
 
 This composition involves distinct stages, grounded in the optimization of the feature subspace prior to alignment:
 
-\subsubsection{Stage 1: Recursive Feature Elimination (RFE) with TabPFN}
-\label{subsubsec:rfe-formalization}
+\subsubsection{Stage 1: Cross-Domain Recursive Feature Elimination (RFE)}
+\label{subsubsec:cross-domain-rfe}
 
-Directly applying domain adaptation on high-dimensional, noisy feature spaces often leads to negative transfer. We employ Recursive Feature Elimination (RFE) to determine the optimal subspace $\rfeselectedfeatures \subseteq \sharedfeatures$.
+The first stage, $\rfeop$, addresses the feature-mismatch challenge between hospitals. Rather than optimizing feature selection for a single dataset, we seek a subset $\rfeselectedfeatures$ that (i) remains available in the target schema and (ii) yields strong predictive performance on the source domain.
 
-Let $\rfeset^{(0)} = \sharedfeatures$ be the initial set of shared features. The RFE process generates a sequence of feature subsets $\rfeset^{(0)} \supset \rfeset^{(1)} \supset \dots \supset \rfeset^{(\featuredim-\rfecurrentdim)}$, where $\rfecurrentdim$ is the target dimensionality. At each iteration $t$:
+Concretely, $\rfeop$ implements a cross-domain variant of recursive feature elimination. A TabPFN-based permutation-importance estimator scores each feature on source-domain cross-validation folds, and candidate subsets of size $k \in [k_{\min}, k_{\max}]$ are evaluated using a composite evaluation index (CEI) that trades off discrimination, computational efficiency, stability across folds, and parsimony. The maximizer $k^{\ast}$ defines the selected subset $\rfeselectedfeatures$, which then serves as the input to the subsequent schema-alignment and domain-adaptation stages.
 
-\begin{enumerate}
-    \item \textbf{Model Fitting:} We define the TabPFN posterior predictive distribution conditioned on the current subset $\rfeiterateset$ using the source data $\sourcedata$.
-    \item \textbf{Importance Estimation ($\rfeimportance$):} Unlike linear models, TabPFN is a non-parametric meta-learned model. We approximate feature importance using \textbf{Permutation Importance}. For each feature $\featurevecj \in \rfeiterateset$, we compute the degradation in the \auc metric when feature $\featurevecj$ is randomly permuted in the validation set:
-    \begin{equation}
-        \label{eq:permutation-loss}
-        \rfeimportance(\featurevecj; \rfeiterateset) = \lossauc(\hypothesissubset, \sourcedata) - \lossauc(\hypothesissubset, \sourcedata^{\text{perm}(j)})
-    \end{equation}
-    
-    \item \textbf{Elimination:} We identify and remove the feature with the minimal contribution:
-    \begin{equation}
-        \label{eq:feature-elimination}
-        \minfeature = \argmin_{\featurevecj \in \rfeiterateset} \rfeimportance(\featurevecj; \rfeiterateset)
-        \quad \longrightarrow \quad
-        \rfeset^{(t+1)} = \rfeiterateset \setminus \{\minfeature\}
-    \end{equation}
-\end{enumerate}
-
-The final subset $\rfeselectedfeatures$ is selected to maximize stability and discriminative power, effectively reducing the $\adaptabilityterm$ term (joint error) in the Ben-David bound by removing concept-shifted features.
+The full implementation details of the cross-domain RFE procedure, including the CEI components and the permutation-importance estimator, are provided in Section~\ref{sec:methods-rfe}.
 
 \subsubsection{Stage 2: Feature Alignment ($\pi_{\cap}$)}
 
