@@ -4,396 +4,438 @@
 \usepackage[UTF8]{ctex}
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
+\usepackage{booktabs}
 
+%==============================
+% Basic Info
+%==============================
 \title{AI4Medicine：跨域表格预测研究}
-\subtitle{PANDA：预训练模型与TCA联合的领域适应框架}
+\subtitle{PANDA：预训练表格基础模型与TCA对齐的领域适应框架}
 \author{刘青沅}
 \institute[PolyU]{Department of Computing, The Hong Kong Polytechnic University}
 \date{\today}
 
 \begin{document}
+
+%==============================
+% Title
+%==============================
 \maketitle
 
-\section{PANDA 框架概览}
+%==============================
+\section{研究背景与问题动机}
+%==============================
+
+\begin{frame}{临床背景：肺结节与诊断风险预测}
+\begin{itemize}
+    \item 低剂量 CT（LDCT）已被证实可降低高危人群肺癌死亡率。
+    \item 小肺结节（sPN）诊断不确定性高，\textbf{需要可靠的恶性风险评分}辅助临床决策。
+    \item 现有临床风险模型（Mayo、PKUPH 等）具有中心依赖性：
+    \begin{itemize}
+        \item 在开发中心内部表现较好；
+        \item 在跨医院外部验证中性能显著下降。
+    \end{itemize}
+    \item 现实部署的关键挑战：\textbf{跨医院分布漂移 + 小样本 + 特征异构}。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{AI 背景：跨医院/跨人群泛化难题}
+\begin{itemize}
+    \item 医学表格数据普遍面临：
+    \begin{itemize}
+        \item 样本量有限、类别不均衡；
+        \item 特征定义、检测面板与单位存在医院差异；
+        \item 采集流程、筛查策略导致分布与先验不同。
+    \end{itemize}
+    \item 传统树模型与深度表格模型：
+    \begin{itemize}
+        \item 对小样本敏感，易过拟合；
+        \item 在域偏移下泛化不稳定。
+    \end{itemize}
+    \item 需要一种\textbf{轻量、可解释、可复用}的跨域表格诊断框架。
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{问题定义}
+%==============================
+
+\begin{frame}{问题定义：跨医院肺结节恶性预测}
+\begin{itemize}
+    \item 目标：预测结节恶性风险 $Y \in \{0,1\}$。
+    \item 源域（Hospital A）：有标签小样本临床表格数据。
+    \item 目标域（Hospital B）：\textbf{训练阶段无标签}，仅用于对齐。
+    \item 关键困难：
+    \begin{itemize}
+        \item 小样本、高方差；
+        \item 类别不均衡；
+        \item 特征异构：$F^S \neq F^T$；
+        \item 分布偏移：检测标准、患者构成、流程差异。
+    \end{itemize}
+    \item 视角：\textbf{无监督领域适应（UDA）}的跨中心风险预测。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{设计原则：从理论到可落地方法}
+\begin{itemize}
+    \item 目标域误差可分解为：
+    \begin{itemize}
+        \item 源域可学习性（source risk）；
+        \item 域间分布差异（divergence）；
+        \item 可迁移性/共享结构（adaptability）。
+    \end{itemize}
+    \item 对应策略：
+    \begin{itemize}
+        \item 用\textbf{预训练表格基础模型}提升小样本学习稳定性；
+        \item 用\textbf{统计对齐}缩小跨域差异；
+        \item 用\textbf{跨域稳定特征选择}降低负迁移风险。
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{核心思想与贡献}
+%==============================
+
+\begin{frame}{PANDA 核心思想}
+\begin{itemize}
+    \item PANDA = \textbf{“选稳定特征 + 对齐分布 + 用预训练模型预测”}。
+    \item 在共享特征空间中构建跨医院鲁棒风险映射。
+    \item 以轻量统计对齐连接真实临床场景与表格基础模型能力。
+    \item 面向可部署的跨中心诊断决策支持。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{主要贡献（Contributions）}
+\begin{itemize}
+    \item 提出 PANDA：融合\textbf{跨域 RFE、TCA 对齐与 TabPFN}的 UDA 框架。
+    \item 设计跨域稳定特征筛选策略，得到紧凑共享特征集合。
+    \item 在两家癌症中心的肺结节任务上验证跨医院增益。
+    \item 在 TableShift BRFSS Diabetes 任务上验证跨人群稳健性。
+    \item 提供可复用的实现与分析范式，连接理论动机与临床部署需求。
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{方法：PANDA 框架}
+%==============================
 
 \begin{frame}{PANDA 方法框架总览}
-
-\textbf{PANDA（Pretrained Adaptation Network with Domain Alignment）}框架包括两个核心阶段：
-
-\vspace{1em}
-\textbf{阶段一：训练阶段（Source Domain）}
 \begin{itemize}
-    \item 使用 Cohort A（源域数据）进行训练；
-    \item 特征选择 + 缺失值填补 + 类别特征处理 + 类别不平衡校正；
-    \item 输入进入一个 \textbf{64 个子模型构成的预训练模型集成结构}；
-\end{itemize}
-
-\vspace{1em}
-\textbf{阶段二：测试阶段（Target Domain）}
-\begin{itemize}
-    \item 使用 TCA（Transfer Component Analysis）对源域与目标域进行特征对齐；
-    \item 经过对齐后的目标样本被送入相同的 64 个模型集成结构中；
-    \item 预测结果通过 Softmax 平均后输出，结合类别重权重增强罕见类别的预测能力。
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{PANDA 模型结构图示（图像版）}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.85\textwidth]{PANDA_pipline.pdf}
-    \caption{PANDA 方法的整体流程图，包含训练与测试阶段、TCA模块与模型内部结构}
-\end{figure}
-
-\end{frame}
-
-
-\begin{frame}{PANDA 模型结构图示（图像版）}
-
-\textbf{图像关键解读：}
-
-\begin{itemize}
-    \item \textbf{右上角：训练阶段（Source Domain）} \\
-    原始表格数据经特征选择、缺失值填补与类别不平衡校正后，送入模型集成结构。
-
-    \item \textbf{左上角：测试阶段（Target Domain）} \\
-    测试数据先经过 \textbf{TCA 特征对齐}，投影到与源域一致的特征空间后再进入模型。
-
-    \item \textbf{下方：子模型结构（Pre-trained Tabular Foundation Model × 32）}
+    \item \textbf{Stage 1：跨域特征选择（RFE）}
     \begin{itemize}
-        \item 所有子模型共享主干结构，但采用 \textbf{不同的预处理组合}增强模型多样性；
-        \item 共分为 \textbf{四种基础配置（各16个模型）}，通过数值变换×类别编码组合：
-        \begin{itemize}
-            \item \textbf{配置1（16个）：}分位数变换+SVD降维+序数编码，最终20维；
-            \item \textbf{配置2（16个）：}无变换+序数编码，保持8维；
-            \item \textbf{配置3（16个）：}分位数变换+SVD降维+数值编码，最终20维；
-            \item \textbf{配置4（16个）：}无变换+数值编码，保持8维；
-        \end{itemize}
-        \item 每种配置内的8个模型通过 \textbf{特征顺序扰动（Rotation 0-7）}增强多样性。
+        \item 在源域上迭代剔除不稳定或冗余特征；
+        \item 保留源/目标均可用的一组紧凑共享特征 $F^\ast$。
     \end{itemize}
-
-    \item \textbf{输出阶段：} 所有子模型并行预测，输出通过 Softmax 聚合，并结合类别重加权，得到最终预测结果。
+    \item \textbf{Stage 2：TCA 域对齐}
+    \begin{itemize}
+        \item 将源域与目标域映射到共享核空间；
+        \item 最小化最大均值差异（MMD），得到对齐表示 $Z_s, Z_t$。
+    \end{itemize}
+    \item \textbf{Stage 3：TabPFN 集成预测}
+    \begin{itemize}
+        \item 在 $Z_s$ 上构建 TabPFN 风格集成；
+        \item 在 $Z_t$ 上推断并输出校准后的恶性概率。
+    \end{itemize}
 \end{itemize}
 
-\end{frame}
-
-
-
-
-
-\section{PANDA 核心组件详解}
-
-\begin{frame}{TabPFN集成配置架构}
-
-\textbf{四种基础配置设计}：通过\textbf{数值变换}和\textbf{类别编码}的2×2组合实现集成多样性
-
-\vspace{1em}
-\begin{table}[h]
-\centering
-\scriptsize
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
-\textbf{配置ID} & \textbf{数值变换} & \textbf{保留原始} & \textbf{SVD降维} & \textbf{类别编码} & \textbf{维度} & \textbf{复杂度} \\
-\hline
-配置1 & quantile\_uni\_coarse & \checkmark & \checkmark & ordinal\_shuffled & 20维 & 高 \\
-\hline
-配置2 & none & \texttimes & \texttimes & ordinal\_shuffled & 8维 & 低 \\
-\hline
-配置3 & quantile\_uni\_coarse & \checkmark & \checkmark & numeric & 20维 & 高 \\
-\hline
-配置4 & none & \texttimes & \texttimes & numeric & 8维 & 低 \\
-\hline
-\end{tabular}
-\end{table}
-
-\textbf{64个集成成员分布}：每种基础配置分配16个集成成员，通过特征重排(rotate偏移0-7)增强多样性
-
-\end{frame}
-
-\begin{frame}[fragile]{TabPFN集成架构技术实现}
-
-\textbf{源码实现}（\texttt{default\_classifier\_preprocessor\_configs()}）：
-
-\vspace{0.5em}
-\scriptsize
-\begin{verbatim}
-def default_classifier_preprocessor_configs():
-    return [
-        # 配置1：高复杂度 + 序数编码 (8原始+8分位数+4SVD=20维)
-        PreprocessorConfig("quantile_uni_coarse", 
-                          append_original=True,
-                          categorical_name="ordinal_shuffled",
-                          global_transformer_name="svd"),
-        # 配置2：低复杂度 + 序数编码 (8维)  
-        PreprocessorConfig("none", 
-                          categorical_name="ordinal_shuffled"),
-        # 配置3：高复杂度 + 数值编码 (8原始+8分位数+4SVD=20维)
-        PreprocessorConfig("quantile_uni_coarse", 
-                          append_original=True,
-                          categorical_name="numeric", 
-                          global_transformer_name="svd"),
-        # 配置4：低复杂度 + 数值编码 (8维)
-        PreprocessorConfig("none", categorical_name="numeric"),
-    ]
-\end{verbatim}
-
-\end{frame}
-
-\begin{frame}{领域适应模块：TCA 对齐机制}
-
-\textbf{Transfer Component Analysis（TCA）核心流程：}
-
-\begin{itemize}
-    \item 输入：源域数据 $X_s$ 与目标域数据 $X_t$；
-    \item 构造核矩阵 $K$，在再生核希尔伯特空间（RKHS）中寻找一个投影矩阵 $W$；
-    \item 优化目标：最小化源-目标分布差异（最大均值差异 MMD）；
-    \item 投影：$Z_s = K_s W,\quad Z_t = K_t W$；
-    \item 在对齐空间中重用训练模型进行预测。
-\end{itemize}
-
-\vspace{1em}
-\textbf{PANDA 中的作用：}
-\begin{itemize}
-    \item 显著减少跨医院数据分布差异；
-    \item 不需要目标域标签（适用于现实无标签场景）；
-    \item 提升外部测试集（B医院）在 A 域训练模型下的鲁棒性。
-\end{itemize}
-
-\end{frame}
-
-\section{集成架构优化分析}
-
-\begin{frame}{集成配置架构对比：16:16 vs 8:8:8:8}
-
-\textbf{架构演进}：从2种配置16:16分布优化为4种配置8:8:8:8分布
-
-\vspace{1em}
-\textbf{旧架构（8:8:8:8分布）}：
-\begin{itemize}
-    \item \textbf{配置1（8个）}：分位数变换+SVD降维+序数编码，20维
-    \item \textbf{配置2（8个）}：无变换+序数编码，8维
-    \item \textbf{配置3（8个）}：分位数变换+SVD降维+数值编码，20维
-    \item \textbf{配置4（8个）}：无变换+数值编码，8维
-    \item \textbf{性能表现（Best11特征集）}：源域AUC 0.8444，无UDA目标域AUC 0.6554，经TCA提升至 0.7056
-\end{itemize}
-
-\vspace{1em}
-\textbf{新架构（16:16:16:16分布）}：
-\begin{itemize}
-    \item \textbf{配置A（16个）}：分位数变换+SVD降维+序数编码
-    \item \textbf{配置B（16个）}：无变换+数值编码
-    \item \textbf{性能表现（Best7特征集）}：源域AUC 0.8285，无UDA目标域AUC 0.6948，经TCA提升至 0.7013
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{架构优化效果分析：权衡分析}
-
-\textbf{架构对比的全面评估}：
-
-\begin{table}[h]
-\centering
-\scriptsize
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
-\textbf{架构类型} & \textbf{特征集} & \textbf{源域AUC} & \textbf{无UDA基线} & \textbf{目标域AUC} & \textbf{TCA改进} & \textbf{改进倍数} \\
-\hline
-旧架构(8:8:8:8) & best11 & \textcolor{green}{\textbf{0.8444}} & \textcolor{red}{\textbf{0.6554}} & 0.7056 & \textcolor{green}{\textbf{+0.0502}} & 1.0× \\
-\hline
-新架构(16:16:16:16) & best7 & 0.8285 & \textcolor{green}{\textbf{0.6948}} & 0.7013 & +0.0065 & \textcolor{red}{\textbf{0.13×}} \\
-\hline
-\end{tabular}
-\end{table}
-
-\vspace{1em}
-\textbf{架构权衡分析}：
-\begin{itemize}
-    \item \textcolor{green}{\textbf{优势}}：新架构在无UDA条件下表现更稳（0.6554→0.6948，+6.0\%），同时保持三十二模型集成规模
-    \item \textcolor{red}{\textbf{劣势}}：TCA增益明显下降（+0.0502→+0.0065，约降低87\%），目标域AUC略低（0.7056→0.7013）
-    \item \textbf{净效果}：若更关注原始预测基线，可优先新架构；若强调域适应增益，旧架构仍具优势
-\end{itemize}
-
-\vspace{1em}
-\textbf{临床决策建议}：
-\begin{itemize}
-    \item \textbf{单医院部署}：可考虑旧架构（更高的无UDA基线性能）
-    \item \textbf{跨医院部署}：推荐新架构（更强的域适应能力）
-    \item \textbf{混合策略}：根据部署场景选择合适的架构配置
-\end{itemize}
-
-\end{frame}
-
-\section{特征选择扫描分析}
-
-\begin{frame}{Feature Sweep Analysis：Best3-Best58完整扫描}
-
-\textbf{扫描配置}：
-\begin{itemize}
-    \item 特征范围：best3 ～ best58（共56种配置）
-    \item 并行工作进程：4
-    \item 成功分析：56/56（100\%成功率）
-\end{itemize}
-
-\vspace{1em}
-\textbf{核心发现}：
-\begin{itemize}
-    \item \textbf{最佳源域性能}：best14 (AUC: 0.8466)
-    \item \textbf{最佳目标域基线}：best7 (AUC: 0.6868)  
-    \item \textbf{最佳TCA域适应}：\textcolor{red}{\textbf{best11 (AUC: 0.7056)}}
-    \item \textbf{最大TCA改进}：\textcolor{red}{\textbf{best11 (+0.0502)}}
-\end{itemize}
-
-\vspace{1em}
-\textbf{性能趋势}：
-\begin{itemize}
-    \item 平均源域AUC：0.8221，平均目标域TCA AUC：0.6501
-    \item 平均TCA改进：+0.0104，best11达到最大改进效果
-\end{itemize}
-
-\end{frame}
-
-\section{模型性能评估}
-
-\begin{frame}{Best11最优配置详细分析}
-
-% \textbf{特征配置}：11个特征的最优组合，特征集ID: best11
-
-% \vspace{1em}
-\textbf{源域10折交叉验证结果}：
-\begin{table}[h]
-\centering
-\tiny
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\textbf{方法} & \textbf{AUC} & \textbf{Accuracy} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
-\hline
-\textcolor{red}{\textbf{PANDA}} & \textcolor{red}{\textbf{0.8444}} & \textcolor{red}{\textbf{0.7763}} & \textcolor{red}{\textbf{0.8332}} & \textcolor{red}{\textbf{0.8066}} & 0.8675 \\
-\hline
-XGBOOST & 0.8003 & 0.7663 & 0.8201 & 0.8120 & 0.8357 \\
-\hline
-RF & 0.7908 & 0.7525 & 0.8218 & 0.7682 & 0.8886 \\
-\hline
-GBDT & 0.7754 & 0.7392 & 0.8051 & 0.7837 & 0.8409 \\
-\hline
-Paper method & 0.7631 & 0.7224 & 0.8101 & 0.7227 & 0.9254 \\
-\hline
-PKUPH & 0.6640 & 0.6782 & 0.7672 & 0.7148 & 0.8354 \\
-\hline
-DT & 0.6283 & 0.6476 & 0.7138 & 0.7374 & 0.6994 \\
-\hline
-MAYO & 0.6049 & 0.3592 & 0.0000 & 0.0000 & 0.0000 \\
-\hline
-SVM & 0.5207 & 0.4847 & 0.3972 & 0.7755 & 0.2795 \\
-\hline
-\end{tabular}
-\end{table}
-
-\textbf{目标域迁移测试结果}：
-\begin{table}[h]
-\centering
-\tiny
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\textbf{方法} & \textbf{AUC} & \textbf{Accuracy} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
-\hline
-\textcolor{red}{\textbf{PANDA (UDA)}} & \textcolor{red}{\textbf{0.7056}} & \textcolor{red}{\textbf{0.7000}} & \textcolor{red}{\textbf{0.8014}} & \textcolor{red}{\textbf{0.7099}} & \textcolor{red}{\textbf{0.9200}} \\
-\hline
-RF & 0.6855 & 0.7000 & 0.7982 & 0.7160 & 0.9026 \\
-\hline
-GBDT & 0.6788 & 0.6895 & 0.7784 & 0.7346 & 0.8308 \\
-\hline
-Paper LR & 0.6678 & 0.6737 & 0.7911 & 0.6825 & 0.9429 \\
-\hline
-PANDA (no UDA) & 0.6554 & 0.6842 & 0.7794 & 0.7211 & 0.8480 \\
-\hline
-PKUPH & 0.6356 & 0.6947 & 0.7838 & 0.7329 & 0.8474 \\
-\hline
-XGBoost & 0.6233 & 0.6368 & 0.7266 & 0.7230 & 0.7353 \\
-\hline
-DT & 0.5933 & 0.6263 & 0.7081 & 0.7263 & 0.6962 \\
-\hline
-Mayo & 0.5837 & 0.3421 & 0.0000 & 0.0000 & 0.0000 \\
-\hline
-SVM & 0.4295 & 0.6211 & 0.7481 & 0.6589 & 0.8718 \\
-\hline
-\end{tabular}
-\end{table}
-
-% \vspace{0.5em}
-% \textbf{关键发现}：PANDA+TCA在所有方法中AUC最高(0.7056)，召回率92\%适合恶性结节筛查
-
-\end{frame}
-
-\begin{frame}{旧架构(8:8:8:8)可视化分析}
-
-\begin{figure}[h]
+% 可在这里插入整体框架图（来自论文的框架示意图）
+\begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{best11_analysis_new.pdf}
-    % \caption{旧架构(Best11)：综合性能分析图表，显示TCA增益显著的历史配置}
+    \includegraphics[width=0.5\linewidth]{img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf}
+    \caption{PANDA framework architecture. (a) Compositional pipeline from original
+tabular data through ensemble training, prediction aggregation, class-imbalance
+adjustment, and final classification output. (b) Multi-branch ensemble with �� = 4
+preprocessing strategies, each generating �� = 8 ensemble members via different random
+seeds.}
+    \label{fig:placeholder}
 \end{figure}
-
 \end{frame}
 
-\begin{frame}{新架构(16:16:16:16)对比分析}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.4\textwidth]{best7_analysis_old.pdf}
-    % \caption{新架构(Best7)：对比基准分析，显示无UDA基线更高但域适应效果有限}
-\end{figure}
-
-\end{frame}
-
-\begin{frame}{架构性能热图对比}
-
-\begin{columns}
-\begin{column}{0.48\textwidth}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.65\textwidth]{best11_heatmaps_new.pdf}
-    \caption{旧架构：Best11特征集}
-\end{figure}
-\end{column}
-
-\begin{column}{0.48\textwidth}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.65\textwidth]{best7_heatmaps_old.pdf}
-    \caption{新架构：Best7特征集}
-\end{figure}
-\end{column}
-\end{columns}
-
-\vspace{1em}
-\textbf{热图解读}：旧架构在TCA域适应方面依旧占优；新架构在无UDA基线更稳、但跨域增益有限
-
-\end{frame}
-
-\section{总结与临床意义}
-
-\begin{frame}{技术创新与架构权衡总结}
-
-\textbf{PANDA 框架核心技术创新：}
-
+\begin{frame}{Stage 1：跨域 RFE（直觉）}
 \begin{itemize}
-    \item \textbf{TabPFN集成架构}：旧架构为4种基础配置×8个成员强化多样性，新架构收敛为2种配置×16个成员以稳住基线
-    \item \textbf{TCA域适应机制}：无监督跨域特征对齐，在RKHS空间最小化MMD距离
-    \item \textbf{特征选择优化}：通过Best3-Best58全扫描验证，\textcolor{red}{\textbf{best7配置在新架构下表现最佳}}
-    \item \textbf{小样本处理能力}：在295训练样本下实现0.8285源域AUC（新架构）
+    \item 动机：跨医院特征不一致会导致模型在外部中心出现显著性能与稳定性退化。
+    \item 目标：学习一个特征子集 $\mathcal{F}^\ast$，
+    \begin{itemize}
+        \item \textbf{在目标医院 schema 中可获得}；
+        \item \textbf{在源域上具有强判别能力}。
+    \end{itemize}
+    \item 方法要点（Cross-domain RFE）：
+    \begin{itemize}
+        \item 使用 \textbf{TabPFN-based permutation importance} 在源域交叉验证中为特征打分；
+        \item 评估候选子集大小 $k \in [k_{\min}, k_{\max}]$；
+        \item 通过 \textbf{复合评价指数 CEI} 综合权衡
+        \textit{判别力、计算效率、fold 稳定性、特征简约性}；
+        \item 选择 $k^\ast$ 得到最优子集 $\mathcal{F}^\ast$。
+    \end{itemize}
+    \item 本研究结果：RFE 在源域选择 $|\mathcal{F}^\ast|=9$；
+    \textbf{后续由 Stage 2 的 $\pi_{\cap}$ 因目标域缺失再约束为 8 个共享特征。}
 \end{itemize}
 
-\vspace{1em}
-\textbf{架构权衡的关键发现：}
-\begin{itemize}
-    \item \textcolor{green}{\textbf{优势}}：新架构带来更高的无UDA基线和特征稳定性
-    \item \textcolor{red}{\textbf{代价}}：TCA增益下降，仅提升0.0065 AUC，整体跨域收益低于旧架构
-    \item \textbf{适用场景}：跨医院部署若以基线稳定为主可采新架构；若强调域适应收益，应继续沿用旧架构
-    \item \textbf{系统性验证}：56种特征配置完整对比，16:16 vs 8:8:8:8架构分析
-\end{itemize}
-
+% 可放 RFE 曲线图
+% \includegraphics[width=0.75\textwidth]{fig_rfe_curve.pdf}
 \end{frame}
 
+\begin{frame}{Stage 2：TCA 对齐（直觉）}
+\begin{itemize}
+    \item 动机：源/目标之间存在显著分布偏移（covariate shift 等）。
+    \item 思想：用核方法将两域映射到\textbf{共享潜在空间}。
+    \item 优化目标（高层描述）：
+    \begin{itemize}
+        \item 最小化源域与目标域的分布差异（MMD）；
+        \item 同时保留判别结构与有效信息。
+    \end{itemize}
+    \item 期望效果：
+    \begin{itemize}
+        \item 减少负迁移；
+        \item 提升外部 AUC/Recall 与概率校准。
+    \end{itemize}
+\end{itemize}
+
+% 可放 TCA 示意图（两团分布 -> 对齐到同一空间）
+\end{frame}
+
+\begin{frame}{Stage 3：TabPFN 预训练表格基础模型}
+\begin{itemize}
+    \item TabPFN：基于大规模合成任务的 meta-training。
+    \item 适配优势：
+    \begin{itemize}
+        \item \textbf{小样本}场景性能稳定；
+        \item 天然支持不确定性与概率输出；
+        \item 集成与多分支预处理进一步提升鲁棒性。
+    \end{itemize}
+    \item 在 PANDA 中的角色：
+    \begin{itemize}
+        \item 作为最终风险预测器；
+        \item 与 RFE/TCA 共同构成可迁移诊断管线。
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{数据集与实验设置}
+%==============================
+
+\begin{frame}{数据集 1：跨医院肺结节队列}
+\begin{itemize}
+    \item 任务：预测肺结节恶性风险（结构化临床表格）。
+    \item 源域 Hospital A vs 目标域 Hospital B。
+    \item 特征：
+    \begin{itemize}
+        \item 临床人口学、实验室指标、影像语义/临床整理特征等；
+        \item 存在特征缺失与面板差异，需取共享 schema。
+    \end{itemize}
+    \item 样本规模与类别比例：\textbf{以论文表格为准}。
+\end{itemize}
+
+% 可插入论文中的队列统计表
+% \includegraphics[width=0.8\textwidth]{tab_cohort_summary.pdf}
+\end{frame}
+
+\begin{frame}{数据集 2：TableShift BRFSS Diabetes}
+\begin{itemize}
+    \item 公共基准：BRFSS Diabetes（TableShift）。
+    \item 训练/测试划分：
+    \begin{itemize}
+        \item ID：White respondents；
+        \item OOD：non-White respondents。
+    \end{itemize}
+    \item Shift 类型：\textbf{race-driven population shift}。
+    \item 目的：验证 PANDA 在\textbf{跨人群}分布变化下的稳健性。
+\end{itemize}
+
+% 可插入论文中关于 TableShift 的任务说明图/表
+\end{frame}
+
+\begin{frame}{实验协议与实现要点}
+\begin{itemize}
+    \item 源域：交叉验证评估内部性能。
+    \item 目标域：
+    \begin{itemize}
+        \item 训练阶段不使用标签（UDA 设置）；
+        \item 测试阶段用于外部/ OOD 评估。
+    \end{itemize}
+    \item 关键模块：
+    \begin{itemize}
+        \item RFE 的稳定性筛选；
+        \item TCA 的核空间对齐；
+        \item TabPFN ensemble 预测与校准。
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{对比方法与评价指标}
+%==============================
+
+\begin{frame}{对比基线（Baselines）}
+\begin{itemize}
+    \item 临床评分：
+    \begin{itemize}
+        \item Mayo、PKUPH 等传统风险模型。
+    \end{itemize}
+    \item 经典机器学习：
+    \begin{itemize}
+        \item Logistic / LASSO、SVM；
+        \item Random Forest、GBDT、XGBoost 等树集成。
+    \end{itemize}
+    \item PANDA 变体：
+    \begin{itemize}
+        \item TabPFN-only；
+        \item w/o RFE；
+        \item w/o TCA；
+        \item PANDA（full）。
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{评价指标}
+\begin{itemize}
+    \item 主要分类指标：
+    \begin{itemize}
+        \item AUC、Accuracy、F1、Precision、Recall。
+    \end{itemize}
+    \item 临床侧关注：
+    \begin{itemize}
+        \item 外部验证的\textbf{高召回}；
+        \item 概率校准与决策曲线（若论文中提供）。
+    \end{itemize}
+    \item 只展示关键数字与差异，不在汇报中堆叠完整大表。
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{实验结果}
+%==============================
+
+\begin{frame}{结果 1：肺结节任务（内部验证）}
+\begin{itemize}
+    \item 源域 10-fold CV。
+    \item TabPFN 作为 backbone 在小样本上优于传统树模型。
+    \item PANDA（含 RFE/TCA 的整体思路）提供更稳健的内部表现。
+    \item \textbf{关键指标与数值请以论文结果表为准}。
+\end{itemize}
+
+% 可插入论文中内部结果对比表（精简版）
+% \includegraphics[width=0.85\textwidth]{tab_internal_results.pdf}
+\end{frame}
+
+\begin{frame}{结果 2：肺结节任务（外部验证）}
+\begin{itemize}
+    \item 目标域 Hospital B 的外部测试。
+    \item PANDA + TCA：
+    \begin{itemize}
+        \item 外部 AUC 约 0.705；
+        \item 召回率约 0.944。
+    \end{itemize}
+    \item 无对齐或传统基线在跨域下退化更明显。
+    \item 强调临床意义：\textbf{高敏感性优先}的跨中心风险筛查能力。
+\end{itemize}
+
+% 可插入外部 ROC 或关键对比表
+% \includegraphics[width=0.75\textwidth]{fig_external_roc.pdf}
+\end{frame}
+
+\begin{frame}{结果 3：TableShift BRFSS Diabetes}
+\begin{itemize}
+    \item 跨人群 OOD 验证（White \textrightarrow non-White）。
+    \item PANDA + TCA：
+    \begin{itemize}
+        \item OOD AUC 约 0.804；
+        \item 几乎不劣于 ID AUC 0.802。
+    \end{itemize}
+    \item 传统 GBDT / RF 类方法 OOD 性能下降更明显。
+    \item 说明 PANDA 在公共基准上具有\textbf{可迁移性与可复现性}。
+\end{itemize}
+
+% 可插入 TableShift 的性能对比图（精简）
+\end{frame}
+
+\begin{frame}{消融与机制分析（如论文中提供）}
+\begin{itemize}
+    \item 逐步移除组件：
+    \begin{itemize}
+        \item w/o RFE：特征噪声增加，跨域稳定性下降；
+        \item w/o TCA：分布差异未缓解，外部召回/AUC 受限；
+        \item TabPFN-only：缺少显式对齐与跨域特征约束。
+    \end{itemize}
+    \item 与理论动机对齐：
+    \begin{itemize}
+        \item RFE 提升可迁移性；
+        \item TCA 缩小域差异；
+        \item TabPFN 提升小样本学习可靠性。
+    \end{itemize}
+\end{itemize}
+
+% 可插入论文的 ablation 表/图（只保留关键两三列）
+\end{frame}
+
+%==============================
+\section{讨论与结论}
+%==============================
+
+\begin{frame}{讨论：优势与局限}
+\begin{itemize}
+    \item 优势：
+    \begin{itemize}
+        \item 面向小样本跨中心诊断任务的\textbf{稳定、轻量}方案；
+        \item RFE 提供\textbf{可解释}的紧凑特征集合；
+        \item TCA + TabPFN 改善外部泛化与校准。
+    \end{itemize}
+    \item 局限：
+    \begin{itemize}
+        \item 依赖共享特征交集；
+        \item 队列规模仍有限；
+        \item 极端分布偏移下仍可能出现负迁移风险。
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{总结与 take-home messages}
+\begin{itemize}
+    \item 提出 PANDA 框架：\textbf{“选稳定特征 + 对齐分布 + 用预训练模型预测”}。
+    \item 在两家中国癌症中心的肺结节任务中：
+    \begin{itemize}
+        \item 内部 AUC 约 0.811；
+        \item 外部 AUC 约 0.705，召回率约 0.944；
+        \item 优于传统临床评分与经典 ML 模型。
+    \end{itemize}
+    \item 在 TableShift BRFSS Diabetes 任务中：
+    \begin{itemize}
+        \item OOD AUC 约 0.804，几乎不劣于 ID AUC 0.802。
+    \end{itemize}
+    \item PANDA 为构建\textbf{可跨医院与跨人群迁移}的表格预测系统提供可复用模板。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{未来工作}
+\begin{itemize}
+    \item 更大规模、多中心真实筛查队列验证。
+    \item 融合影像与表格的\textbf{多模态 PANDA}。
+    \item 面向隐私约束的\textbf{联邦/协同对齐}策略。
+    \item 应对时间漂移的在线或持续学习扩展。
+\end{itemize}
+\end{frame}
+
+%==============================
+\section{致谢}
+%==============================
+
+\begin{frame}{致谢}
+\begin{itemize}
+    \item 感谢导师：Prof. Wenqi Fan 的指导与支持。
+    \item 感谢合作医院与临床团队的数据支持与专业建议。
+    \item 感谢课题组同学与朋友的讨论与帮助。
+    \item 感谢 PolyU 与相关项目/资源支持（如适用）。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{谢谢！}
+\begin{center}
+\LARGE 谢谢各位老师聆听 \\
+\vspace{1em}
+\Large 欢迎提问
+\end{center}
+\end{frame}
 
 \end{document}

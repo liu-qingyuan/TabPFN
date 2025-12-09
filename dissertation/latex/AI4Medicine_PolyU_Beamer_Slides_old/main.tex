@@ -1,0 +1,399 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+\usepackage{poly}
+
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+
+\title{AI4Medicine：跨域表格预测研究}
+\subtitle{PANDA：预训练模型与TCA联合的领域适应框架}
+\author{刘青沅}
+\institute[PolyU]{Department of Computing, The Hong Kong Polytechnic University}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{PANDA 框架概览}
+
+\begin{frame}{PANDA 方法框架总览}
+
+\textbf{PANDA（Pretrained Adaptation Network with Domain Alignment）}框架包括两个核心阶段：
+
+\vspace{1em}
+\textbf{阶段一：训练阶段（Source Domain）}
+\begin{itemize}
+    \item 使用 Cohort A（源域数据）进行训练；
+    \item 特征选择 + 缺失值填补 + 类别特征处理 + 类别不平衡校正；
+    \item 输入进入一个 \textbf{64 个子模型构成的预训练模型集成结构}；
+\end{itemize}
+
+\vspace{1em}
+\textbf{阶段二：测试阶段（Target Domain）}
+\begin{itemize}
+    \item 使用 TCA（Transfer Component Analysis）对源域与目标域进行特征对齐；
+    \item 经过对齐后的目标样本被送入相同的 64 个模型集成结构中；
+    \item 预测结果通过 Softmax 平均后输出，结合类别重权重增强罕见类别的预测能力。
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{PANDA 模型结构图示（图像版）}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.85\textwidth]{PANDA_pipline.pdf}
+    \caption{PANDA 方法的整体流程图，包含训练与测试阶段、TCA模块与模型内部结构}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{PANDA 模型结构图示（图像版）}
+
+\textbf{图像关键解读：}
+
+\begin{itemize}
+    \item \textbf{右上角：训练阶段（Source Domain）} \\
+    原始表格数据经特征选择、缺失值填补与类别不平衡校正后，送入模型集成结构。
+
+    \item \textbf{左上角：测试阶段（Target Domain）} \\
+    测试数据先经过 \textbf{TCA 特征对齐}，投影到与源域一致的特征空间后再进入模型。
+
+    \item \textbf{下方：子模型结构（Pre-trained Tabular Foundation Model × 32）}
+    \begin{itemize}
+        \item 所有子模型共享主干结构，但采用 \textbf{不同的预处理组合}增强模型多样性；
+        \item 共分为 \textbf{四种基础配置（各16个模型）}，通过数值变换×类别编码组合：
+        \begin{itemize}
+            \item \textbf{配置1（16个）：}分位数变换+SVD降维+序数编码，最终20维；
+            \item \textbf{配置2（16个）：}无变换+序数编码，保持8维；
+            \item \textbf{配置3（16个）：}分位数变换+SVD降维+数值编码，最终20维；
+            \item \textbf{配置4（16个）：}无变换+数值编码，保持8维；
+        \end{itemize}
+        \item 每种配置内的8个模型通过 \textbf{特征顺序扰动（Rotation 0-7）}增强多样性。
+    \end{itemize}
+
+    \item \textbf{输出阶段：} 所有子模型并行预测，输出通过 Softmax 聚合，并结合类别重加权，得到最终预测结果。
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\section{PANDA 核心组件详解}
+
+\begin{frame}{TabPFN集成配置架构}
+
+\textbf{四种基础配置设计}：通过\textbf{数值变换}和\textbf{类别编码}的2×2组合实现集成多样性
+
+\vspace{1em}
+\begin{table}[h]
+\centering
+\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{配置ID} & \textbf{数值变换} & \textbf{保留原始} & \textbf{SVD降维} & \textbf{类别编码} & \textbf{维度} & \textbf{复杂度} \\
+\hline
+配置1 & quantile\_uni\_coarse & \checkmark & \checkmark & ordinal\_shuffled & 20维 & 高 \\
+\hline
+配置2 & none & \texttimes & \texttimes & ordinal\_shuffled & 8维 & 低 \\
+\hline
+配置3 & quantile\_uni\_coarse & \checkmark & \checkmark & numeric & 20维 & 高 \\
+\hline
+配置4 & none & \texttimes & \texttimes & numeric & 8维 & 低 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{64个集成成员分布}：每种基础配置分配16个集成成员，通过特征重排(rotate偏移0-7)增强多样性
+
+\end{frame}
+
+\begin{frame}[fragile]{TabPFN集成架构技术实现}
+
+\textbf{源码实现}（\texttt{default\_classifier\_preprocessor\_configs()}）：
+
+\vspace{0.5em}
+\scriptsize
+\begin{verbatim}
+def default_classifier_preprocessor_configs():
+    return [
+        # 配置1：高复杂度 + 序数编码 (8原始+8分位数+4SVD=20维)
+        PreprocessorConfig("quantile_uni_coarse", 
+                          append_original=True,
+                          categorical_name="ordinal_shuffled",
+                          global_transformer_name="svd"),
+        # 配置2：低复杂度 + 序数编码 (8维)  
+        PreprocessorConfig("none", 
+                          categorical_name="ordinal_shuffled"),
+        # 配置3：高复杂度 + 数值编码 (8原始+8分位数+4SVD=20维)
+        PreprocessorConfig("quantile_uni_coarse", 
+                          append_original=True,
+                          categorical_name="numeric", 
+                          global_transformer_name="svd"),
+        # 配置4：低复杂度 + 数值编码 (8维)
+        PreprocessorConfig("none", categorical_name="numeric"),
+    ]
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}{领域适应模块：TCA 对齐机制}
+
+\textbf{Transfer Component Analysis（TCA）核心流程：}
+
+\begin{itemize}
+    \item 输入：源域数据 $X_s$ 与目标域数据 $X_t$；
+    \item 构造核矩阵 $K$，在再生核希尔伯特空间（RKHS）中寻找一个投影矩阵 $W$；
+    \item 优化目标：最小化源-目标分布差异（最大均值差异 MMD）；
+    \item 投影：$Z_s = K_s W,\quad Z_t = K_t W$；
+    \item 在对齐空间中重用训练模型进行预测。
+\end{itemize}
+
+\vspace{1em}
+\textbf{PANDA 中的作用：}
+\begin{itemize}
+    \item 显著减少跨医院数据分布差异；
+    \item 不需要目标域标签（适用于现实无标签场景）；
+    \item 提升外部测试集（B医院）在 A 域训练模型下的鲁棒性。
+\end{itemize}
+
+\end{frame}
+
+\section{集成架构优化分析}
+
+\begin{frame}{集成配置架构对比：16:16 vs 8:8:8:8}
+
+\textbf{架构演进}：从2种配置16:16分布优化为4种配置8:8:8:8分布
+
+\vspace{1em}
+\textbf{旧架构（8:8:8:8分布）}：
+\begin{itemize}
+    \item \textbf{配置1（8个）}：分位数变换+SVD降维+序数编码，20维
+    \item \textbf{配置2（8个）}：无变换+序数编码，8维
+    \item \textbf{配置3（8个）}：分位数变换+SVD降维+数值编码，20维
+    \item \textbf{配置4（8个）}：无变换+数值编码，8维
+    \item \textbf{性能表现（Best11特征集）}：源域AUC 0.8444，无UDA目标域AUC 0.6554，经TCA提升至 0.7056
+\end{itemize}
+
+\vspace{1em}
+\textbf{新架构（16:16:16:16分布）}：
+\begin{itemize}
+    \item \textbf{配置A（16个）}：分位数变换+SVD降维+序数编码
+    \item \textbf{配置B（16个）}：无变换+数值编码
+    \item \textbf{性能表现（Best7特征集）}：源域AUC 0.8285，无UDA目标域AUC 0.6948，经TCA提升至 0.7013
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{架构优化效果分析：权衡分析}
+
+\textbf{架构对比的全面评估}：
+
+\begin{table}[h]
+\centering
+\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{架构类型} & \textbf{特征集} & \textbf{源域AUC} & \textbf{无UDA基线} & \textbf{目标域AUC} & \textbf{TCA改进} & \textbf{改进倍数} \\
+\hline
+旧架构(8:8:8:8) & best11 & \textcolor{green}{\textbf{0.8444}} & \textcolor{red}{\textbf{0.6554}} & 0.7056 & \textcolor{green}{\textbf{+0.0502}} & 1.0× \\
+\hline
+新架构(16:16:16:16) & best7 & 0.8285 & \textcolor{green}{\textbf{0.6948}} & 0.7013 & +0.0065 & \textcolor{red}{\textbf{0.13×}} \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{1em}
+\textbf{架构权衡分析}：
+\begin{itemize}
+    \item \textcolor{green}{\textbf{优势}}：新架构在无UDA条件下表现更稳（0.6554→0.6948，+6.0\%），同时保持三十二模型集成规模
+    \item \textcolor{red}{\textbf{劣势}}：TCA增益明显下降（+0.0502→+0.0065，约降低87\%），目标域AUC略低（0.7056→0.7013）
+    \item \textbf{净效果}：若更关注原始预测基线，可优先新架构；若强调域适应增益，旧架构仍具优势
+\end{itemize}
+
+\vspace{1em}
+\textbf{临床决策建议}：
+\begin{itemize}
+    \item \textbf{单医院部署}：可考虑旧架构（更高的无UDA基线性能）
+    \item \textbf{跨医院部署}：推荐新架构（更强的域适应能力）
+    \item \textbf{混合策略}：根据部署场景选择合适的架构配置
+\end{itemize}
+
+\end{frame}
+
+\section{特征选择扫描分析}
+
+\begin{frame}{Feature Sweep Analysis：Best3-Best58完整扫描}
+
+\textbf{扫描配置}：
+\begin{itemize}
+    \item 特征范围：best3 ～ best58（共56种配置）
+    \item 并行工作进程：4
+    \item 成功分析：56/56（100\%成功率）
+\end{itemize}
+
+\vspace{1em}
+\textbf{核心发现}：
+\begin{itemize}
+    \item \textbf{最佳源域性能}：best14 (AUC: 0.8466)
+    \item \textbf{最佳目标域基线}：best7 (AUC: 0.6868)  
+    \item \textbf{最佳TCA域适应}：\textcolor{red}{\textbf{best11 (AUC: 0.7056)}}
+    \item \textbf{最大TCA改进}：\textcolor{red}{\textbf{best11 (+0.0502)}}
+\end{itemize}
+
+\vspace{1em}
+\textbf{性能趋势}：
+\begin{itemize}
+    \item 平均源域AUC：0.8221，平均目标域TCA AUC：0.6501
+    \item 平均TCA改进：+0.0104，best11达到最大改进效果
+\end{itemize}
+
+\end{frame}
+
+\section{模型性能评估}
+
+\begin{frame}{Best11最优配置详细分析}
+
+% \textbf{特征配置}：11个特征的最优组合，特征集ID: best11
+
+% \vspace{1em}
+\textbf{源域10折交叉验证结果}：
+\begin{table}[h]
+\centering
+\tiny
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{方法} & \textbf{AUC} & \textbf{Accuracy} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
+\hline
+\textcolor{red}{\textbf{PANDA}} & \textcolor{red}{\textbf{0.8444}} & \textcolor{red}{\textbf{0.7763}} & \textcolor{red}{\textbf{0.8332}} & \textcolor{red}{\textbf{0.8066}} & 0.8675 \\
+\hline
+XGBOOST & 0.8003 & 0.7663 & 0.8201 & 0.8120 & 0.8357 \\
+\hline
+RF & 0.7908 & 0.7525 & 0.8218 & 0.7682 & 0.8886 \\
+\hline
+GBDT & 0.7754 & 0.7392 & 0.8051 & 0.7837 & 0.8409 \\
+\hline
+Paper method & 0.7631 & 0.7224 & 0.8101 & 0.7227 & 0.9254 \\
+\hline
+PKUPH & 0.6640 & 0.6782 & 0.7672 & 0.7148 & 0.8354 \\
+\hline
+DT & 0.6283 & 0.6476 & 0.7138 & 0.7374 & 0.6994 \\
+\hline
+MAYO & 0.6049 & 0.3592 & 0.0000 & 0.0000 & 0.0000 \\
+\hline
+SVM & 0.5207 & 0.4847 & 0.3972 & 0.7755 & 0.2795 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{目标域迁移测试结果}：
+\begin{table}[h]
+\centering
+\tiny
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{方法} & \textbf{AUC} & \textbf{Accuracy} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
+\hline
+\textcolor{red}{\textbf{PANDA (UDA)}} & \textcolor{red}{\textbf{0.7056}} & \textcolor{red}{\textbf{0.7000}} & \textcolor{red}{\textbf{0.8014}} & \textcolor{red}{\textbf{0.7099}} & \textcolor{red}{\textbf{0.9200}} \\
+\hline
+RF & 0.6855 & 0.7000 & 0.7982 & 0.7160 & 0.9026 \\
+\hline
+GBDT & 0.6788 & 0.6895 & 0.7784 & 0.7346 & 0.8308 \\
+\hline
+Paper LR & 0.6678 & 0.6737 & 0.7911 & 0.6825 & 0.9429 \\
+\hline
+PANDA (no UDA) & 0.6554 & 0.6842 & 0.7794 & 0.7211 & 0.8480 \\
+\hline
+PKUPH & 0.6356 & 0.6947 & 0.7838 & 0.7329 & 0.8474 \\
+\hline
+XGBoost & 0.6233 & 0.6368 & 0.7266 & 0.7230 & 0.7353 \\
+\hline
+DT & 0.5933 & 0.6263 & 0.7081 & 0.7263 & 0.6962 \\
+\hline
+Mayo & 0.5837 & 0.3421 & 0.0000 & 0.0000 & 0.0000 \\
+\hline
+SVM & 0.4295 & 0.6211 & 0.7481 & 0.6589 & 0.8718 \\
+\hline
+\end{tabular}
+\end{table}
+
+% \vspace{0.5em}
+% \textbf{关键发现}：PANDA+TCA在所有方法中AUC最高(0.7056)，召回率92\%适合恶性结节筛查
+
+\end{frame}
+
+\begin{frame}{旧架构(8:8:8:8)可视化分析}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{best11_analysis_new.pdf}
+    % \caption{旧架构(Best11)：综合性能分析图表，显示TCA增益显著的历史配置}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{新架构(16:16:16:16)对比分析}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{best7_analysis_old.pdf}
+    % \caption{新架构(Best7)：对比基准分析，显示无UDA基线更高但域适应效果有限}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{架构性能热图对比}
+
+\begin{columns}
+\begin{column}{0.48\textwidth}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{best11_heatmaps_new.pdf}
+    \caption{旧架构：Best11特征集}
+\end{figure}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{best7_heatmaps_old.pdf}
+    \caption{新架构：Best7特征集}
+\end{figure}
+\end{column}
+\end{columns}
+
+\vspace{1em}
+\textbf{热图解读}：旧架构在TCA域适应方面依旧占优；新架构在无UDA基线更稳、但跨域增益有限
+
+\end{frame}
+
+\section{总结与临床意义}
+
+\begin{frame}{技术创新与架构权衡总结}
+
+\textbf{PANDA 框架核心技术创新：}
+
+\begin{itemize}
+    \item \textbf{TabPFN集成架构}：旧架构为4种基础配置×8个成员强化多样性，新架构收敛为2种配置×16个成员以稳住基线
+    \item \textbf{TCA域适应机制}：无监督跨域特征对齐，在RKHS空间最小化MMD距离
+    \item \textbf{特征选择优化}：通过Best3-Best58全扫描验证，\textcolor{red}{\textbf{best7配置在新架构下表现最佳}}
+    \item \textbf{小样本处理能力}：在295训练样本下实现0.8285源域AUC（新架构）
+\end{itemize}
+
+\vspace{1em}
+\textbf{架构权衡的关键发现：}
+\begin{itemize}
+    \item \textcolor{green}{\textbf{优势}}：新架构带来更高的无UDA基线和特征稳定性
+    \item \textcolor{red}{\textbf{代价}}：TCA增益下降，仅提升0.0065 AUC，整体跨域收益低于旧架构
+    \item \textbf{适用场景}：跨医院部署若以基线稳定为主可采新架构；若强调域适应收益，应继续沿用旧架构
+    \item \textbf{系统性验证}：56种特征配置完整对比，16:16 vs 8:8:8:8架构分析
+\end{itemize}
+
+\end{frame}
+
+
+\end{document}
