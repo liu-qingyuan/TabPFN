@@ -120,94 +120,82 @@
 \section{方法：PANDA 框架}
 %==============================
 
-\begin{frame}{PANDA 方法框架总览}
+\begin{frame}{PANDA 框架形式化}
 \begin{itemize}
-    \item \textbf{Stage 1：跨域特征选择（RFE）}
-    \begin{itemize}
-        \item 在源域上迭代剔除不稳定或冗余特征；
-        \item 保留源/目标均可用的一组紧凑共享特征 $F^\ast$。
-    \end{itemize}
-    \item \textbf{Stage 2：TCA 域对齐}
-    \begin{itemize}
-        \item 将源域与目标域映射到共享核空间；
-        \item 最小化最大均值差异（MMD），得到对齐表示 $Z_s, Z_t$。
-    \end{itemize}
-    \item \textbf{Stage 3：TabPFN 集成预测}
-    \begin{itemize}
-        \item 在 $Z_s$ 上构建 TabPFN 风格集成；
-        \item 在 $Z_t$ 上推断并输出校准后的恶性概率。
-    \end{itemize}
+    \item 复合函数定义：
+    \[
+    f_{\text{PANDA}}(\mathbf{x}) = h \circ \psi \circ \pi_{\cap} \circ \pi_{\text{RFE}}(\mathbf{x})
+    \]
+    \item $\pi_{\text{RFE}}$：跨域 RFE 选出判别性子集 $\mathcal{F}^\ast$。
+    \item $\pi_{\cap}$：强制源/目标 schema 交集，保证目标域可用。
+    \item $\psi$：TCA 进行域对齐，减小源/目标分布差异。
+    \item $h$：TabPFN 集成分类 + 温度校准，输出鲁棒概率。
 \end{itemize}
+\end{frame}
 
-% 可在这里插入整体框架图（来自论文的框架示意图）
+\begin{frame}{PANDA 流程示意}
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{img/cross_hospital/Pre-trained Tabular Foundation Mode Pipeline_new.pdf}
-    \caption{PANDA framework architecture. (a) Compositional pipeline from original
-tabular data through ensemble training, prediction aggregation, class-imbalance
-adjustment, and final classification output. (b) Multi-branch ensemble with �� = 4
-preprocessing strategies, each generating �� = 8 ensemble members via different random
-seeds.}
-    \label{fig:placeholder}
+    \includegraphics[width=0.76\linewidth]{img/cross_hospital/Feature Selection and UDA.pdf}
+    \caption{Pipeline aligned with论文结构：RFE 先优化可迁移子空间，随后 schema 交集 $\pi_{\cap}$、TCA 映射 $\psi$，最终 TabPFN 集成分类器 $h$。}
+    \label{fig:panda-pipeline}
 \end{figure}
 \end{frame}
 
-\begin{frame}{Stage 1：跨域 RFE（直觉）}
+\begin{frame}{Stage 1：跨域 RFE（$\pi_{\text{RFE}}$）}
 \begin{itemize}
-    \item 动机：跨医院特征不一致会导致模型在外部中心出现显著性能与稳定性退化。
-    \item 目标：学习一个特征子集 $\mathcal{F}^\ast$，
+    \item 目标：学习特征子集 $\mathcal{F}^\ast$，满足
     \begin{itemize}
         \item \textbf{在目标医院 schema 中可获得}；
         \item \textbf{在源域上具有强判别能力}。
     \end{itemize}
-    \item 方法要点（Cross-domain RFE）：
+    \item TabPFN-based permutation importance 在源域交叉验证中为特征打分。
     \begin{itemize}
-        \item 使用 \textbf{TabPFN-based permutation importance} 在源域交叉验证中为特征打分；
-        \item 评估候选子集大小 $k \in [k_{\min}, k_{\max}]$；
-        \item 通过 \textbf{复合评价指数 CEI} 综合权衡
-        \textit{判别力、计算效率、fold 稳定性、特征简约性}；
-        \item 选择 $k^\ast$ 得到最优子集 $\mathcal{F}^\ast$。
+        \item 候选子集大小 $k \in [k_{\min}, k_{\max}]$；
+        \item \textbf{复合评价指数（CEI）}平衡判别力、计算效率、fold 稳定性与简约性；
+        \item 取 $k^\ast$ 最大化 CEI，得到 $\mathcal{F}^\ast$（本实验 $|\mathcal{F}^\ast|=9$）。
     \end{itemize}
-    \item 本研究结果：RFE 在源域选择 $|\mathcal{F}^\ast|=9$；
-    \textbf{后续由 Stage 2 的 $\pi_{\cap}$ 因目标域缺失再约束为 8 个共享特征。}
+    \item 详尽实现与 CEI 组成见论文 Section 5.2.1。
 \end{itemize}
-
-% 可放 RFE 曲线图
-% \includegraphics[width=0.75\textwidth]{fig_rfe_curve.pdf}
 \end{frame}
 
-\begin{frame}{Stage 2：TCA 对齐（直觉）}
+\begin{frame}{Stage 2：特征对齐（$\pi_{\cap}$）}
 \begin{itemize}
-    \item 动机：源/目标之间存在显著分布偏移（covariate shift 等）。
-    \item 思想：用核方法将两域映射到\textbf{共享潜在空间}。
-    \item 优化目标（高层描述）：
-    \begin{itemize}
-        \item 最小化源域与目标域的分布差异（MMD）；
-        \item 同时保留判别结构与有效信息。
-    \end{itemize}
-    \item 期望效果：
-    \begin{itemize}
-        \item 减少负迁移；
-        \item 提升外部 AUC/Recall 与概率校准。
-    \end{itemize}
+    \item RFE 产出 $|\mathcal{F}^\ast| = 9$，因目标域缺失，交集约束为
+    \[
+        \mathcal{F}_{\cap} = \mathcal{F}^\ast \cap \mathcal{F}^T
+    \]
+    \item 维度从 9 减至 8，显式处理目标医院未检测的生物标志物。
+    \item 确保后续域对齐与分类仅在\textbf{临床可用的共享子空间}上进行。
 \end{itemize}
-
-% 可放 TCA 示意图（两团分布 -> 对齐到同一空间）
 \end{frame}
 
-\begin{frame}{Stage 3：TabPFN 预训练表格基础模型}
+\begin{frame}{Stage 3：域适配映射（$\psi$，TCA）}
 \begin{itemize}
-    \item TabPFN：基于大规模合成任务的 meta-training。
-    \item 适配优势：
+    \item 对齐后的特征 $\mathcal{F}_{\cap}$ 送入 TCA，学习线性映射：
+    \[
+        \mathbf{x}' = \psi(\mathbf{x}; \mathcal{F}_{\cap}) = \mathbf{W}^\top \mathbf{x}
+    \]
+    \item 在线性核 RKHS 中最小化源/目标的 MMD，\textbf{降低 $\mathcal{H}\Delta\mathcal{H}$-divergence}。
     \begin{itemize}
-        \item \textbf{小样本}场景性能稳定；
-        \item 天然支持不确定性与概率输出；
-        \item 集成与多分支预处理进一步提升鲁棒性。
+        \item $\mathbf{W}$ 在保持方差的约束下优化；
+        \item 以未标注目标数据参与对齐，符合隐私/标签缺失场景。
     \end{itemize}
-    \item 在 PANDA 中的角色：
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Stage 4：分类与集成（$h$，TabPFN）}
+\begin{itemize}
+    \item 适配后的特征 $\mathbf{x}'$ 经 TabPFN 集成分类：
+    \[
+        h(\mathbf{x}') = \frac{1}{N} \sum_{i=1}^{N} \sigma\!\left(\frac{f_i^{\text{TabPFN}}(\mathbf{x}')}{\tau}\right)
+    \]
+    \item 温度参数 $\tau$ 用于校准不同医院的患病率差异。
+    \item 集成平滑不确定性，提高对协变量/概念漂移的鲁棒性。
+    \item PANDA 在文中分别评估：
     \begin{itemize}
-        \item 作为最终风险预测器；
-        \item 与 RFE/TCA 共同构成可迁移诊断管线。
+        \item 肺结节实验：主要是 covariate 与 concept shift；
+        \item TableShift Diabetes：显式考察 label shift/患病率差异。
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -225,11 +213,25 @@ seeds.}
         \item 临床人口学、实验室指标、影像语义/临床整理特征等；
         \item 存在特征缺失与面板差异，需取共享 schema。
     \end{itemize}
-    \item 样本规模与类别比例：\textbf{以论文表格为准}。
 \end{itemize}
-
-% 可插入论文中的队列统计表
-% \includegraphics[width=0.8\textwidth]{tab_cohort_summary.pdf}
+\begin{table}
+    \centering
+    \caption{Training (Cohort A) and testing (Cohort B) cohorts.}
+    \label{tab:cohort_summary_slide}
+    \scriptsize
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Characteristic} & \textbf{Cohort A (n = 295)} & \textbf{Cohort B (n = 190)} \\
+        \midrule
+        Upper lobe (Yes) & 41.0\% & 51.6\% \\
+        Age (years) & 56.95 $\pm$ 11.03 & 58.26 $\pm$ 9.57 \\
+        DLCO1 & 5.90 $\pm$ 2.89 & 6.31 $\pm$ 1.55 \\
+        VC & 3.33 $\pm$ 0.80 & 2.92 $\pm$ 0.73 \\
+        CEA & 4.23 $\pm$ 6.90 & 4.15 $\pm$ 10.61 \\
+        Malignant (Yes) & 64.1\% & 65.8\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 \end{frame}
 
 \begin{frame}{数据集 2：TableShift BRFSS Diabetes}
@@ -243,8 +245,24 @@ seeds.}
     \item Shift 类型：\textbf{race-driven population shift}。
     \item 目的：验证 PANDA 在\textbf{跨人群}分布变化下的稳健性。
 \end{itemize}
-
-% 可插入论文中关于 TableShift 的任务说明图/表
+\begin{table}
+    \centering
+    \caption{Source (ID) vs target (OOD) cohorts for the BRFSS Diabetes race shift.}
+    \label{tab:tableshift_cohort_summary_slide}
+    \scriptsize
+    \begin{tabular}{p{0.42\linewidth}p{0.26\linewidth}p{0.26\linewidth}}
+        \toprule
+        \textbf{Characteristic} & \textbf{ID (White)} & \textbf{OOD (Non-White)} \\
+        \midrule
+        Sample size (full) & Train 969{,}229; Val 121{,}154; Test 121{,}154 & Val 23{,}264; Test 209{,}375 \\
+        Diabetes rate & 12.5\% (train) & 17.4\% (ood\_test) \\
+        Domain shift var. & PRACE1 = 1 (non-Hispanic White) & PRACE1 $\in \{2,3,4,5,6\}$ (other races) \\
+        Modeling sample (seed 42) & 1{,}024 (train) & 2{,}048 (eval) \\
+        Sampled diabetes rate & 13.2\% & 17.3\% \\
+        Sampled pos / neg & 135 / 889 & 355 / 1{,}693 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 \end{frame}
 
 \begin{frame}{实验协议与实现要点}
@@ -281,26 +299,41 @@ seeds.}
     \end{itemize}
     \item PANDA 变体：
     \begin{itemize}
-        \item TabPFN-only；
-        \item w/o RFE；
-        \item w/o TCA；
-        \item PANDA（full）。
+        \item TabPFN-only（含 RFE，去掉 TCA 对齐）；
+        \item PANDA（含 RFE + TCA + TabPFN，全管线）。
     \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{评价指标}
+\begin{frame}{评价指标（核心公式）}
 \begin{itemize}
-    \item 主要分类指标：
-    \begin{itemize}
-        \item AUC、Accuracy、F1、Precision、Recall。
-    \end{itemize}
-    \item 临床侧关注：
-    \begin{itemize}
-        \item 外部验证的\textbf{高召回}；
-        \item 概率校准与决策曲线（若论文中提供）。
-    \end{itemize}
-    \item 只展示关键数字与差异，不在汇报中堆叠完整大表。
+    \item 分类与临床指标：
+    \[
+        \text{Accuracy} = \frac{TP + TN}{TP+TN+FP+FN},\quad
+        \text{Precision} = \frac{TP}{TP+FP}
+    \]
+    \[
+        \text{Recall} = \frac{TP}{TP+FN},\quad
+        \text{F1} = \frac{2 \cdot \text{Prec} \cdot \text{Rec}}
+        {\text{Prec} + \text{Rec}}
+    \]
+    \item AUC：
+    \[
+        \text{AUC} = \int_{0}^{1} \text{TPR}(\tau)\, d\,\text{FPR}(\tau),
+        \quad \text{TPR}=\tfrac{TP}{TP+FN},\ \text{FPR}=\tfrac{FP}{FP+TN}
+    \]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{校准与决策曲线}
+\begin{itemize}
+    \item 校准曲线：分桶比较 $\hat{p}$ 与观测频率，越接近对角线越好（概率越可信），偏离表示过/欠估计风险。
+    \item DCA：净获益
+    \[
+        \text{NB}(\tau) = \frac{TP(\tau)}{n} - \frac{FP(\tau)}{n} \cdot \frac{\tau}{1-\tau}
+    \]
+    \item 参考策略：Treat-all $\text{NB}_{\text{all}}(\tau)$ 与 Treat-none (0)；曲线越高、覆盖阈值范围越宽，临床效用越好。
+    \item 判读指南：校准看“贴线”，DCA 看“高于基线的面积/高度”，选择外部敏感性优先的阈值段。
 \end{itemize}
 \end{frame}
 
@@ -308,66 +341,54 @@ seeds.}
 \section{实验结果}
 %==============================
 
-\begin{frame}{结果 1：肺结节任务（内部验证）}
+\begin{frame}{实验 1：肺结节（跨医院 UDA）}
 \begin{itemize}
-    \item 源域 10-fold CV。
-    \item TabPFN 作为 backbone 在小样本上优于传统树模型。
-    \item PANDA（含 RFE/TCA 的整体思路）提供更稳健的内部表现。
-    \item \textbf{关键指标与数值请以论文结果表为准}。
+    \item 跨医院 UDA（Cohort A $\rightarrow$ Cohort B），特征异构+分布漂移。
+    \item PANDA（RFE+TCA+TabPFN）：外部 AUC 0.7046，Recall 0.9440，内部 10-fold AUC 0.8287。
+    \item TabPFN-only（含 RFE，无 TCA）：外部 AUC 0.6980，Recall 0.8880。
+    \item 传统树/临床基线跨域 AUC 多数 < 0.65，召回明显下降。
 \end{itemize}
-
-% 可插入论文中内部结果对比表（精简版）
-% \includegraphics[width=0.85\textwidth]{tab_internal_results.pdf}
 \end{frame}
 
-\begin{frame}{结果 2：肺结节任务（外部验证）}
-\begin{itemize}
-    \item 目标域 Hospital B 的外部测试。
-    \item PANDA + TCA：
-    \begin{itemize}
-        \item 外部 AUC 约 0.705；
-        \item 召回率约 0.944。
-    \end{itemize}
-    \item 无对齐或传统基线在跨域下退化更明显。
-    \item 强调临床意义：\textbf{高敏感性优先}的跨中心风险筛查能力。
-\end{itemize}
-
-% 可插入外部 ROC 或关键对比表
-% \includegraphics[width=0.75\textwidth]{fig_external_roc.pdf}
+\begin{frame}{实验 1：综合分析图}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.42\linewidth]{img/cross_hospital/combined_analysis_figure.pdf}
+    \caption{\textbf{Performance and utility across source/target.} \textbf{a,b} ROC（Cohort A/B）；\textbf{c,d} 校准；\textbf{e,f} 决策曲线，展示 TCA 提升外部敏感性与净获益。}
+\end{figure}
 \end{frame}
 
-\begin{frame}{结果 3：TableShift BRFSS Diabetes}
+\begin{frame}{实验 1：内外部热力图}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.35\linewidth]{img/cross_hospital/combined_heatmaps_nature.pdf}
+    \caption{\textbf{Performance comparison across domains.} \textbf{a} 源域 10-fold 热力图；\textbf{b} 外部验证热力图，PANDA+TCA 在 AUC/Recall 上领先。}
+\end{figure}
+\end{frame}
+
+\begin{frame}{实验 2：TableShift BRFSS Diabetes（跨人群 OOD）}
 \begin{itemize}
-    \item 跨人群 OOD 验证（White \textrightarrow non-White）。
-    \item PANDA + TCA：
-    \begin{itemize}
-        \item OOD AUC 约 0.804；
-        \item 几乎不劣于 ID AUC 0.802。
-    \end{itemize}
-    \item 传统 GBDT / RF 类方法 OOD 性能下降更明显。
+    \item 跨人群 OOD（White $\rightarrow$ Non-White）。
+    \item PANDA + TCA：OOD AUC 0.804，几乎不劣于 ID AUC 0.802。
+    \item TabPFN-only 亦保持稳定，传统树模型 OOD 性能下降更明显。
     \item 说明 PANDA 在公共基准上具有\textbf{可迁移性与可复现性}。
 \end{itemize}
-
-% 可插入 TableShift 的性能对比图（精简）
 \end{frame}
 
-\begin{frame}{消融与机制分析（如论文中提供）}
-\begin{itemize}
-    \item 逐步移除组件：
-    \begin{itemize}
-        \item w/o RFE：特征噪声增加，跨域稳定性下降；
-        \item w/o TCA：分布差异未缓解，外部召回/AUC 受限；
-        \item TabPFN-only：缺少显式对齐与跨域特征约束。
-    \end{itemize}
-    \item 与理论动机对齐：
-    \begin{itemize}
-        \item RFE 提升可迁移性；
-        \item TCA 缩小域差异；
-        \item TabPFN 提升小样本学习可靠性。
-    \end{itemize}
-\end{itemize}
+\begin{frame}{实验 2：ROC/校准/决策曲线}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.42\linewidth]{img/tableshift/combined_analysis_figure.pdf}
+        \caption{\textbf{TableShift BRFSS Diabetes analysis.} \textbf{a,b} ROC；\textbf{c,d} 校准；\textbf{e,f} 决策曲线，展示 PANDA 在种族驱动分布漂移下的稳健性。}
+    \end{figure}
+    \end{frame}
 
-% 可插入论文的 ablation 表/图（只保留关键两三列）
+\begin{frame}{实验 2：热力图}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.35\linewidth]{img/tableshift/combined_heatmaps_nature.pdf}
+    \caption{\textbf{Performance comparison on TableShift.} 训练/种族迁移划分的多指标热力图，PANDA+TCA 维持稳定表现。}
+\end{figure}
 \end{frame}
 
 %==============================
@@ -378,42 +399,34 @@ seeds.}
 \begin{itemize}
     \item 优势：
     \begin{itemize}
-        \item 面向小样本跨中心诊断任务的\textbf{稳定、轻量}方案；
-        \item RFE 提供\textbf{可解释}的紧凑特征集合；
-        \item TCA + TabPFN 改善外部泛化与校准。
+        \item \textbf{预训练 TabPFN 作为稳健先验}：小样本（$n<300$）显著优于树模型。
+        \item \textbf{跨域 RFE}：收敛到 8 个稳定特征，降低维度并抑制站点特异性噪声。
+        \item \textbf{TCA 对齐}：减小 MMD，AUC 提升约 +0.007，并改善外部校准。
     \end{itemize}
     \item 局限：
     \begin{itemize}
-        \item 依赖共享特征交集；
-        \item 队列规模仍有限；
-        \item 极端分布偏移下仍可能出现负迁移风险。
+        \item \textbf{封闭特征交集}：无法利用目标新采集的强预测因子。
+        \item \textbf{未建模 MNAR}：完整案例策略依赖 MCAR/MAR；MNAR 下可能有选择偏倚。
+        \item \textbf{资源约束}：TabPFN 在 CPU 也可运行但较慢；GPU 可达 $\sim$20ms/例，$O(N^2)$ 注意力限制大样本；肺结节实验非低患病率标签移位场景。
     \end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}{总结与 take-home messages}
 \begin{itemize}
-    \item 提出 PANDA 框架：\textbf{“选稳定特征 + 对齐分布 + 用预训练模型预测”}。
-    \item 在两家中国癌症中心的肺结节任务中：
-    \begin{itemize}
-        \item 内部 AUC 约 0.811；
-        \item 外部 AUC 约 0.705，召回率约 0.944；
-        \item 优于传统临床评分与经典 ML 模型。
-    \end{itemize}
-    \item 在 TableShift BRFSS Diabetes 任务中：
-    \begin{itemize}
-        \item OOD AUC 约 0.804，几乎不劣于 ID AUC 0.802。
-    \end{itemize}
-    \item PANDA 为构建\textbf{可跨医院与跨人群迁移}的表格预测系统提供可复用模板。
+    \item PANDA = \textbf{预训练先验 + 稳定特征 + 线性对齐}。
+    \item 肺结节（A$\rightarrow$B）：内部 AUC 0.8287；外部 AUC 0.7046，Recall 0.944，优于临床评分/树模型。
+    \item TableShift Diabetes：OOD AUC 0.804，接近 ID AUC 0.802。
+    \item 为跨医院、跨人群表格预测提供可复用的轻量 UDA 模板。
 \end{itemize}
 \end{frame}
 
 \begin{frame}{未来工作}
 \begin{itemize}
-    \item 更大规模、多中心真实筛查队列验证。
-    \item 融合影像与表格的\textbf{多模态 PANDA}。
-    \item 面向隐私约束的\textbf{联邦/协同对齐}策略。
-    \item 应对时间漂移的在线或持续学习扩展。
+    \item \textbf{联邦/协同对齐}：仅共享二阶统计学习 TCA，保护隐私。
+    \item \textbf{多模态 PANDA}：融合 CT 影像与表格，跨模态对齐。
+    \item \textbf{低患病率/真实筛查}队列验证，补足标签移位应对。
+    \item \textbf{资源优化}：轻量化推理、稀疏注意力，扩展到边缘设备。
 \end{itemize}
 \end{frame}
 
@@ -426,7 +439,7 @@ seeds.}
     \item 感谢导师：Prof. Wenqi Fan 的指导与支持。
     \item 感谢合作医院与临床团队的数据支持与专业建议。
     \item 感谢课题组同学与朋友的讨论与帮助。
-    \item 感谢 PolyU 与相关项目/资源支持（如适用）。
+    \item 感谢 PolyU 计算机学院（COMP）与相关项目/资源支持。
 \end{itemize}
 \end{frame}
 

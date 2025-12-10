@@ -251,6 +251,29 @@ We further evaluated PANDA on the TableShift BRFSS Diabetes benchmark, which int
 
 In this setting, our goal is to assess whether a tabular foundation model with lightweight domain alignment can remain stable when the covariate distribution changes along demographic axes. Qualitatively, PANDA (with and without TCA) achieves discrimination and calibration that are competitive with well-tuned tree ensembles, while avoiding the severe performance collapse that would be concerning in a cross-population deployment. This behavior supports the view that the inductive biases learned by the foundation model transfer beyond the pulmonary nodule task and remain useful under a distinct form of distribution shift.
 
+\begin{table}[htbp]
+\small
+\centering
+\caption{Source (ID) vs target (OOD) cohorts for the BRFSS Diabetes race shift.}
+\label{tab:tableshift_cohort_summary}
+\begin{tabular}{p{0.34\linewidth}p{0.28\linewidth}p{0.28\linewidth}}
+\toprule
+\textbf{Characteristic} & \textbf{Source / ID (PRACE1 = 1)} & \textbf{Target / OOD (PRACE1 $\in \{2,\dots,6\}$)} \\
+\midrule
+Sample size (full) & Train 969{,}229; Val 121{,}154; Test 121{,}154 & Val 23{,}264; Test 209{,}375 \\
+Diabetes positive rate & 12.5\% (train) & 17.4\% (ood\_test) \\
+Years & 2015: 245{,}675; 2016: 5{,}789; 2017: 244{,}996; 2018: 6{,}403; 2019: 221{,}847; 2020: 9{,}630; 2021: 223{,}088; 2022: 11{,}801 & 2015: 49{,}216; 2016: 1{,}507; 2017: 52{,}150; 2018: 1{,}424; 2019: 48{,}012; 2020: 3{,}147; 2021: 50{,}595; 2022: 3{,}324 \\
+Domain shift variable & PRACE1 = 1 (non-Hispanic White) & PRACE1 $\in \{2,3,4,5,6\}$ (other races) \\
+Modeling sample (seed 42) & 1{,}024 sampled for training & 2{,}048 sampled for evaluation \\
+Sampled diabetes rate & 13.2\% & 17.3\% \\
+Sampled pos / neg counts & 135 / 889 & 355 / 1{,}693 \\
+Sampled years (seed 42) & 2015: 245; 2016: 8; 2017: 278; 2018: 2; 2019: 232; 2020: 7; 2021: 241; 2022: 11 & 2015: 497; 2016: 17; 2017: 488; 2018: 17; 2019: 445; 2020: 30; 2021: 525; 2022: 29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The BRFSS \texttt{DIABETES} label is coded 1 (Yes) versus 0 (No/Prediabetes/Borderline), with NA rows removed. After preprocessing, all 142 features are numerical, cross-year aligned, and retain the survey year (\texttt{IYEAR}). Preprocessing steps drop \texttt{DRNK\_PER\_WEEK=99900}, map \texttt{SEX$\rightarrow\{0,1\}$}, set health-day 88 to 0, and fill remaining non-asked entries with \texttt{NOTASKED\_MISSING}.
+
 Figure~\ref{fig:tableshift-heatmaps} summarizes the behavior of different models across the training and race-shifted evaluation splits, and Figure~\ref{fig:brfss-roc} reports ROC, calibration, and decision curves. Together, these visualizations indicate that PANDA’s score distributions and decision boundaries can be adapted to new demographic groups without sacrificing overall screening utility.
 
 \begin{figure}[htbp]

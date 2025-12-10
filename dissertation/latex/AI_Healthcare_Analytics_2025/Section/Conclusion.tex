@@ -23,7 +23,9 @@ PANDA assumes that the source and target domains share a common feature schema g
 
 \subsubsection{Missing Data Mechanisms}
 
-The current approach assumes that missing values are either Missing Completely At Random (MCAR) or Missing At Random (MAR). The \texttt{best8} feature set was selected partly for its high completeness. However, in clinical practice data are often Missing Not At Random (MNAR); for instance, a test may not be ordered because the clinician believes that the patient is either too healthy or too sick. PANDA's current imputation strategies (mean, median, and contextual imputation) do not explicitly model such informative missingness and may therefore introduce bias.
+The current implementation of PANDA uses a complete-case strategy: it removes samples with missing values before downstream preprocessing and modeling. Consequently, the core framework does not rely on explicit imputation. This approach implicitly assumes that the retained cohort remains representative under Missing Completely At Random (MCAR) or, more weakly, Missing At Random (MAR). The \texttt{best8} feature set was selected partly for its high completeness, which reduces the number of excluded cases.
+
+However, clinical data are often Missing Not At Random (MNAR); for instance, a clinician may not order a test because they believe the patient is either too healthy or too sick. Under such informative missingness, complete-case filtering may introduce selection bias and limit the generalizability of the current results. Future extensions of PANDA could incorporate missingness indicators or explicitly model informative missingness to better address MNAR settings.
 
 \subsubsection{Computational Resource Requirements}
 

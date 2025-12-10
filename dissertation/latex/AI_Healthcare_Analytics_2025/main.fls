@@ -263,6 +263,11 @@ INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
 INPUT ./img/cross_hospital/combined_heatmaps_nature.pdf
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT ./img/tableshift/combined_heatmaps_nature.pdf
 INPUT ./img/tableshift/combined_heatmaps_nature.pdf
 INPUT ./img/tableshift/combined_heatmaps_nature.pdf
@@ -313,6 +318,7 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/publi
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
@@ -326,6 +332,7 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/publi
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_2/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb
